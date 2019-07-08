@@ -146,3 +146,9 @@ print(vmat_binary)
 # scipy.ndimage.binary_opening
 # scipy.ndimage.binary_closing
 # Can choose different structuring elements to get different information.
+# Other commands (from Svenn-Arne's page https://dragly.org/2013/03/25/working-with-percolation-clusters-in-python/):
+# Furthermore we want to label each cluster. This is performed by the scipy.ndimage.measurements.label function:
+# lw, num = measurements.label(z)
+# After this we may want to extract some properties of the clusters, such as the area. This is possible using the scipy.ndimage.measurements.sum function:
+# area = measurements.sum(z, lw, index=arange(lw.max() + 1))
+
