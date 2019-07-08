@@ -447,11 +447,11 @@ np.save(outfilename_npy,outarray)
 np.save(outfilename_x,x_centres)
 np.save(outfilename_y,y_centres)
 np.save(outfilename_z,z_centres)
-np.save(outfilename_vmox,voxelvalues)
+np.save(outfilename_vox,voxelvalues)
 np.save(outfilename_vmat,voxmat)
 
 
-for i in range(voxN):
+for i in range(voxN): # Why this no work?
     outfile_txt.write('%.16f %.16f %.16f %.16f\n' % (outarray[n,0],outarray[n,1],outarray[n,2],outarray[n,3]))
 outfile_txt.close()
 

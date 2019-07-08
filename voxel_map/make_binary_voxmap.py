@@ -131,14 +131,18 @@ vmat      = np.load(infilename_vmat) # I guess I should use this one...
 
 dx_map    = x_vals[1] - x_vals[0] 
 
-print('dx_map',dx_map)
+#print('dx_map',dx_map)
 
 # Use Svenn-Arne's FYS4460 stuff:
 
+# This makes True and False. Would rather have 0 and 1, I guess:
 vmat_binary = vmat < thr # Which ones should be 0 and which should be 1? # This yields 'solid' 1 and 'pore' 0. Guess that makes sense. A bit different from what we did in FYS4460.
+print(vmat_binary)
 # No need for BounddingBox or stuff like that. Should I label clusters, or just let the morhpology functions do their work?
 # Should use a sphere for structuring element, I guess. Can see if ndimage provides that or if I should come up with it myself.
 
-print('Me dunnit!')
-
-
+# Look at the morphology section of scipy.ndimage!:
+# https://docs.scipy.org/doc/scipy/reference/ndimage.html
+# scipy.ndimage.binary_opening
+# scipy.ndimage.binary_closing
+# Can choose different structuring elements to get different information.
