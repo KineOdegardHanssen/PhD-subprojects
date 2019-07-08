@@ -77,11 +77,11 @@ outfilename  = 'voxelmap_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%
 infilename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
 outfilename_npy  = 'voxelmap_test_short'
 outfilename_txt  = outfilename_npy+'.txt'
-outfilename_x    = outfilename_npy+'_x.txt'
-outfilename_y    = outfilename_npy+'_y.txt'
-outfilename_z    = outfilename_npy+'_z.txt'
+outfilename_x    = outfilename_npy+'_x'
+outfilename_y    = outfilename_npy+'_y'
+outfilename_z    = outfilename_npy+'_z'
 outfilename_vox  = outfilename_npy+'_vox.txt'
-outfilename_vmat = outfilename_npy+'_vox_matrix.txt'
+outfilename_vmat = outfilename_npy+'_vox_matrix'
 #'''
 # Varying the grid spacing # THIS IS NOW THE STANDARD FILE NAMES.
 '''
@@ -444,32 +444,16 @@ print('The absolutely smallest distance:', min(voxelvalues))
 print('max(voxelvalues):', max(voxelvalues))
 
 np.save(outfilename_npy,outarray)
+np.save(outfilename_x,x_centres)
+np.save(outfilename_y,y_centres)
+np.save(outfilename_z,z_centres)
+np.save(outfilename_vmox,voxelvalues)
+np.save(outfilename_vmat,voxmat)
+
 
 for i in range(voxN):
     outfile_txt.write('%.16f %.16f %.16f %.16f\n' % (outarray[n,0],outarray[n,1],outarray[n,2],outarray[n,3]))
 outfile_txt.close()
-
-for i in range(Nx): # Do I store too much by writing to three separate files? The spacing is the same. Can recreate arrays by giving the spacing and the number of elements (the starting point is not that important now...) # Maybe not that much of a hassle anyway. Would need to redo the calcs if I only gave spacing and N's.
-    outfile_x.write('%.16f ' % x_centres[i])
-outfile_x.close()
-
-for i in range(Ny):
-    outfile_y.write('%.16f ' % y_centres[i])
-outfile_y.close()
-
-for i in range(Nz):
-    outfile_z.write('%.16f ' % z_centres[i])
-outfile_z.close()
-
-for i in range(voxN):
-    outfile_vox.write('%.16f ' % voxelvalues[i])
-outfile_vox.close()
-
-# Hmmm... How to write a 3D matrix to file? Should probably use some special format. Check MATLAB. (Can do it in Python too, though)
-for i in range(Nx): 
-    for j in range(Ny):
-        for k in range(Nz):
-            outfile_vmat.write('%.16f ' % voxmat[i,j,k])
 
 # Plotting and printing
 '''
