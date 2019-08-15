@@ -8,6 +8,8 @@ import numpy as np
 import random
 import math
 import time
+import os
+import glob
 
 # Function for curve_fit
 '''
@@ -58,21 +60,39 @@ def element_difference(h,f):
         df[i]= f[i+1]-f[i]
     return hout, df
 
+def av_and_rms(f):
+    av  = mean(f)
+    N   = len(f)
+    rms = 0
+    for i in range(len(f)):
+        rms += (av-f[i])**2
+    rms = np.sqrt(rms/N)
+    return av, rms
+
 start_time = time.process_time()
 
 ### To make data into binary:
 # Threshold:
 thr         = 0.4 # Set any number here
-thrs        = np.linspace(0.2,4.0,3) # Or something
+Nthr        = 2
+thrs        = np.linspace(2.1,4.0,Nthr) # Or something
 
 # Radius of structuring element
-radii         = np.arange(1,17)
-Nr            = len(radii)
-porefracs     = np.zeros(Nr)
-accfracs_p    = np.zeros(Nr)
-porevoxels    = np.zeros(Nr)
-poredistr     = np.zeros(Nr)
-ball_elements = np.zeros(Nr)
+radii                  = np.arange(1,17) # Possibly: # UNCOMMENT AFTER TESTING!
+Nr                     = len(radii)
+porefracs              = np.zeros((Nr,Nthr))
+accfracs_p             = np.zeros((Nr,Nthr))
+porevoxels             = np.zeros((Nr,Nthr))
+poredistr              = np.zeros((Nr-1,Nthr))
+diffporefrac           = np.zeros((Nr-1,Nthr))
+differenceporefrac     = np.zeros((Nr-1,Nthr))
+porefracs_rms          = np.zeros((Nr,Nthr))
+accfracs_p_rms         = np.zeros((Nr,Nthr))
+porevoxels_rms         = np.zeros((Nr,Nthr))
+poredistr_rms          = np.zeros((Nr-1,Nthr))
+diffporefrac_rms       = np.zeros((Nr-1,Nthr))
+differenceporefrac_rms = np.zeros((Nr-1,Nthr))
+
 print('radii:', radii)
 print('radii[1]=',radii[1])
 
@@ -178,77 +198,105 @@ outfilename  = 'voxelmap_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_fa
 infilename   = 'chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.lammpstrj' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)     # Actual run
 outfilename  = 'voxelmap_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.txt' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
 '''
+### More on names:
+foldername            = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/'
+infilename_totalbase  = foldername + infilename_base
+### For each frame:
+
 ### Loading data
-#outfile_txt  = open(outfilename_txt,'r')
-x_vals    = np.load(infilename_x) # Do I really need all these? Or just the spacing to translate the distances?
-y_vals    = np.load(infilename_y)
-z_vals    = np.load(infilename_z)
-vmat      = np.load(infilename_vmat) # I guess I should use this one...
+# Extracting the numbers I'm after to make the file names (because otherwise the order might be off...)
+allthetimesteps = []
+regex = re.compile(r'\d+')
+# List all files in a directory using os.listdir
+basepath = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_voxelmap_test_short/'
+for entry in os.listdir(basepath):
+    if os.path.isfile(os.path.join(basepath, entry)):
+        filename = entry#str(entry)
+        thesenumbers = regex.findall(filename)
+        if len(thesenumbers)!=0:
+            allthetimesteps.append(thesenumbers[-1]) # I get the numbers out this way :D Now, I only need to make sure that the timestep is the last number in the filename. Should be easy
+                                                     # Oooooh, I also need to remove repetitions of the numbers so that the program only performs the operation ONCE for each number
+allthetimesteps = np.array(allthetimesteps)  # This is highly redundant
+timestepnumbers = np.unique(allthetimesteps) # And I want the unique time step numbers
+timestepnumbers = np.array(['2340000'])        # FOR TESTING ONLY!!! UNCOMMENT AS SOON AS THE PLOTS LOOK THE SAME!
+Nsteps          = len(timestepnumbers)
 
-matsize   = np.size(vmat)
-dx_map    = x_vals[1] - x_vals[0] # Grid size
+### Arrays for finding the average and stdv:
+accfracs_p_collect         = np.zeros((Nsteps, Nthr, Nr))
+porefracs_collect          = np.zeros((Nsteps, Nthr, Nr))
+diffporefrac_collect       = np.zeros((Nsteps, Nthr, Nr-1))
+differenceporefrac_collect = np.zeros((Nsteps, Nthr, Nr-1))
+poredistr_collect          = np.zeros((Nsteps, Nthr, Nr-1))
+ball_elements              = np.zeros((Nsteps, Nthr, Nr))
 
-#print('dx_map',dx_map)
-
-# This makes True and False. Would rather have 0 and 1, I guess:
-# Should I just make a bunch of binary matrices?
-for thr in thrs:
-    outfilename      = infilename_base + '_binary_thr' + str(thr)
-    outfilename_text = outfilename + '.txt'
-    plotname         = outfilename + '.png'
-    outfile          = open(outfilename,'w') 
-    vmat_binary      = vmat < thr # Which ones should be 0 and which should be 1? # This yields 'solid' 1 and 'pore' 0. Guess that makes sense. A bit different from what we did in FYS4460.
-    #vmat_binary      = vmat > thr # Testing.
-    #print(vmat_binary)
-    np.save(outfilename,vmat_binary)
+# Can loop from here:
+for timeind in range(Nsteps):
+    timestep = timestepnumbers[timeind]
+    infilename_vmat = infilename_totalbase +'_timestep'+timestep+'.npy'
+    infilename_x    = infilename_totalbase +'_x_timestep'+timestep+'.npy'
     
-    #print('Have saved!')
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    #print('axes set!')
-    '''
-    xsize = len(x_vals)
-    ysize = len(y_vals)
-    zsize = len(z_vals)
-    m = np.zeros(shape = (xsize, ysize, zsize))
-    random_location_1 = (1,1,2)
-    random_location_2 = (3,5,8)
-    m[random_location_1] = 1
-    m[random_location_2] = 1
-    '''
-    '''
-    pos = np.where(vmat_binary==True)
-    #print('pos set!')
-    ax.scatter(pos[0], pos[1], pos[2], c='black')
-    #print('Should plot any minute now')
-    plt.savefig(plotname)
-    #print('Have plotted')
-    plt.show()
-    '''
+    print('infilename_vmat:', infilename_vmat)
+    print('infilename_x:', infilename_x)
     
-    labels = measure.label(vmat_binary)
-    print('max(labels[0])=',max(labels[0][0]))
-    print('shape, vmat_binary:', np.shape(vmat_binary))
-    print('shape, labels:', np.shape(labels))
-    #io.imshow(labels)
-    #io.show()
+    #outfilename_txt  = outfilename_npy+'.txt'
+    infilename_x    = infilename_totalbase+'_x.npy'
+    infilename_y    = infilename_totalbase+'_y.npy'
+    infilename_z    = infilename_totalbase+'_z.npy'
+    #infilename_vox  = infilename_base+'_vox.txt'
+    infilename_vmat = infilename_totalbase+'_vox_matrix.npy'
     
-    # I probably want to perform operations on the binary matrix now that I have made it... use skimage.morphology
+    #outfile_txt  = open(outfilename_txt,'r')
+    x_vals    = np.load(infilename_x) # Do I really need all these? Or just the spacing to translate the distances?
+    y_vals    = np.load(infilename_y)
+    z_vals    = np.load(infilename_z)
+    vmat      = np.load(infilename_vmat) # I guess I should use this one...
     
-    print('Number of elements in matrix:', np.size(vmat_binary))
-    print('Fraction of filled voxels:', np.sum(np.sum(np.sum(vmat_binary)))/matsize)
-    filled_original     = np.sum(np.sum(np.sum(vmat_binary)))
-    pore_original       = matsize - filled_original
-    fracfilled_original = filled_original/matsize
-    fracpore_original   = 1-fracfilled_original
-    # Checking how big a ball can fit
-    if thr==thrs[2]:
-        # For plotting:
-        plotname_acc      = outfilename + '_accvolfrac_pore.png'
-        plotname_pore     = outfilename + '_porefrac.png'
-        plotname_pore_differentiated = outfilename + '_porefrac_differentiated_from_accumulated.png'
-        plotname_pore_difference     = outfilename + '_porefrac_difference_from_accumulated.png'
-        plotname_pore_numbers        = outfilename + '_porenos_from_difference.png'
+    matsize   = np.size(vmat)
+    dx_map    = x_vals[1] - x_vals[0] # Grid size
+    
+    #print('dx_map',dx_map)
+    
+    # Agh, double loop! :(
+    # This makes True and False. Would rather have 0 and 1, I guess:
+    # Should I just make a bunch of binary matrices?
+    for thrind in range(Nthr):
+        thr = thrs[thrind]
+        outfilename      = infilename_totalbase + '_binary_thr' + str(thr) + '_timestep'+str(timestep)
+        outfilename_text = outfilename + '.txt'
+        plotname         = outfilename + '.png'
+        outfile          = open(outfilename,'w') 
+        vmat_binary      = vmat < thr # Which ones should be 0 and which should be 1? # This yields 'solid' 1 and 'pore' 0. Guess that makes sense. A bit different from what we did in FYS4460.
+        #vmat_binary      = vmat > thr # Testing.
+        #print(vmat_binary)
+        np.save(outfilename,vmat_binary)
+        
+        #print('Have saved!')
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        #print('axes set!')
+        '''
+        pos = np.where(vmat_binary==True)
+        ax.scatter(pos[0], pos[1], pos[2], c='black')
+        plt.savefig(plotname)
+        plt.show()
+        '''
+        
+        labels = measure.label(vmat_binary)
+        print('max(labels[0])=',max(labels[0][0]))
+        print('shape, vmat_binary:', np.shape(vmat_binary))
+        print('shape, labels:', np.shape(labels))
+        #io.imshow(labels)
+        #io.show()
+        
+        # I probably want to perform operations on the binary matrix now that I have made it... use skimage.morphology
+        
+        print('Number of elements in matrix:', np.size(vmat_binary))
+        print('Fraction of filled voxels:', np.sum(np.sum(np.sum(vmat_binary)))/matsize)
+        filled_original     = np.sum(np.sum(np.sum(vmat_binary)))
+        pore_original       = matsize - filled_original
+        fracfilled_original = filled_original/matsize
+        fracpore_original   = 1-fracfilled_original
+        # Checking how big a ball can fit
         negative = util.invert(vmat_binary)
         negative = negative.astype(int)
         #radius = 1                           # Radius of the structuring element
@@ -256,8 +304,8 @@ for thr in thrs:
         #while black==True:
         for i in range(Nr): 
             radius = radii[i]
-            structuring_element = morphology.ball(radius)
-            ball_elements[i]    = np.sum(np.sum(np.sum(structuring_element)))
+            structuring_element                = morphology.ball(radius)
+            ball_elements[timeind,thrind,i]    = np.sum(np.sum(np.sum(structuring_element))) # Can do this outside of the loop, but it is probably not very costly anyways.
             ######### Erosion on negative ########   This told me nothing...
             '''
             newimage     = morphology.binary_erosion(negative,structuring_element)
@@ -306,7 +354,7 @@ for thr in thrs:
             ########## Closing ################
             #'''
             newimage = morphology.binary_closing(vmat_binary,structuring_element)
-            #print(newimage)
+            print(newimage)
             print('newimage made')
             #fig = plt.figure()
             #ax = fig.add_subplot(111, projection='3d')
@@ -326,71 +374,117 @@ for thr in thrs:
             plt.show()
             #'''
             # Calculating the fraction: (rename!)
-            porevoxel     = matsize-np.sum(np.sum(np.sum(newimage)))
-            porevoxels[i] = porevoxel
-            accfracs_p[i] = 1-porevoxel/pore_original
-            porefracs[i]  = 1-np.sum(np.sum(np.sum(newimage)))/matsize
-            print('porevoxels[i]:', porevoxels[i])
+            porevoxel            = matsize-np.sum(np.sum(np.sum(newimage)))
+            porevoxels[i,thrind] = porevoxel
+            accfracs_p_collect[timeind,thrind,i] = 1-porevoxel/pore_original
+            porefracs_collect[timeind,thrind,i]  = 1-np.sum(np.sum(np.sum(newimage)))/matsize
             # Updating or ending the loop:
             #radius += 2
             #if radius == 15:
             #    break
+        # Loop over i (structuring element) finished
+        diffradii, diffporefrac_collect[timeind,thrind,:]             = diff_by_secant(radii,porefracs_collect[timeind,thrind,:])       # How well does this work
+        differenceradii, differenceporefrac_collect[timeind,thrind,:] = element_difference(radii,accfracs_p_collect[timeind,thrind,:])
+        differenceradii, poredistr_collect[timeind,thrind,:]          = element_difference(radii,porevoxels[:,thrind])
+        
+        print('porevoxels[:,thrind]:',porevoxels[:,thrind])
+        
+        poredistr_collect /= ball_elements[timeind,thrind,1:]
+        poredistr_collect = np.absolute(poredistr_collect)
+        
+        print('pore_original:', pore_original)
+        print('porevoxels:', porevoxels)
+        #print('accfracs:', accfracs_p)
+    # Loop over thresholds finished
+# Loop over time steps finished
+# We use that to get the averages, so I don't think I will do much analysis before this point.
+
+'''
+porefracs      = np.zeros((Nr,Nthr))
+accfracs_p     = np.zeros((Nr,Nthr))
+porevoxels     = np.zeros((Nr,Nthr))
+poredistr      = np.zeros((Nr,Nthr))
+porefracs_rms  = np.zeros((Nr,Nthr))
+accfracs_p_rms = np.zeros((Nr,Nthr))
+porevoxels_rms = np.zeros((Nr,Nthr))
+poredistr_rms  = np.zeros((Nr,Nthr))
+'''
 
 
-diffradii, diffporefrac             = diff_by_secant(radii,porefracs)
-differenceradii, differenceporefrac = element_difference(radii,accfracs_p)
-differenceradii, poredistr          = element_difference(radii,porevoxels)
-
-poredistr /= -ball_elements[1:]
-poredistr = np.absolute(poredistr)
-
-print('pore_original:', pore_original)
-print('porevoxels:', porevoxels)
-print('accfracs:', accfracs_p)
-
-plt.figure(figsize=(6,5))
-plt.plot(radii,accfracs_p)
-plt.xlabel('Radius r [voxels]')
-plt.ylabel('Accumulated volume fraction, pores')
-plt.title('Accumulated pore volume fraction, str. elem=ball')
-plt.tight_layout()
-plt.savefig(plotname_acc)
-
-plt.figure(figsize=(6,5))
-plt.plot(radii,porefracs)
-plt.xlabel('Radius r [voxels]')
-plt.ylabel('Accumulated pore fraction')
-plt.title('Pore fraction, str. elem=ball')
-plt.tight_layout()
-plt.savefig(plotname_pore)
-
-plt.figure(figsize=(6,5))
-plt.plot(diffradii,diffporefrac)
-plt.xlabel('Radius r [voxels]')
-plt.ylabel('Pore fraction')
-plt.title('Pore fraction, str. elem=ball, differentiated from acc')
-plt.tight_layout()
-plt.savefig(plotname_pore_differentiated)
-
-#'''
-plt.figure(figsize=(6,5))
-plt.plot(differenceradii,differenceporefrac)
-plt.xlabel('Radius r [voxels]')
-plt.ylabel('Pore fraction')
-plt.title('Pore fraction, str. elem=ball, difference from acc')
-plt.tight_layout()
-plt.savefig(plotname_pore_difference)
-#'''
-
-plt.figure(figsize=(6,5))
-plt.plot(differenceradii,poredistr)
-plt.xlabel('Radius r [voxels]')
-plt.ylabel('Number of pores')
-plt.title('Number of pores, str. elem=ball, difference from acc')
-plt.tight_layout()
-plt.savefig(plotname_pore_numbers)
-
-print('dx_map:', dx_map)
+# Need a kind of post-proccessing loop?
+for thrind in range(Nthr):
+    thr = thrs[thrind]
+    # For plotting:
+    outfilename      = infilename_totalbase + '_binary_thr' + str(thr) + '_timestep'+str(timestep)
+    outfilename_text = outfilename + '.txt'
+    plotname         = outfilename + '.png'
+    outfile          = open(outfilename,'w')
+    plotname_acc      = outfilename + '_accvolfrac_pore.png'
+    plotname_pore     = outfilename + '_porefrac.png'
+    plotname_pore_differentiated = outfilename + '_porefrac_differentiated_from_accumulated.png'
+    plotname_pore_difference     = outfilename + '_porefrac_difference_from_accumulated.png'
+    plotname_pore_numbers        = outfilename + '_porenos_from_difference.png'
+    
+    for i in range(Nr): # Dp I really need to treat these as 2d-arrays, though? Can't I just overwrite them for each thr?
+        accfracs_p[i,thrind], accfracs_p_rms[i,thrind]                 = av_and_rms(accfracs_p_collect[:,thrind,i])
+        porefracs[i,thrind], porefracs_rms[i,thrind]                   = av_and_rms(porefracs_collect[:,thrind,i])
+    for i in range(Nr-1):    
+        diffporefrac[i,thrind], diffporefrac_rms[i,thrind]             = av_and_rms(diffporefrac_collect[:,thrind,i])
+        differenceporefrac[i,thrind], differenceporefrac_rms[i,thrind] = av_and_rms(differenceporefrac_collect[:,thrind,i])       
+        poredistr[i,thrind], poredistr_rms[i,thrind]                   = av_and_rms(poredistr_collect[:,thrind,i])
+        if i==0:
+            print('poredistr[i,thrind]:',poredistr[i,thrind])
+    
+    plt.figure(figsize=(6,5))
+    #plt.errorbar(separation, costheta[-1,:], yerr=costheta_rms[-1,:], fmt="none", capsize=2, label='Values')
+    plt.errorbar(radii,accfracs_p[:,thrind], yerr=accfracs_p_rms[:,thrind], fmt="none", capsize=2)#, label='Values')
+    plt.plot(radii,accfracs_p[:,thrind], 'o')
+    plt.xlabel('Radius r [voxels]')
+    plt.ylabel('Accumulated volume fraction, pores')
+    plt.title('Accumulated pore volume fraction, str. elem=ball')
+    plt.tight_layout()
+    plt.savefig(plotname_acc)
+    
+    plt.figure(figsize=(6,5))
+    plt.errorbar(radii,porefracs[:,thrind], yerr=porefracs_rms[:,thrind], fmt="none", capsize=2)#, label='Values')
+    plt.plot(radii,porefracs[:,thrind], 'o')
+    plt.xlabel('Radius r [voxels]')
+    plt.ylabel('Accumulated pore fraction')
+    plt.title('Pore fraction, str. elem=ball')
+    plt.tight_layout()
+    plt.savefig(plotname_pore)
+    
+    plt.figure(figsize=(6,5))
+    plt.errorbar(diffradii,diffporefrac[:,thrind], yerr=diffporefrac_rms[:,thrind], fmt="none", capsize=2)#, label='Values')
+    plt.plot(diffradii,diffporefrac[:,thrind], 'o')
+    plt.xlabel('Radius r [voxels]')
+    plt.ylabel('Pore fraction')
+    plt.title('Pore fraction, str. elem=ball, differentiated from acc')
+    plt.tight_layout()
+    plt.savefig(plotname_pore_differentiated)
+    
+    #'''
+    plt.figure(figsize=(6,5))
+    #plt.plot(differenceradii,differenceporefrac)
+    plt.errorbar(differenceradii,differenceporefrac[:,thrind], yerr=differenceporefrac_rms[:,thrind], fmt="none", capsize=2)#, label='Values')
+    plt.plot(differenceradii,differenceporefrac[:,thrind], 'o')
+    plt.xlabel('Radius r [voxels]')
+    plt.ylabel('Pore fraction')
+    plt.title('Pore fraction, str. elem=ball, difference from acc')
+    plt.tight_layout()
+    plt.savefig(plotname_pore_difference)
+    #'''
+    
+    plt.figure(figsize=(6,5))
+    plt.errorbar(differenceradii,poredistr[:,thrind], yerr=poredistr_rms[:,thrind], fmt="none", capsize=2)#, label='Values')
+    plt.plot(differenceradii,poredistr[:,thrind], 'o')
+    plt.xlabel('Radius r [voxels]')
+    plt.ylabel('Number of pores')
+    plt.title('Number of pores, str. elem=ball, difference from acc')
+    plt.tight_layout()
+    plt.savefig(plotname_pore_numbers)
+    
+    print('dx_map:', dx_map)
 
 '''    
 from mpl_toolkits.mplot3d import Axes3D

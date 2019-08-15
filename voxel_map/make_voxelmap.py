@@ -1,3 +1,4 @@
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt               # To plot
 from scipy.optimize import curve_fit
 import numpy as np
@@ -13,7 +14,7 @@ start_time = time.process_time()
 
 ### Grid setting
 zbuffer     = 10 # Don't know if the 'buffer' is big enough
-Nvoxels     = 50
+Nvoxels     = 55
 
 ### Input file parameters
 Kangle      = 20
@@ -75,6 +76,7 @@ outfilename  = 'voxelmap_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%
 #'''
 #infilename   = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % (M,N,spacing,Kangle,Kbond,charge,T)
 infilename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
+# chaingrid_quadratic_M9N101_gridspacing40_Langevin_wall1.042_Kangle20_Kbond200_debye_kappa1_debyecutoff3_charge-1_T310_theta0is180_twofirst_are_fixed.lammpstrj
 outfilename_npy  = 'voxelmap_test_short'
 outfilename_txt  = outfilename_npy+'.txt'
 outfilename_x    = outfilename_npy+'_x'
@@ -202,9 +204,13 @@ i = int(math.ceil(skipelem*(Nall+9)))
 j = 0
 testcounter = 0
 #totlines = 3*(N+skiplines)
-skiplines += (Nall+skiplines)*sampleevery # Check!
+skiplines += (Nall+skiplines)*sampleevery
+first      = True
 while i<totlines:
     words = lines[i].split()
+    if first==True:
+        print('First line:', words)
+        first = False
     if i==int(math.ceil(skipelem*(N+9))):
         print("In loop, words[0]=", words[0])
         print("First line I read:", words)
@@ -297,6 +303,25 @@ timeframe_makegrid = 0
 xes_makegrid       = xes[0]
 ys_makegrid        = ys[0]
 zs_makegrid        = zs[0]
+
+print('time step:', times[0])
+
+'''
+# Print this to a plot for comparison:    # DO THIS IN OVITO INSTEAD!
+plotname = outfilename_npy + '_atomplot.png'
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+size_plot = len(xes_makegrid)
+m = np.zeros(shape = (N*M, N*M, N*M))
+for i in range(size_plot):
+    location = (xes_makegrid[i],ys_makegrid[i],zs_makegrid[i])
+    m[location] = 1
+pos = np.where(m==1)
+ax.scatter(pos[0], pos[1], pos[2], c='black')
+plt.savefig(plotname)
+'''
+
 '''
 print('zs_makegrid:',zs_makegrid)
 print('len(zs):',len(zs))
@@ -417,7 +442,7 @@ for tindex in range(1): # Only look at the first frame. Can generalize.
                 xc            = x_centres[i]
                 yc            = y_centres[j]
                 zc            = z_centres[k]
-                centrevec     = np.array([xc,y_centres[j],z_centres[k]])
+                centrevec     = np.array([xc,yc,zc])
                 # Loop over all the atoms. Oh vey.
                 for m in range(M): # Loop over the chains 
                     x_thischain = xes_makegrid[m] # Change these if I use multiple timesteps
