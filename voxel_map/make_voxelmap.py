@@ -306,9 +306,9 @@ zs_makegrid        = zs[0]
 
 print('time step:', times[0])
 
-'''
+#'''
 # Print this to a plot for comparison:    # DO THIS IN OVITO INSTEAD!
-plotname = outfilename_npy + '_atomplot.png'
+plotname = outfilename_npy + '_timestep'+ str(times[0]) + '_atomplot.png'
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 

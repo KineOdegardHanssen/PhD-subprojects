@@ -162,13 +162,6 @@ outfilename  = 'voxelmap_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%
 infilename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
 
 infilename_base = 'voxelmap_test_short'
-infilename_npy  = infilename_base+'.npy'
-#outfilename_txt  = outfilename_npy+'.txt'
-infilename_x    = infilename_base+'_x.npy'
-infilename_y    = infilename_base+'_y.npy'
-infilename_z    = infilename_base+'_z.npy'
-#infilename_vox  = infilename_base+'_vox.txt'
-infilename_vmat = infilename_base+'_vox_matrix.npy'
 #'''
 # Varying the grid spacing # THIS IS NOW THE STANDARD FILE NAMES.
 '''
@@ -218,7 +211,7 @@ for entry in os.listdir(basepath):
                                                      # Oooooh, I also need to remove repetitions of the numbers so that the program only performs the operation ONCE for each number
 allthetimesteps = np.array(allthetimesteps)  # This is highly redundant
 timestepnumbers = np.unique(allthetimesteps) # And I want the unique time step numbers
-timestepnumbers = np.array(['2340000'])        # FOR TESTING ONLY!!! UNCOMMENT AS SOON AS THE PLOTS LOOK THE SAME!
+#timestepnumbers = np.array(['2340000'])#,'3340000'])        # FOR TESTING ONLY!!! UNCOMMENT AS SOON AS THE PLOTS LOOK THE SAME!
 Nsteps          = len(timestepnumbers)
 
 ### Arrays for finding the average and stdv:
@@ -229,27 +222,31 @@ differenceporefrac_collect = np.zeros((Nsteps, Nthr, Nr-1))
 poredistr_collect          = np.zeros((Nsteps, Nthr, Nr-1))
 ball_elements              = np.zeros((Nsteps, Nthr, Nr))
 
+print('!!! timestepnumbers:',timestepnumbers)
 # Can loop from here:
 for timeind in range(Nsteps):
     timestep = timestepnumbers[timeind]
-    infilename_vmat = infilename_totalbase +'_timestep'+timestep+'.npy'
+    infilename_vmat = infilename_totalbase +'_vox_matrix_timestep'+timestep+'.npy' # _vox_matrix_timestep
     infilename_x    = infilename_totalbase +'_x_timestep'+timestep+'.npy'
+    print('TIMESTEP:', timestep)
     
     print('infilename_vmat:', infilename_vmat)
     print('infilename_x:', infilename_x)
     
     #outfilename_txt  = outfilename_npy+'.txt'
-    infilename_x    = infilename_totalbase+'_x.npy'
+    infilename_x    = infilename_totalbase+'_x.npy' # What to do with these for NPT... (in make_voxmap_several.py)
     infilename_y    = infilename_totalbase+'_y.npy'
     infilename_z    = infilename_totalbase+'_z.npy'
     #infilename_vox  = infilename_base+'_vox.txt'
-    infilename_vmat = infilename_totalbase+'_vox_matrix.npy'
+    #infilename_vmat = infilename_totalbase+'_vox_matrix.npy'
     
     #outfile_txt  = open(outfilename_txt,'r')
     x_vals    = np.load(infilename_x) # Do I really need all these? Or just the spacing to translate the distances?
     y_vals    = np.load(infilename_y)
     z_vals    = np.load(infilename_z)
     vmat      = np.load(infilename_vmat) # I guess I should use this one...
+    
+    print('shape, vmat:', np.shape(vmat))
     
     matsize   = np.size(vmat)
     dx_map    = x_vals[1] - x_vals[0] # Grid size
@@ -271,16 +268,17 @@ for timeind in range(Nsteps):
         np.save(outfilename,vmat_binary)
         
         #print('Have saved!')
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        #print('axes set!')
-        '''
-        pos = np.where(vmat_binary==True)
-        ax.scatter(pos[0], pos[1], pos[2], c='black')
-        plt.savefig(plotname)
-        plt.show()
-        '''
+        if thr==thrs[1]:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            #print('axes set!')
+            pos = np.where(vmat_binary==True)
+            ax.scatter(pos[0], pos[1], pos[2], c='black')
+            plt.savefig(plotname)
+            #plt.show()
         
+        print('vmat_binary:',vmat_binary)
+        print('shape, vmat_binary:', np.shape(vmat_binary))
         labels = measure.label(vmat_binary)
         print('max(labels[0])=',max(labels[0][0]))
         print('shape, vmat_binary:', np.shape(vmat_binary))
@@ -354,8 +352,8 @@ for timeind in range(Nsteps):
             ########## Closing ################
             #'''
             newimage = morphology.binary_closing(vmat_binary,structuring_element)
-            print(newimage)
-            print('newimage made')
+            #print(newimage)
+            #print('newimage made')
             #fig = plt.figure()
             #ax = fig.add_subplot(111, projection='3d')
             #pos = np.where(newimage==1)
@@ -387,13 +385,13 @@ for timeind in range(Nsteps):
         differenceradii, differenceporefrac_collect[timeind,thrind,:] = element_difference(radii,accfracs_p_collect[timeind,thrind,:])
         differenceradii, poredistr_collect[timeind,thrind,:]          = element_difference(radii,porevoxels[:,thrind])
         
-        print('porevoxels[:,thrind]:',porevoxels[:,thrind])
+        #print('porevoxels[:,thrind]:',porevoxels[:,thrind])
         
         poredistr_collect /= ball_elements[timeind,thrind,1:]
         poredistr_collect = np.absolute(poredistr_collect)
         
-        print('pore_original:', pore_original)
-        print('porevoxels:', porevoxels)
+        #print('pore_original:', pore_original)
+        #print('porevoxels:', porevoxels)
         #print('accfracs:', accfracs_p)
     # Loop over thresholds finished
 # Loop over time steps finished
@@ -415,10 +413,10 @@ poredistr_rms  = np.zeros((Nr,Nthr))
 for thrind in range(Nthr):
     thr = thrs[thrind]
     # For plotting:
-    outfilename      = infilename_totalbase + '_binary_thr' + str(thr) + '_timestep'+str(timestep)
+    outfilename      = infilename_totalbase + '_binary_thr' + str(thr) + '_timestep'+str(timestep) # I can skip timestep in this name when I'm sure everything is right
     outfilename_text = outfilename + '.txt'
     plotname         = outfilename + '.png'
-    outfile          = open(outfilename,'w')
+    #outfile          = open(outfilename,'w')
     plotname_acc      = outfilename + '_accvolfrac_pore.png'
     plotname_pore     = outfilename + '_porefrac.png'
     plotname_pore_differentiated = outfilename + '_porefrac_differentiated_from_accumulated.png'

@@ -20,9 +20,9 @@ start_time = time.process_time()
 ### Number of time frames
 Nframes     = 3                                 # Number of time steps we want to include here
 totframes   = 10000000/10000                    # Total number of time steps in the file # This should be 1000
-startframe  = 100#250
-endframe    = 200#750# totframes-1
-indices     = np.linspace(0,totframes-1,Nframes)  # Might need to take floor() of the values here, just in case
+startframe  = 300#0#100#250
+endframe    = 450#totframes-1#200#750# 
+indices     = np.linspace(startframe,endframe,Nframes)#np.linspace(0,totframes-1,Nframes)  # Might need to take floor() of the values here, just in case
 for i in range(Nframes):
     indices[i] = math.floor(indices[i])
 
@@ -183,6 +183,7 @@ for lindex in lineindices:
     #lindex should yield ['ITEM:', 'TIMESTEP']
     tline     = lines[lindex+1].split()
     timestep  = float(tline[0])         # This should give us the time
+    print('TIMESTEP:', timestep)
     
     ## Volume
     words = lines[lindex+5].split()
@@ -211,7 +212,7 @@ for lindex in lineindices:
     #ys  = np.zeros((N, ?))
     #zs  = np.zeros((N, ?))
     print('lindex:',lindex)
-    print('lines[lindex]:', lines[lindex])
+    #print('lines[lindex]:', lines[lindex])
     print('Going into the coord.-gathering loop:')
     for i in range(Nall): # This should work, but check!
         words   = lines[i+lindex+skiplines].split()
@@ -256,22 +257,6 @@ for lindex in lineindices:
     print('time step:', timestep)
     
     '''
-    # Print this to a plot for comparison:    # DO THIS IN OVITO INSTEAD!
-    plotname = outfilename_npy + '_atomplot.png'
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    
-    size_plot = len(xes_makegrid)
-    m = np.zeros(shape = (N*M, N*M, N*M))
-    for i in range(size_plot):
-        location = (xes[i],ys[i],zs[i])    
-        m[location] = 1
-    pos = np.where(m==1)
-    ax.scatter(pos[0], pos[1], pos[2], c='black')
-    plt.savefig(plotname)
-    '''
-    
-    '''
     print('zs_makegrid:',zs_makegrid)
     print('len(zs):',len(zs))
     print('size(zs):',np.size(zs))#.size())
@@ -304,7 +289,7 @@ for lindex in lineindices:
     # But it is difficult to fit a set number of voxels... The simulation box does not have the same length in all direction.
     # OR should I set number of voxels in x-direction and then add voxels (cubes) of that size until I've covered all the simulation box (up until maxz_grid)?
     
-    len_voxel = Lx/float(Nvoxels) # This is the length of all sides.
+    len_voxel = Lx/float(Nvoxels) # This is the length of all sides. # The voxel length should be the same for all time frames
     ns        = np.arange(Nvoxels)
     x_centres = 0.5*(2*ns+1)*len_voxel+minx_grid # Do I really need this one, though?...
     
@@ -365,7 +350,7 @@ for lindex in lineindices:
     # I should make a map of the running index to the voxel centre coordinates.
     # First: Make array of positions. # Or don't I need that?
     
-    print('voxN:',voxN)
+    #print('voxN:',voxN)
 
     ### Fill voxel grid ###
     # Should I make an array with xpos, ypos, zpos, voxelvalue? # Or will that take up too much space?
@@ -373,48 +358,48 @@ for lindex in lineindices:
     voxmat   = np.zeros((Nx,Ny,Nz))
     # This is probably the bottleneck
     # Print to file here, I guess...
-    for tindex in range(1): # Only look at the first frame. Can generalize.
-        print('Find voxel values')
-        l = 0 # Can't even remember what this was for...
-        n = 0
-        voxelvalues = np.zeros(voxN)
-        for i in range(Nx):
-            for j in range(Ny):
-                for k in range(Nz):
-                    smallest_dist = 1e10 # No distance is this big.
-                    xc            = x_centres[i]
-                    yc            = y_centres[j]
-                    zc            = z_centres[k]
-                    centrevec     = np.array([xc,yc,zc])
-                    # Loop over all the atoms. Oh vey.
-                    for m in range(Nall):
-                        vecthis = posvecs[m,:]
+    print('Find voxel values')
+    l = 0 # Can't even remember what this was for...
+    n = 0
+    print('posvecs[25,:]:',posvecs[25,:])
+    voxelvalues = np.zeros(voxN)
+    for i in range(Nx):
+        for j in range(Ny):
+            for k in range(Nz):
+                smallest_dist = 1e20 # No distance is this big.
+                xc            = x_centres[i]
+                yc            = y_centres[j]
+                zc            = z_centres[k]
+                centrevec     = np.array([xc,yc,zc])
+                # Loop over all the atoms. Oh vey.
+                for m in range(Nall):
+                    vecthis = posvecs[m,:]
+                    distvec = centrevec-vecthis
+                    dotprod = np.dot(distvec,distvec)
+                    if dotprod<smallest_dist:
+                        smallest_dist = dotprod
+                '''
+                for m in range(M):       # Loop over the chains 
+                    x_thischain = xes[m] # Change these if I use multiple timesteps
+                    y_thischain = ys[m]  # Change these if I use multiple timesteps
+                    z_thischain = zs[m]  # Change these if I use multiple timesteps
+                    for nc in range(N):  # Loop over the atoms in a chain
+                        vecthis = np.array([x_thischain[nc],y_thischain[nc],z_thischain[nc]]) # Is this really cost-efficient? I should probably just import the data into position arrays...
                         distvec = centrevec-vecthis
                         dotprod = np.dot(distvec,distvec)
                         if dotprod<smallest_dist:
                             smallest_dist = dotprod
-                    '''
-                    for m in range(M):       # Loop over the chains 
-                        x_thischain = xes[m] # Change these if I use multiple timesteps
-                        y_thischain = ys[m]  # Change these if I use multiple timesteps
-                        z_thischain = zs[m]  # Change these if I use multiple timesteps
-                        for nc in range(N):  # Loop over the atoms in a chain
-                            vecthis = np.array([x_thischain[nc],y_thischain[nc],z_thischain[nc]]) # Is this really cost-efficient? I should probably just import the data into position arrays...
-                            distvec = centrevec-vecthis
-                            dotprod = np.dot(distvec,distvec)
-                            if dotprod<smallest_dist:
-                                smallest_dist = dotprod
-                    '''
-                    #print('n:',n)
-                    #print('smallest_dist:', smallest_dist)
-                    voxval         = np.sqrt(smallest_dist)
-                    voxelvalues[n] = voxval
-                    voxmat[i,j,k]  = voxval
-                    outarray[n,0]  = xc
-                    outarray[n,1]  = yc
-                    outarray[n,2]  = zc
-                    outarray[n,3]  = voxval
-                    n+=1
+                '''
+                #print('n:',n)
+                #print('smallest_dist:', smallest_dist)
+                voxval         = np.sqrt(smallest_dist)
+                voxelvalues[n] = voxval
+                voxmat[i,j,k]  = voxval
+                outarray[n,0]  = xc
+                outarray[n,1]  = yc
+                outarray[n,2]  = zc
+                outarray[n,3]  = voxval
+                n+=1
     # It's running, so that's a plus. The distances seem way to big, though...
     print('The absolutely smallest distance:', min(voxelvalues))
     print('max(voxelvalues):', max(voxelvalues))
@@ -430,8 +415,27 @@ for lindex in lineindices:
     outfilename_z    = foldername + outfilename_base+'_z_timestep%i' % timestep
     outfilename_vox  = foldername + outfilename_base+'_vox_timestep%i' % timestep
     outfilename_vmat = foldername + outfilename_base+'_vox_matrix_timestep%i' % timestep
+    outfilename_txt  = foldername + outfilename_base+'_timestep%i' % timestep+'_voxarray.txt'
     
-    #outfile_txt  = open(outfilename_txt,'w')
+    print('!!! outfilename_npy:', outfilename_npy)
+    # Plotting
+    '''
+    # Print this to a plot for comparison:    # DO THIS IN OVITO INSTEAD!
+    plotname = outfilename_npy + '_atomplot.png'
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    
+    size_plot = len(xes_makegrid)
+    m = np.zeros(shape = (N*M, N*M, N*M))
+    for i in range(size_plot):
+        location = (xes[i],ys[i],zs[i])    
+        m[location] = 1
+    pos = np.where(m==1)
+    ax.scatter(pos[0], pos[1], pos[2], c='black')
+    plt.savefig(plotname)
+    #'''
+    
+    outfile_txt  = open(outfilename_txt,'w')
     outfile_x    = open(outfilename_x,'w')
     outfile_y    = open(outfilename_y,'w')
     outfile_z    = open(outfilename_z,'w')
@@ -448,9 +452,10 @@ for lindex in lineindices:
     
     new_time = time.process_time()
     print('Time step no.', counter, ' of', Nframes, ' done. Time:', new_time-start_time, " s")
-    #for i in range(voxN): # Why this no work?
-    #   outfile_txt.write('%.16f %.16f %.16f %.16f\n' % (outarray[n,0],outarray[n,1],outarray[n,2],outarray[n,3]))
-    #outfile_txt.close()
+    for i in range(voxN): # Why this no work?
+       outfile_txt.write('%i %.16f\n' % (i,outarray[i,3]))
+    outfile_txt.close()
+    print('DONE WITH ONE, ONTO THE NEXT!\n')
 
 # Plotting and printing
 '''
