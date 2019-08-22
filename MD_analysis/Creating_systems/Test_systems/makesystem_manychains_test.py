@@ -8,15 +8,13 @@ import math
 # so I don't bother cleaning it up
 
 # Set variables
-N             = 100 # Number of bond vectors = number of units - 1 # Per chain
-M             = 9   # Number of chains
-L2            = 3   # Determining the shape of the L1xL2 polymer grid on the surface
-charge        = -1
-gridspacing   = 4 # The spacing in our grid # Default is 40
-mass          = 0.00081
-Nelem         = M*(N+1)
-Nbonds        = M*N
-Nangles       = M*(N-1)
+N  = 100 # Number of bond vectors = number of units - 1 # Per chain
+M  = 9   # Number of chains
+L2 = 3   # Determining the shape of the L1xL2 polymer grid on the surface
+gridspacing = 40 # The spacing in our grid
+Nelem   = M*(N+1)
+Nbonds  = M*N
+Nangles = M*(N-1)
 xpos          = np.zeros(Nelem)
 ypos          = np.zeros(Nelem)
 zpos          = np.zeros(Nelem)
@@ -33,9 +31,6 @@ positions     = []
 k = 0
 l = 0
 
-k = 0
-l = 0
-
 for j in range(M):
     # Starting the chain
     x_accm = (j//L2)*gridspacing
@@ -48,7 +43,7 @@ for j in range(M):
     vxs[k]   = np.random.normal(0,1)
     vys[k]   = np.random.normal(0,1)
     vzs[k]   = np.random.normal(0,1)
-    qs[k]    = charge
+    qs[k]    = -1
     molID[k] = j+1
     atomtypes_all[k] = 1
     
@@ -80,7 +75,7 @@ for j in range(M):
         x_accm += x
         y_accm += y
         z_accm += z
-        qs[k]   = charge
+        qs[k]   = -1
         xpos[k] = x_accm
         ypos[k] = y_accm
         zpos[k] = z_accm
@@ -98,7 +93,7 @@ for j in range(M):
         vxs[k] = np.random.normal(0,1)
         vys[k] = np.random.normal(0,1)
         vzs[k] = np.random.normal(0,1)
-        qs[k] = charge
+        qs[k] = -1
         k += 1
         l += 1
 
@@ -143,18 +138,77 @@ ymin = min(ypos)-0.5*gridspacing
 
 ### Print to file
 #outfilename = 'data.randomchain_N%i' % N+1
-outfilename = 'testsystem_chaingrid_straight.lammpstrj'#'data.chaingrids_N%i_Nchains%i_Ly%i_gridspacing%i_twofixed_charge%i_mass%.5f' % (Nelem,M,L2,gridspacing,charge,mass)
+outfilename = 'chaingrids_totallystraight_N%i_Nchains%i_Ly%i_twofixed_test.lammpstrj' % (Nelem,M,L2)
 outfile = open(outfilename,'w')
+outfile.write('ITEM: TIMESTEP\n2\nITEM: NUMBER OF ATOMS\n%i\nITEM: BOX BOUNDS pp pp pp\n' % (N+1))
+outfile.write('%.16e %.16e xlo xhi\n' % (xmin, xmax))
+outfile.write('%.16e %.16e ylo yhi\n' % (ymin, ymax))
+outfile.write('%.16e %.16e zlo zhi\n' % (zmin, zmax))
+outfile.write('ITEM: ATOMS id type x y z vx vy vz \n')
+for i in range(Nelem):
+    # ITEM: ATOMS id type x y z vx vy vz
+    outfile.write('%i %i %i %.16e %.16e %.16e %.16e %.16e %.16e\n' % ((i+1), atomtypes_all[i], molID[i], xpos[i], ypos[i], zpos[i], vxs[i], vys[i], vzs[i]))
 
+# Write that step again too
 for j in range(100):
-    outfile.write('ITEM: TIMESTEP\n%i\nITEM: NUMBER OF ATOMS\n%i\nITEM: BOX BOUNDS pp pp pp\n' % (j,M*(N+1)))
+    outfile.write('ITEM: TIMESTEP\n3\nITEM: NUMBER OF ATOMS\n%i\nITEM: BOX BOUNDS pp pp pp\n' % (N+1))
     outfile.write('%.16e %.16e xlo xhi\n' % (xmin, xmax))
     outfile.write('%.16e %.16e ylo yhi\n' % (ymin, ymax))
     outfile.write('%.16e %.16e zlo zhi\n' % (zmin, zmax))
-    outfile.write('ITEM: ATOMS id type mol x y z vx vy vz \n')
-    for i in range(M*(N+1)):
-        # ITEM: ATOMS id type mol x y z vx vy vz
+    outfile.write('ITEM: ATOMS id type x y z vx vy vz \n')
+    for i in range(Nelem):
+        # ITEM: ATOMS id type x y z vx vy vz
         outfile.write('%i %i %i %.16e %.16e %.16e %.16e %.16e %.16e\n' % ((i+1), atomtypes_all[i], molID[i], xpos[i], ypos[i], zpos[i], vxs[i], vys[i], vzs[i]))
+
+
+# And the last command:
+# Close file
+outfile.close()
+
+
+
+'''
+outfile.write('LAMMPS data file via python scripting, version 11 Aug 2017, timestep = 0\n\n%i atoms \n%i bonds \n2 atom types\n1 bond types \n%i angles \n1 angle types\n\n' % (Nelem,Nbonds, Nangles))
+outfile.write('%.16e %.16e xlo xhi\n' % (xmin, xmax))
+outfile.write('%.16e %.16e ylo yhi\n' % (ymin, ymax))
+outfile.write('%.16e %.16e zlo zhi\n\n' % (zmin, zmax))
+outfile.write('Masses\n\n')
+outfile.write('1 1\n2 1\n') # Should maybe automate this, but...
+
+#outfile.write('Atoms # angle\n\n') # Original line
+outfile.write('\nAtoms # full\n\n')
+
+for i in range(Nelem):
+    # For atom_type full:
+    # atom-ID molecule-ID atom-type q x y z
+    outfile.write('%i %i %i %i %.16e %.16e %.16e\n' % ((i+1), molID[i], atomtypes_all[i], qs[i], xpos[i], ypos[i], zpos[i]))
+
+# Have the velocities here?
+# Argh, the velocities
+outfile.write('\nVelocities\n\n')
+for i in range(Nelem):
+    outfile.write('%i %.16e %.16e %.16e\n' % ((i+1), vxs[i], vys[i], vzs[i]))
+
+# Have bonds here?
+
+outfile.write('\nBonds\n\n')
+
+counter = 0
+for j in range(M):
+    for i in range(N):
+        counter += 1
+        k = j*(N+1)+i+1
+        outfile.write('%i 1 %i %i\n' % (counter, k, (k+1)))
+
+outfile.write('\nAngles\n\n')
+
+counter = 0
+for j in range(M):
+    for i in range(N-1):
+        counter += 1
+        k = j*(N+1)+i+1
+        outfile.write('%i 1 %i %i %i\n' % (counter, k, (k+1), (k+2)))
+'''
 
 # And the last command:
 # Close file

@@ -12,7 +12,7 @@ N             = 100 # Number of bond vectors = number of units - 1 # Per chain
 M             = 9   # Number of chains
 L2            = 3   # Determining the shape of the L1xL2 polymer grid on the surface
 charge        = -1
-gridspacing   = 4 # The spacing in our grid # Default is 40
+gridspacing   = 40 # The spacing in our grid # Default is 40
 mass          = 0.00081
 Nelem         = M*(N+1)
 Nbonds        = M*N
@@ -60,23 +60,13 @@ for j in range(M):
     # (Generate random configuration to start with)
     # Should add a constraint to avoid z = 0 plane (or x = 0, or y = 0...)
     for i in range(N):
-        # I could maybe flip the sign of z0, but that does not seem very ergodic... 
-        # I probably want a Monte Carlo-style test to set the random chain in a realistic way
-        z_acc_test = -1
-        '''# There is an intialization problem. Random vectors: Some atoms get too close to the wall... I should start from straight chains just to be sure.
-        while z_acc_test<0:
-            x0 = np.random.normal(0,1)
-            y0 = np.random.normal(0,1)
-            z0  = np.random.normal(0,1)+2
-            den = np.sqrt(x0**2+y0**2+z0**2)
-            x = x0/den
-            y = y0/den
-            z = z0/den
-            z_acc_test = z_accm+z
-        '''
-        x = 0
-        y = 0
-        z = 1
+        x0 = 0
+        y0 = np.cos(np.pi/((N-1)*2.0)*i+0.1*j) # Should make a set angle between each bond
+        z0 = np.sin(np.pi/((N-1)*2.0)*i+0.1*j) # But the angle should be small enough that the chain does not make a ring (i.e. no overlap of bonds)
+        den = np.sqrt(x0**2+y0**2+z0**2) # Not neccessary with cos and sin
+        x = x0/den
+        y = y0/den
+        z = z0/den
         x_accm += x
         y_accm += y
         z_accm += z
@@ -104,34 +94,6 @@ for j in range(M):
 
 
 ### Data on system
-'''
-xmax = max(xpos)*3.0
-ymax = max(ypos)*3.0
-zmax = max(zpos)*3.0 
-xmin = min(xpos)*3.0
-ymin = min(ypos)*3.0
-zmin = min(zpos)*3.0 # Change something here...
-'''
-
-'''
-xmax = max(xpos)*3.0+20.0
-ymax = max(ypos)*3.0+20.0
-zmax = max(zpos)*3.0
-zmin = min(zpos)*3.0 # Change something here...
-xmin = min(xpos)*3.0-20.0
-ymin = min(ypos)*3.0-20.0
-'''
-
-'''
-xmax = max(xpos)+2.0*gridspacing
-ymax = max(ypos)+2.0*gridspacing
-zmax = max(zpos)*3.0
-zmin = min(zpos)*3.0 # Change something here...
-xmin = min(xpos)-2.0*gridspacing
-ymin = min(ypos)-2.0*gridspacing
-'''
-
-# Kan evt. ha +- 0.5*gridspacing slik at det ser ut som om systemet er uniformt og uendelig... Best dersom systemet er ganske stort
 xmax = max(xpos)+0.5*gridspacing
 ymax = max(ypos)+0.5*gridspacing
 zmax = max(zpos)*3.0
@@ -143,7 +105,7 @@ ymin = min(ypos)-0.5*gridspacing
 
 ### Print to file
 #outfilename = 'data.randomchain_N%i' % N+1
-outfilename = 'testsystem_chaingrid_straight.lammpstrj'#'data.chaingrids_N%i_Nchains%i_Ly%i_gridspacing%i_twofixed_charge%i_mass%.5f' % (Nelem,M,L2,gridspacing,charge,mass)
+outfilename = 'testsystem_chaingrid_rotatingarc.lammpstrj'
 outfile = open(outfilename,'w')
 
 for j in range(100):
