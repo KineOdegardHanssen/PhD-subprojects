@@ -95,7 +95,7 @@ outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_gridspacing%i_
 
 
 # Tester:
-arctest      = True
+arctest      = False
 testtype     = 'straight'#'rotatingarc_withtime'#'rotatingarc_withtime'#'rotatingarc'#'quartercirc'#'straight'
 infilename   = 'testsystem_chaingrid_'+testtype+'.lammpstrj'
 plot1name    = 'costheta_testsystem_chaingrid_'+testtype+'.png'
@@ -110,6 +110,28 @@ outfilename5 = 'ree_average_testsystem_chaingrid_'+testtype+'.txt'
 outfilename6 = 'persistence_length_actualdistance_testsystem_chaingrid_'+testtype+'.txt'
 outfilename7 = 'endzs_testsystem_chaingrid_'+testtype+'.txt'
 outfilename8 = 'bondlengths_systemwide_testsystem_chaingrid_'+testtype+'.txt'  
+
+# Tester 2:
+N = 100
+arctest      = False
+foldername   = 'MC_for_testing/'
+#p = Path(foldername)
+#p.mkdir(exist_ok=True)
+testtype     = 'MC_for_testing/M%iN%i_1000trials_freelyjointedchains' % (M,N) # /home/kine/Projects_PhD/P2_PolymerMD'
+infilename   = testtype+'.lammpstrj'
+plot1name    = testtype+'_costheta_testsystem_chaingrid'+'.png'
+plot2name    = testtype+'_angledistr_testsystem_chaingrid'+'.png'
+plot3name    = testtype+'_costheta_actualdistance_testsystem_chaingrid'+'.png'  
+outfilename  = testtype+'_bond_lengths_testsystem_chaingrid'+'.txt'
+
+outfilename2 = testtype+'_persistence_length_testsystem_chaingrid'+'.txt'
+outfilename3 = testtype+'_costhetas_neighbourbonds_testsystem_chaingrid'+'.txt'
+outfilename4 = testtype+'_ree_last_testsystem_chaingrid'+'.txt'
+outfilename5 = testtype+'_ree_average_testsystem_chaingrid'+'.txt'
+outfilename6 = testtype+'_persistence_length_actualdistance_testsystem_chaingrid'+'.txt'
+outfilename7 = testtype+'_endzs_testsystem_chaingrid'+'.txt'
+outfilename8 = testtype+'_bondlengths_systemwide_testsystem_chaingrid'+'.txt'  
+N = 101
 
 
 
@@ -258,7 +280,7 @@ startat             = 50            # To equilibrate. The number of ns we want t
 dt                  = 0.00045       # The time step of our simulation. 0.00045 ns default for nano
 skiplines           = 9             # If we hit 'ITEM:', skip this many steps...
 skipelem            = 0#10#1000#10000#10000#90000 # The number of elements we skip in order to equilibrate (set to 0 if the .lammpstrj file should be equilibrated)
-sampleevery         = 0#1 # Sample every 10th of the values written to file # The program gets WAY too slow if this is too small.
+sampleevery         = 9#1 # Sample every 10th of the values written to file # The program gets WAY too slow if this is too small.
 timefac             = dt*printeverynthstep*1e-9*sampleevery
 
 #### Automatic part
@@ -409,7 +431,6 @@ while i<totlines:
         #    break
         #print("In extraction part")
 
-# Only if I have ONE short test file:
 xes.append(x_curr)
 ys.append(y_curr)
 zs.append(z_curr)
@@ -504,9 +525,9 @@ for i in range(Nt):    # Loop over time steps
             bondvecs[i,k,j,0] = dx # x-component of bond vector j for time i
             bondvecs[i,k,j,1] = dy # y-component of bond vector j for time i
             bondvecs[i,k,j,2] = dz # z-component of bond vector j for time i
-            ree_dx         += dx
-            ree_dy         += dy
-            ree_dz         += dz
+            ree_dx           += dx
+            ree_dy           += dy
+            ree_dz           += dz
             #tempvec = np.array([dx,dy,dz])
             #length_bondvecs[i,j] = np.linalg.norm(tempvec)
             veclen2              = dx**2+dy**2+dz**2
@@ -600,7 +621,7 @@ costheta_timemaster              = []
 # This part is the bottleneck: # Aaaaand I'm adding another loop to the bottleneck. Great! # It also messes up the data structure. I think I need to add another list...
 for i in range(Nt):  # Looping over the time steps
     for l in range(M):           # Looping over the chains
-        costheta_allvalues                     = []
+        costheta_allvalues                     = []   # I think this is reduntant?
         costheta_allvalues_unzipped            = []
         costheta_allvalues_separation_unzipped = []
         costheta_allvalues_distance_unzipped   = []
@@ -945,23 +966,23 @@ for i in range(Nt):
             outfile.write('%i %i %.16e\n' % (j+1, k,length_bondvecs[i,k,j]))
 bondlength_chain_vals /= Nt*(N-1)
 bondlength_rms_system  = np.sqrt(bondlength_rms_system/(M*Nt*(N-1)-1))
-print('M*Nt*(N-1)-1:',M*Nt*(N-1)-1)
+#print('M*Nt*(N-1)-1:',M*Nt*(N-1)-1)
 outfile.close()
 
-print('SEARCHING FOR THE ERROR IN BOND LENGTH RMS:')
-print('BOND LENGTH AV. FOR CHAIN:',bondlength_chain_vals)
+#print('SEARCHING FOR THE ERROR IN BOND LENGTH RMS:')
+#print('BOND LENGTH AV. FOR CHAIN:',bondlength_chain_vals)
 for i in range(Nt):
     for k in range(M):
         for j in range(N-1):
             #print("length_bondvecs[i,k,j]:",length_bondvecs[i,k,j])
             bondlength_chain_vals_rms[k] += (bondlength_chain_vals[k]-length_bondvecs[i,k,j])**2 # Do I get an overflow?
-            if (bondlength_chain_vals[k]-length_bondvecs[i,k,j])**2!=0.0:
-                print('Contrib:',(bondlength_chain_vals[k]-length_bondvecs[i,k,j])**2)
-                print('accumulated:', bondlength_chain_vals_rms[k])
+            #if (bondlength_chain_vals[k]-length_bondvecs[i,k,j])**2!=0.0:
+            #    print('Contrib:',(bondlength_chain_vals[k]-length_bondvecs[i,k,j])**2)
+            #    print('accumulated:', bondlength_chain_vals_rms[k])
 for i in range(M):
     bondlength_chain_vals_rms[i] = np.sqrt(bondlength_chain_vals_rms[k]/(Nt*(N-1)-1))#(M*Nt*(N-1)-1)) # Shouldn't divide by M here...
-print('BOND LENGTH AV. FOR CHAIN:',bondlength_chain_vals)
-print('Nt*(N-1)-1:',Nt*(N-1)-1)
+#print('BOND LENGTH AV. FOR CHAIN:',bondlength_chain_vals)
+#print('Nt*(N-1)-1:',Nt*(N-1)-1)
 
 outfile8 = open(outfilename8,'w')
 for i in range(M):
