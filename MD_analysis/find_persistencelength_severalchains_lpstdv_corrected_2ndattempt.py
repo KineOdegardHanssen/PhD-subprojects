@@ -13,8 +13,8 @@ start_time = time.process_time()
 
 arctest     = False
 ### Input file parameters
-Kangle      = 25
-Kbond       = 2000
+Kangle      = 20
+Kbond       = 200#0
 T           = 310
 M           = 9
 N           = 101 ###
@@ -95,6 +95,7 @@ outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_gridspacing%i_
 
 
 # Tester:
+'''
 arctest      = False
 testtype     = 'straight'#'rotatingarc_withtime'#'rotatingarc_withtime'#'rotatingarc'#'quartercirc'#'straight'
 infilename   = 'testsystem_chaingrid_'+testtype+'.lammpstrj'
@@ -110,8 +111,10 @@ outfilename5 = 'ree_average_testsystem_chaingrid_'+testtype+'.txt'
 outfilename6 = 'persistence_length_actualdistance_testsystem_chaingrid_'+testtype+'.txt'
 outfilename7 = 'endzs_testsystem_chaingrid_'+testtype+'.txt'
 outfilename8 = 'bondlengths_systemwide_testsystem_chaingrid_'+testtype+'.txt'  
+#'''
 
 # Tester 2:
+#'''
 N = 100
 arctest      = False
 foldername   = 'MC_for_testing/'
@@ -132,7 +135,7 @@ outfilename6 = testtype+'_persistence_length_actualdistance_testsystem_chaingrid
 outfilename7 = testtype+'_endzs_testsystem_chaingrid'+'.txt'
 outfilename8 = testtype+'_bondlengths_systemwide_testsystem_chaingrid'+'.txt'  
 N = 101
-
+#'''
 
 
 ''' # With wall potential: #### This is what I've been using recently (good for voxellation)
@@ -280,7 +283,7 @@ startat             = 50            # To equilibrate. The number of ns we want t
 dt                  = 0.00045       # The time step of our simulation. 0.00045 ns default for nano
 skiplines           = 9             # If we hit 'ITEM:', skip this many steps...
 skipelem            = 0#10#1000#10000#10000#90000 # The number of elements we skip in order to equilibrate (set to 0 if the .lammpstrj file should be equilibrated)
-sampleevery         = 9#1 # Sample every 10th of the values written to file # The program gets WAY too slow if this is too small.
+sampleevery         = 0#1 # Sample every 10th of the values written to file # The program gets WAY too slow if this is too small.
 timefac             = dt*printeverynthstep*1e-9*sampleevery
 
 #### Automatic part
@@ -569,64 +572,30 @@ print("Time:", end_time-start_time, " s")
 
 
 
-# Finding the persistence length
+### Finding the persistence length
 # Want <cos(theta)> of sites that are at distance i apart
 # We want this to be a time average
-# Distance 0: <cos(theta)> = 1 # Can just set that and not calculate it
 Nb = N-1
-costheta = np.zeros((M,Nb))
+costheta = np.zeros((M,Nb))  # This matrix will hold the average costheta for each chain (M-index) and bond separation s (Nb-index). It is an average over time and pairs that fulfill s.
 counters = np.zeros((M,Nb))
 costheta[:,0] = 1            # Distance 0: <cos(theta)> = 1 # Can just set that and not calculate it
-costheta_allvalues   = []    # Sorted after distance between bonds
-costheta_unpacked    = []    
-distances_unpacked   = []
-costheta_chainsorted = []    # costheta_allvalues for each chain
 
-# This pfart is the bottleneck: # Aaaaand I'm adding another loop to the bottleneck. Great! # It also messes up the data structure. I think I need to add another list...
-# OLD:
-'''
-for l in range(M):           # Looping over the chains
-    costheta_allvalues = []
-    for j in range(1,Nb):    # The distance between the bonds to be measured
-        costheta_j = []
-        for i in range(Nt):  # Looping over the time steps
-            for k in range(Nb-j): # The position of the first bond
-                bond1        = bondvecs[i,l,k]
-                bond2        = bondvecs[i,l,k+j]
-                distance     = np.sum(length_bondvecs[i,l,(k+1):(k+j+1)]) # Getting the distance between the two vectors
-                length1      = length_bondvecs[i,l,k]
-                length2      = length_bondvecs[i,l,k+j] 
-                dotprod      = np.dot(bond1,bond2)         # I only find the angle between bond vectors in the same time step
-                ct           = dotprod/(length1*length2)
-                if(length1*length2==0):
-                    a = 1
-                    #print("ct:", ct, "; i =", i)
-                costheta[l,j] += ct
-                counters[l,j] += 1
-                costheta_j.append(ct)
-                costheta_unpacked.append(ct)
-                distances_unpacked.append(distance)
-                # Should I save all the contributions to costheta so that I can find the rms?
-        costheta_allvalues.append(costheta_j) # Should I not have indented this?
-    costheta_chainsorted.append(costheta_allvalues)
-'''
+costheta_chainsorted             = [] # Inneholder ct for alle separasjoner s, med bidrag fra hvert par av bonds. Each element corresponds to one chain at one point in time
+costheta_chainsorted_separations = [] # Lists the separations of costheta_chainsorted. On the same form
+costheta_chainsorted_distances   = [] # Lists the distances of costheta_chainsorted. On the same form
+costheta_chainmaster             = [] # Lists the chain index of costheta_chainsorted
+costheta_timemaster              = [] # Lists the time index of costheta_chainsorted
 
-costheta_allvalues_separation    = []
-costheta_allvalues_chain         = []
-costheta_chainsorted_separations = []
-costheta_chainsorted_distances   = []
-costheta_chainmaster             = []
-costheta_timemaster              = []
+# Averaging over bonds as well:
+# Do this? costheta_total = np.zeros(Nb)?
 
 # This part is the bottleneck: # Aaaaand I'm adding another loop to the bottleneck. Great! # It also messes up the data structure. I think I need to add another list...
 for i in range(Nt):  # Looping over the time steps
     for l in range(M):           # Looping over the chains
-        costheta_allvalues                     = []   # I think this is reduntant?
         costheta_allvalues_unzipped            = []
         costheta_allvalues_separation_unzipped = []
         costheta_allvalues_distance_unzipped   = []
         for j in range(1,Nb):    # The distance between the bonds to be measured
-            costheta_j = []
             for k in range(Nb-j): # The position of the first bond
                 bond1        = bondvecs[i,l,k]
                 bond2        = bondvecs[i,l,k+j]
@@ -640,34 +609,22 @@ for i in range(Nt):  # Looping over the time steps
                     #print("ct:", ct, "; i =", i)
                 costheta[l,j] += ct
                 counters[l,j] += 1
-                costheta_j.append(ct)
-                #costheta_unpacked.append(ct)
-                #distances_unpacked.append(distance)
                 costheta_allvalues_unzipped.append(ct)
                 costheta_allvalues_separation_unzipped.append(j)
                 costheta_allvalues_distance_unzipped.append(distance)
                 # Should I save all the contributions to costheta so that I can find the rms?
-            # These are not in use anymore:
-            costheta_allvalues.append(costheta_j) # Should I not have indented this?
-            costheta_allvalues_separation.append(j)
-            costheta_allvalues_chain.append(l)
-        # But these are:
         costheta_chainmaster.append(l)
         costheta_timemaster.append(i)
         costheta_chainsorted.append(costheta_allvalues_unzipped)
         costheta_chainsorted_separations.append(costheta_allvalues_separation_unzipped)
         costheta_chainsorted_distances.append(costheta_allvalues_distance_unzipped)
-    # Do something similar to costheta_unpacked.
-    #costheta_unpacked.append(costheta_)
-#costheta_unpacked  = np.array(costheta_unpacked)
-#distances_unpacked = np.array(distances_unpacked)
 
 for j in range(M):
     for i in range(1,Nb):
         costheta[j,i] /= Nt*(Nb-i) # Could also have a counter, that's probably wise
         #print("counter[i]-(Nt*(Nb-i)):", counters[i]-(Nt*(Nb-i))) # Seems fine
 
-costheta1_av_system  = np.mean(costheta[:,1])
+costheta1_av_system  = np.mean(costheta[:,1]) # <cos(theta(s=1))>
 costheta1_counter    = 0
 # Finding the rms values:
 costheta_rms         = np.zeros((M,Nb))
@@ -675,33 +632,23 @@ costheta1_rms_system = 0
 #costheta_rms[0] = 0   # No variation here. # Don't actually need to set this
 # Should I have binned the values? Some of the bins are really small, so I guess it is superfluous
 thiscounter = 0
-''' # Deprecated:
-for l in range(Nt):
-    for k in range(M):
-        costheta_allvalues = costheta_chainsorted[k]
-        thiscounter += 1
-        for i in range(1,Nb):
-            cai = costheta_allvalues[i-1]
-            Nthis = len(cai)
-            for j in range(Nthis):
-                costheta_rms[k,i] += (costheta[k,i]-cai[j])**2    # Should work up until here...
-            costheta_rms[k,i] =  np.sqrt(costheta_rms[k,i]/Nthis)
-'''
+
+# Finding RMS of costheta
 Nthis = np.zeros((M,Nb))
-for i1 in range(len(costheta_chainsorted)):
-    costheta_allvalues      = costheta_chainsorted[i1]
-    costheta_allseparations = costheta_chainsorted_separations[i1]
-    k                       = costheta_chainmaster[i1]
+for i1 in range(len(costheta_chainsorted)):                     # Looping over a set of time steps and chains
+    costheta_allvalues      = costheta_chainsorted[i1]              # All ct for one chain for one time step.
+    costheta_allseparations = costheta_chainsorted_separations[i1]  # List of the separation for those ct
+    k                       = costheta_chainmaster[i1]              # Extracting the chain index for the current data
     thiscounter += 1
-    for i2 in range(len(costheta_allvalues)):
-        cai = costheta_allvalues[i2]
-        i = costheta_allseparations[i2]
+    for i2 in range(len(costheta_allvalues)):                   # Looking at the data one by one
+        cai = costheta_allvalues[i2]                                # Getting one cosine value
+        i = costheta_allseparations[i2]                             # Getting the corresponding separation
         Nthis[k,i] += 1 
-        costheta_rms[k,i] += (costheta[k,i]-cai)**2    # Should work up until here...
+        costheta_rms[k,i] += (costheta[k,i]-cai)**2                 # Getting the contribution to the rms
         if i==1:
             costheta1_rms_system += (costheta1_av_system-cai)**2
             costheta1_counter    += 1
-
+#                                                               # Getting the final value
 costheta1_rms_system      = np.sqrt(costheta1_rms_system/(costheta1_counter-1))
 for k in range(M):
     for i in range(1,Nb):
@@ -777,38 +724,39 @@ pl_all2            = 0
 
 #Ntimeav = M*Nt/100. # 100 bins
 for k in range(len(costheta_chainmaster)):
-    i = costheta_chainmaster[k]
-    j = costheta_timemaster[k]
-    costhetas_this        = costheta_chainsorted[k]
-    separations_this      = costheta_chainsorted_separations[k]
-    distances_this        = costheta_chainsorted_distances[k]
+    i = costheta_chainmaster[k]                                  # Getting chain index
+    j = costheta_timemaster[k]                                   # Getting time index
+    costhetas_this        = costheta_chainsorted[k]              # Getting list of cosines
+    separations_this      = costheta_chainsorted_separations[k]  # Getting list of separations
+    distances_this        = costheta_chainsorted_distances[k]    # Getting list of distances
     # First: Separation fit:
     popt, pcov            = curve_fit(costheta_exponential, separations_this, costhetas_this)
     this_pl               = popt[0]
     uncertainty           = np.sqrt(pcov[0])
-    persistencelength[i] += this_pl
+    persistencelength[i] += this_pl                              # persistencelength is the average over fits found from {all ct in one time step and one chain}
     #pl_stdv[i]           = np.sqrt(pcov[0])
     allvals_pl[i,j]       = this_pl
-    '''
-    print("This persistence length:", this_pl, "; pcov:", uncertainty)
-    if this_pl>20:
+    #'''
+    #print("This persistence length:", this_pl, "; pcov:", uncertainty)
+    if k==0: # Have ONE plot that shows what's going on:
         separations_this = np.array(separations_this)
-        fittedgraph = costheta_exponential(separations_this, this_pl)
+        fittedgraph_this = costheta_exponential(separations_this, this_pl)
         x_eline = np.zeros(2)
         y_eline = np.zeros(2)+ 1./np.exp(1)
         x_eline[0] = 0
         x_eline[1] = 100
         plt.figure(figsize=(6,5))
-        plt.plot(separations_this, costhetas_this, label='Values')
-        plt.plot(separations_this, fittedgraph, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
+        plt.plot(separations_this, costhetas_this, 'o', label='Values')
+        plt.plot(separations_this, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
         plt.plot(x_eline, y_eline, '--')
-        plt.xlabel(r'Bond distance', fontsize=16)
+        plt.xlabel(r'Bond distance $s$', fontsize=16)
         plt.ylabel(r'<cos($\theta$)>', fontsize=16)
         plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
         plt.legend(loc="upper right")
-        plt.title(r'<cos($\theta$)> vs separation (last chain)', fontsize=16)
-        plt.show()
-    '''
+        plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$', fontsize=16)
+        #plt.show()
+        plt.savefig('costheta_onefit_data_fit')
+    #'''
     # Then: Distance fit:
     popt2, pcov2           = curve_fit(costheta_exponential, distances_this, costhetas_this)
     this_pl2               = popt2[0]
@@ -842,7 +790,7 @@ for i in range(M):
     pl_stdv2[i]       = np.sqrt(pl_stdv2[i]/float(Nt-1))
 pl_stdv_all           = np.sqrt(pl_stdv_all/float(M*Nt-1))
 pl_stdv_all2          = np.sqrt(pl_stdv_all2/float(M*Nt-1))
-fittedgraph = costheta_exponential(separation, persistencelength[-1]) # I don't need THAT many graphs
+fittedgraph = costheta_exponential(separation, persistencelength[-1]) # Graph of the exponential function of the last chain (averaged over time)
 
 # Standard deviation in the mean persistence length:
 pl_stdv_mean  = 0
@@ -873,12 +821,6 @@ lastpls_rms2 = np.sqrt(lastpls_rms2/(M-1))
 
 print("rms from the last values:", lastpls_rms)
 print("Nt:", Nt)
-'''
-# Use the actual bond length # I think maybe this is too computationally heavy. I guess I should try once to see if the results are fairly similar?
-popt2, pcov2       = curve_fit(costheta_exponential, distances_unpacked, costheta_unpacked)
-persistencelength2 = popt2[0]
-pl_stdv2           = np.sqrt(pcov2[0])
-'''
 fittedgraph2 = costheta_exponential(separation, persistencelength2[-1])
 
 
@@ -925,7 +867,6 @@ plt.title(r'<cos($\theta$)> vs separation (last chain)', fontsize=16)
 plt.savefig(plot1name)
 
 plt.figure(figsize=(6,5))
-#plt.plot(distances_unpacked, costheta_unpacked, 'o', label='Values')
 plt.plot(separation, fittedgraph, label='Fit, unit b')
 plt.plot(separation, fittedgraph2, label='Fit, exact b')
 #plt.plot(x_persistencelength, y_persistencelength, '--')
@@ -966,23 +907,14 @@ for i in range(Nt):
             outfile.write('%i %i %.16e\n' % (j+1, k,length_bondvecs[i,k,j]))
 bondlength_chain_vals /= Nt*(N-1)
 bondlength_rms_system  = np.sqrt(bondlength_rms_system/(M*Nt*(N-1)-1))
-#print('M*Nt*(N-1)-1:',M*Nt*(N-1)-1)
 outfile.close()
 
-#print('SEARCHING FOR THE ERROR IN BOND LENGTH RMS:')
-#print('BOND LENGTH AV. FOR CHAIN:',bondlength_chain_vals)
 for i in range(Nt):
     for k in range(M):
         for j in range(N-1):
-            #print("length_bondvecs[i,k,j]:",length_bondvecs[i,k,j])
             bondlength_chain_vals_rms[k] += (bondlength_chain_vals[k]-length_bondvecs[i,k,j])**2 # Do I get an overflow?
-            #if (bondlength_chain_vals[k]-length_bondvecs[i,k,j])**2!=0.0:
-            #    print('Contrib:',(bondlength_chain_vals[k]-length_bondvecs[i,k,j])**2)
-            #    print('accumulated:', bondlength_chain_vals_rms[k])
 for i in range(M):
     bondlength_chain_vals_rms[i] = np.sqrt(bondlength_chain_vals_rms[k]/(Nt*(N-1)-1))#(M*Nt*(N-1)-1)) # Shouldn't divide by M here...
-#print('BOND LENGTH AV. FOR CHAIN:',bondlength_chain_vals)
-#print('Nt*(N-1)-1:',Nt*(N-1)-1)
 
 outfile8 = open(outfilename8,'w')
 for i in range(M):
