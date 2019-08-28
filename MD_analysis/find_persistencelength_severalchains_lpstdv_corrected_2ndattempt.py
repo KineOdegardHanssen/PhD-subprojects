@@ -32,6 +32,8 @@ gridspacing = spacing
 K           = Kangle # Because we used this notation earlier, but using Kangle is less confusing
 wallenergy  = 1.042
 dielectric  = 1#50 #1 2 10 100
+systemtest  = False
+
 
 ### Input and output file names
 
@@ -96,8 +98,9 @@ outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_gridspacing%i_
 
 # Tester:
 '''
-arctest      = False
-testtype     = 'straight'#'rotatingarc_withtime'#'rotatingarc_withtime'#'rotatingarc'#'quartercirc'#'straight'
+arctest      = True
+systemtest   = True
+testtype     = 'rotatingarc_withtime'#'rotatingarc_withtime'#'rotatingarc'#'quartercirc'#'straight'
 infilename   = 'testsystem_chaingrid_'+testtype+'.lammpstrj'
 plot1name    = 'costheta_testsystem_chaingrid_'+testtype+'.png'
 plot2name    = 'angledistr_testsystem_chaingrid_'+testtype+'.png'
@@ -114,8 +117,9 @@ outfilename8 = 'bondlengths_systemwide_testsystem_chaingrid_'+testtype+'.txt'
 #'''
 
 # Tester 2:
-#'''
+'''
 N = 100
+systemtest   = True
 arctest      = False
 foldername   = 'MC_for_testing/'
 #p = Path(foldername)
@@ -154,21 +158,27 @@ outfilename7 = 'endzs_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f
 outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
 #'''
 
-# Output names for code testing:
-'''
-infilename   = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % (M,N,spacing,Kangle,Kbond,charge,T)
-plot1name    = 'costheta_test_short.png'
-plot2name    = 'angledistr_test_short.png'
-plot3name    = 'costheta_actualdistance_test_short.png'
-outfilename  = 'bond_lengths_test_short.txt'
+# Output names for code testing: # go here!
+#'''
+Kangle = 2000.
+Kbond  = 2000.
+factor = Kangle/Kbond
+infilename   = 'chaingrid_quadratic_M9N101_Langevin_Kangle%i_Kbond%i_factor%.2f_T310_theta0is180_twofirst_are_fixed.lammpstrj' % (Kangle,Kbond,factor)
 
-outfilename2 = 'persistence_length_test_short.txt'
-outfilename3 = 'costhetas_neighbourbonds_test_short.txt'
-outfilename4 = 'ree_last_test_short.txt'
-outfilename5 = 'ree_average_test_short.txt'
-outfilename6 = 'persistence_length_actualdistance_test_short.txt' 
-outfilename7 = 'endzs_test_short.txt'
-outfilename8 = 'bondlengths_systemwide_short.txt'
+#infilename   = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % (M,N,spacing,Kangle,Kbond,charge,T)
+#'chaingrid_quadratic_M9N101_gridspacing40_Langevin_Kangle20_Kbond200_debye_kappa1_debyecutoff3_charge-1_T310_theta0is180_twofirst_are_fixed.lammpstrj' % (M,N,spacing,Kangle,Kbond,charge,T)
+plot1name    = 'costheta_test_short_Kangle%i.png' % Kangle
+plot2name    = 'angledistr_test_short_Kangle%i.png' % Kangle
+plot3name    = 'costheta_actualdistance_test_short_Kangle%i.png' % Kangle
+outfilename  = 'bond_lengths_test_short_Kangle%i.txt' % Kangle
+
+outfilename2 = 'persistence_length_test_short_Kangle%i.txt' % Kangle
+outfilename3 = 'costhetas_neighbourbonds_test_short_Kangle%i.txt' % Kangle
+outfilename4 = 'ree_last_test_short_Kangle%i.txt' % Kangle
+outfilename5 = 'ree_average_test_short_Kangle%i.txt' % Kangle
+outfilename6 = 'persistence_length_actualdistance_test_short_Kangle%i.txt' % Kangle 
+outfilename7 = 'endzs_test_short_Kangle%i.txt' % Kangle
+outfilename8 = 'bondlengths_systemwide_short_Kangle%i.txt' % Kangle
 #'''
 # Varying the grid spacing # THIS IS NOW THE STANDARD FILE NAMES.
 '''
@@ -283,7 +293,7 @@ startat             = 50            # To equilibrate. The number of ns we want t
 dt                  = 0.00045       # The time step of our simulation. 0.00045 ns default for nano
 skiplines           = 9             # If we hit 'ITEM:', skip this many steps...
 skipelem            = 0#10#1000#10000#10000#90000 # The number of elements we skip in order to equilibrate (set to 0 if the .lammpstrj file should be equilibrated)
-sampleevery         = 0#1 # Sample every 10th of the values written to file # The program gets WAY too slow if this is too small.
+sampleevery         = 10#1 # Sample every 10th of the values written to file # The program gets WAY too slow if this is too small.
 timefac             = dt*printeverynthstep*1e-9*sampleevery
 
 #### Automatic part
@@ -434,41 +444,28 @@ while i<totlines:
         #    break
         #print("In extraction part")
 
-xes.append(x_curr)
-ys.append(y_curr)
-zs.append(z_curr)
+if systemtest==False:
+    # Removing the first redundant element of position lists (neccessary if t=0 is not the first time step in the file/that we read)
+    xes.pop(0)
+    ys.pop(0)
+    zs.pop(0)
+if sampleevery==0: # Because sampleevery!=0 can mess with the program, and leave an empty x_curr after the read-in loop
+    xes.append(x_curr)
+    ys.append(y_curr)
+    zs.append(z_curr)
 
 infile.close()
 
 #print("xes:",xes)
 #print("xes[0]:", xes[0])
+#print("xes[-1]:", xes[-1])
 #print("max(xes):", max(xes))
-
-# SEEMS to work fine up until here.
+print('Done with read-in loop')
 
 # Finding the bond vectors for each time step.
 # This will be an awfully blocky code, it seems
-# Removing the first redundant element of position lists (uncomment if short test-file)
-
-'''
-xes.pop(0)
-ys.pop(0)
-zs.pop(0)
-'''
 
 Nt = len(xes) # Could have used j (Nt = j)
-
-#print("xes:", xes)
-
-#print("xes[-1]:",xes[-1])
-#print("ys[-1]:",ys[-1])
-#print("zs[-1]:",zs[-1])
-#print("len, xes:", Nt)
-
-#print("xes[0]:", xes[0])
-#print("ys[0]:", ys[0])
-#print("zs[0]:", zs[0])
-#print("xes:", xes)
 
 # Oh, vey.
 bondvecs        = np.zeros((Nt, M, N-1, 3))
@@ -585,6 +582,30 @@ costheta_chainsorted_separations = [] # Lists the separations of costheta_chains
 costheta_chainsorted_distances   = [] # Lists the distances of costheta_chainsorted. On the same form
 costheta_chainmaster             = [] # Lists the chain index of costheta_chainsorted
 costheta_timemaster              = [] # Lists the time index of costheta_chainsorted
+costheta_eachMandt               = np.zeros((Nt,M,Nb)) # Have <cos(theta(s))> for each M and t
+costheta_eachMandt_rms           = np.zeros((Nt,M,Nb))
+costheta_totav                   = np.zeros(Nb)
+costheta_totav_rms               = np.zeros(Nb)
+cos_max                          = np.zeros(Nb)-1000
+cos_min                          = np.zeros(Nb)+1000
+cos_maxes_eachMandt              = np.zeros((Nt,M,Nb))-1000
+cos_mins_eachMandt               = np.zeros((Nt,M,Nb))+1000
+# Setting all \cos\theta(s=0)=1
+cos_max[0]                       = 1
+cos_min[0]                       = 1
+costheta_totav[0]                = 1
+
+for i in range(Nt):
+    for j in range(M):
+        cos_maxes_eachMandt[i,j,0] = 1
+        cos_mins_eachMandt[i,j,0]  = 1
+        costheta_eachMandt[i,j,0]  = 1
+
+# I don't need rms values for max and min, right? How would that even work?
+#cos_max_rms                      = np.zeros(Nb)       
+#cos_min_rms                      = np.zeros(Nb)
+#cos_maxes_eachMandt_rms          = np.zeros((Nt,M,Nb))
+#cos_mins_eachMandt_rms           = np.zeros((Nt,M,Nb))
 
 # Averaging over bonds as well:
 # Do this? costheta_total = np.zeros(Nb)?
@@ -605,10 +626,12 @@ for i in range(Nt):  # Looping over the time steps
                 dotprod      = np.dot(bond1,bond2)         # I only find the angle between bond vectors in the same time step
                 ct           = dotprod/(length1*length2)
                 if(length1*length2==0):
-                    a = 1
+                    print('bond1:', bond1, '; bond2:', bond2)
                     #print("ct:", ct, "; i =", i)
-                costheta[l,j] += ct
-                counters[l,j] += 1
+                costheta[l,j]             += ct
+                counters[l,j]             += 1
+                costheta_totav[j]         += ct
+                costheta_eachMandt[i,l,j] += ct
                 costheta_allvalues_unzipped.append(ct)
                 costheta_allvalues_separation_unzipped.append(j)
                 costheta_allvalues_distance_unzipped.append(distance)
@@ -619,10 +642,13 @@ for i in range(Nt):  # Looping over the time steps
         costheta_chainsorted_separations.append(costheta_allvalues_separation_unzipped)
         costheta_chainsorted_distances.append(costheta_allvalues_distance_unzipped)
 
-for j in range(M):
-    for i in range(1,Nb):
+for i in range(1,Nb):
+    costheta_totav[i] /= (M*Nt*(Nb-i))
+    for j in range(M):
         costheta[j,i] /= Nt*(Nb-i) # Could also have a counter, that's probably wise
         #print("counter[i]-(Nt*(Nb-i)):", counters[i]-(Nt*(Nb-i))) # Seems fine
+        for k in range(Nt):
+            costheta_eachMandt[k,j,i] /= (Nb-i)
 
 costheta1_av_system  = np.mean(costheta[:,1]) # <cos(theta(s=1))>
 costheta1_counter    = 0
@@ -633,27 +659,52 @@ costheta1_rms_system = 0
 # Should I have binned the values? Some of the bins are really small, so I guess it is superfluous
 thiscounter = 0
 
-# Finding RMS of costheta
+# Redundant?:
+'''
+maxcos_all  = np.zeros(Nb)-1000
+mincos_all  = np.zeros(Nb)+1000
+maxcos_this = np.zeros((Nt,M,Nb))-1000
+mincos_this = np.zeros((Nt,M,Nb))+1000
+'''
+
+# Finding RMS of costheta and costheta_eachMandt
 Nthis = np.zeros((M,Nb))
 for i1 in range(len(costheta_chainsorted)):                     # Looping over a set of time steps and chains
     costheta_allvalues      = costheta_chainsorted[i1]              # All ct for one chain for one time step.
     costheta_allseparations = costheta_chainsorted_separations[i1]  # List of the separation for those ct
     k                       = costheta_chainmaster[i1]              # Extracting the chain index for the current data
+    j                       = costheta_timemaster[i1]               # Extracting the time index for the current data
     thiscounter += 1
     for i2 in range(len(costheta_allvalues)):                   # Looking at the data one by one
         cai = costheta_allvalues[i2]                                # Getting one cosine value
         i = costheta_allseparations[i2]                             # Getting the corresponding separation
         Nthis[k,i] += 1 
         costheta_rms[k,i] += (costheta[k,i]-cai)**2                 # Getting the contribution to the rms
+        costheta_eachMandt_rms[j,k,i] += (costheta_eachMandt[j,k,i]-cai)**2
+        costheta_totav_rms[i] += (costheta_totav[i]-cai)**2
+        # Tests to find extremal values # Wait... could I automate this? # I guess that's a bother the way things are stored. But could mix min/max of array with k and j in chain/time-master?
+        # Total max/min:
+        if cai>cos_max[i]:
+            cos_max[i]    = cai
+        if cai<cos_min[i]:
+            cos_min[i]    = cai
+        # Max/min for chain and time:
+        if cai>cos_maxes_eachMandt[j,k,i]:
+            cos_maxes_eachMandt[j,k,i]    = cai
+        if cai<cos_mins_eachMandt[j,k,i]:
+            cos_mins_eachMandt[j,k,i]     = cai
         if i==1:
             costheta1_rms_system += (costheta1_av_system-cai)**2
             costheta1_counter    += 1
 #                                                               # Getting the final value
 costheta1_rms_system      = np.sqrt(costheta1_rms_system/(costheta1_counter-1))
-for k in range(M):
-    for i in range(1,Nb):
-        costheta_rms[k,i] = np.sqrt(costheta_rms[k,i]/(Nthis[k,i]-1))
 
+for i in range(1,Nb):
+    costheta_totav_rms[i] = np.sqrt(costheta_totav_rms[i]/(Nt*M*(Nb-i)))
+    for k in range(M):
+        costheta_rms[k,i] = np.sqrt(costheta_rms[k,i]/(Nthis[k,i]-1))
+        for j in range(Nt):
+            costheta_eachMandt_rms[j,k,i] = np.sqrt(costheta_eachMandt_rms[j,k,i]/(Nb-i))
 
 print("Found cos(theta)")
 
@@ -736,9 +787,13 @@ for k in range(len(costheta_chainmaster)):
     persistencelength[i] += this_pl                              # persistencelength is the average over fits found from {all ct in one time step and one chain}
     #pl_stdv[i]           = np.sqrt(pcov[0])
     allvals_pl[i,j]       = this_pl
-    #'''
+    # Test of new implementation, separation fit: Averaging first:
+    popt, pcov            = curve_fit(costheta_exponential, separation, costheta_eachMandt[j,i,:])
+    this_pl_TEST          = popt[0]                           # persistencelength is the average over fits found from {all ct in one time step and one chain}
+    #pl_stdv[i]           = np.sqrt(pcov[0])
+    #allvals_pl[i,j]       = this_pl
     #print("This persistence length:", this_pl, "; pcov:", uncertainty)
-    if k==0: # Have ONE plot that shows what's going on:
+    if i==1 and j==0: # Have ONE plot that shows what's going on:
         separations_this = np.array(separations_this)
         fittedgraph_this = costheta_exponential(separations_this, this_pl)
         x_eline = np.zeros(2)
@@ -746,7 +801,7 @@ for k in range(len(costheta_chainmaster)):
         x_eline[0] = 0
         x_eline[1] = 100
         plt.figure(figsize=(6,5))
-        plt.plot(separations_this, costhetas_this, 'o', label='Values')
+        plt.plot(separations_this, costhetas_this, '.', label='Values')
         plt.plot(separations_this, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
         plt.plot(x_eline, y_eline, '--')
         plt.xlabel(r'Bond distance $s$', fontsize=16)
@@ -755,7 +810,62 @@ for k in range(len(costheta_chainmaster)):
         plt.legend(loc="upper right")
         plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$', fontsize=16)
         #plt.show()
-        plt.savefig('costheta_onefit_data_fit')
+        plt.savefig('costheta_onefit_data_fit_allpoints_Ktheta%i' %Kangle)
+        #
+        plt.figure(figsize=(6,5))
+        plt.plot(separation, costheta_eachMandt[j,i,:], label='Mean values')
+        plt.plot(separation, cos_maxes_eachMandt[j,i,:], '.', label='Max. values')
+        plt.plot(separation, cos_mins_eachMandt[j,i,:], '.', label='Min. values')
+        plt.plot(separations_this, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
+        plt.plot(x_eline, y_eline, '--')
+        plt.xlabel(r'Bond distance $s$', fontsize=16)
+        plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+        plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+        plt.legend(loc="upper right")
+        plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$', fontsize=16)
+        #plt.show()
+        plt.savefig('costheta_onefit_data_fit_Ktheta%i' %Kangle)
+        # TEST:
+        fittedgraph_this = costheta_exponential(separation, this_pl_TEST)
+        plt.figure(figsize=(6,5))
+        plt.plot(separation, costheta_eachMandt[j,i,:], label='Values')
+        plt.plot(separation, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
+        plt.plot(x_eline, y_eline, '--')
+        plt.xlabel(r'Bond distance $s$', fontsize=16)
+        plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+        plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+        plt.legend(loc="upper right")
+        plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$ using <cos($\theta$)>', fontsize=16)
+        #plt.show()
+        plt.savefig('costheta_onefit_data_fit_AVERAGINGFIRST_Ktheta%i' %Kangle)
+    if i==1 and j==1:
+        # TEST:
+        fittedgraph_this = costheta_exponential(separation, this_pl_TEST)
+        plt.figure(figsize=(6,5))
+        plt.plot(separation, costheta_eachMandt[j,i,:], label='Values')
+        plt.plot(separation, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
+        plt.plot(x_eline, y_eline, '--')
+        plt.xlabel(r'Bond distance $s$', fontsize=16)
+        plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+        plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+        plt.legend(loc="upper right")
+        plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$ using <cos($\theta$)>', fontsize=16)
+        #plt.show()
+        plt.savefig('costheta_onefit_data_fit_AVERAGINGFIRST_2_Ktheta%i' %Kangle)
+    if i==1 and j==2:
+        # TEST:
+        fittedgraph_this = costheta_exponential(separation, this_pl_TEST)
+        plt.figure(figsize=(6,5))
+        plt.plot(separation, costheta_eachMandt[j,i,:], label='Values')
+        plt.plot(separation, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
+        plt.plot(x_eline, y_eline, '--')
+        plt.xlabel(r'Bond distance $s$', fontsize=16)
+        plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+        plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+        plt.legend(loc="upper right")
+        plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$ using <cos($\theta$)>', fontsize=16)
+        #plt.show()
+        plt.savefig('costheta_onefit_data_fit_AVERAGINGFIRST_3_Ktheta%i' %Kangle)
     #'''
     # Then: Distance fit:
     popt2, pcov2           = curve_fit(costheta_exponential, distances_this, costhetas_this)
@@ -851,8 +961,27 @@ x_eline[1] = 100
 ############## FIX THE PLOTS AT SOME POINT!!!
 # Maybe plotting, printing and fitting?
 plt.figure(figsize=(6,5))
+#plt.errorbar(separation, costheta[-1,:], yerr=costheta_rms[-1,:], fmt="none", capsize=2, label='Values')
+plt.errorbar(separation, costheta_totav, yerr=costheta_totav_rms, fmt="none", capsize=2, label='Values')
+plt.plot(separation, costheta_totav, '.', label=r'Mean $\cos\theta$')
+plt.plot(separation, cos_max, '.', label=r'Max $\cos\theta$')
+plt.plot(separation, cos_min, '.', label=r'Min $\cos\theta$')
+if arctest==False:
+    plt.plot(separation, fittedgraph, label='Fit')
+else:
+    plt.plot(separation,np.cos(np.pi*separation/(2*(Nb-1))), label='cos(pi*s/2N-1)')
+#plt.plot(x_persistencelength, y_persistencelength, '--')
+#plt.plot(x_eline, y_eline, '--')
+plt.xlabel(r'Bond distance', fontsize=16)
+plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+plt.legend(loc="upper right")
+plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
+plt.savefig(plot1name)
+
+plt.figure(figsize=(6,5))
 plt.errorbar(separation, costheta[-1,:], yerr=costheta_rms[-1,:], fmt="none", capsize=2, label='Values')
-plt.plot(separation, costheta[-1,:], 'o')
+plt.plot(separation, costheta[-1,:], '.')
 if arctest==False:
     plt.plot(separation, fittedgraph, label='Fit')
 else:
@@ -863,8 +992,8 @@ plt.xlabel(r'Bond distance', fontsize=16)
 plt.ylabel(r'<cos($\theta$)>', fontsize=16)
 plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
 plt.legend(loc="upper right")
-plt.title(r'<cos($\theta$)> vs separation (last chain)', fontsize=16)
-plt.savefig(plot1name)
+plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
+plt.savefig('oldone_onechain')
 
 plt.figure(figsize=(6,5))
 plt.plot(separation, fittedgraph, label='Fit, unit b')
