@@ -7,13 +7,21 @@ import math
 # I probably don't need a lot of these variables anymore, but this is not a bottleneck
 # so I don't bother cleaning it up
 
+#
+onechain = True
+
 # Set variables
 N             = 100 # Number of bond vectors = number of units - 1 # Per chain
-M             = 9   # Number of chains
-L2            = 3   # Determining the shape of the L1xL2 polymer grid on the surface
+if onechain==True:
+    M             = 1   # Number of chains
+    L2            = 1   # Determining the shape of the L1xL2 polymer grid on the surface
+    gridspacing   = 200 # Huuuge spacing in the grid in order to only study ONE chain (this will affect the box size)
+else:
+    M             = 9   # Number of chains
+    L2            = 3   # Determining the shape of the L1xL2 polymer grid on the surface
+    gridspacing   = 4 # The spacing in our grid # Default is 40
 charge        = -1
-gridspacing   = 4 # The spacing in our grid # Default is 40
-mass          = 0.00081
+mass          = 1#0.00081 # Run into trouble when using the correct mass... can look at that separately later ... Need to increase the time step with a small mass, but then I run into problems
 Nelem         = M*(N+1)
 Nbonds        = M*N
 Nangles       = M*(N-1)
@@ -140,7 +148,10 @@ ymin = min(ypos)-0.5*gridspacing
 
 ### Print to file
 #outfilename = 'data.randomchain_N%i' % N+1
-outfilename = 'data.chaingrids_N%i_Nchains%i_Ly%i_gridspacing%i_twofixed_charge%i_mass%.5f' % (Nelem,M,L2,gridspacing,charge,mass)
+if mass!=1:
+    outfilename = 'data.chaingrids_N%i_Nchains%i_Ly%i_gridspacing%i_twofixed_charge%i_mass%.5f' % (Nelem,M,L2,gridspacing,charge,mass)
+else:
+    outfilename = 'data.chaingrids_N%i_Nchains%i_Ly%i_gridspacing%i_twofixed_charge%i_mass%i' % (Nelem,M,L2,gridspacing,charge,mass)
 outfile = open(outfilename,'w')
 outfile.write('LAMMPS data file via python scripting, version 11 Aug 2017, timestep = 0\n\n%i atoms \n%i bonds \n2 atom types\n1 bond types \n%i angles \n1 angle types\n\n' % (Nelem,Nbonds, Nangles))
 outfile.write('%.16e %.16e xlo xhi\n' % (xmin, xmax))

@@ -1,0 +1,67 @@
+# I think I need to use atom style angle instead... Should have a script for that? ...
+
+label tfloop # Varying the size of the time steps
+variable tfac index 1.0 10.0 100.0 1000.0
+
+variable equilib equal 1333400*${tfac}
+variable runvar equal 10000000*${tfac}
+variable simdt equal 0.00045/${tfac}
+
+# Shortest sim: 10 000 000 time steps. Longest sim: 10 000 000 000 # The last file is 10x bigger than our usual files... Increased interval between writing to file to get smaller files
+
+######################### Setting the sytem ####################################
+variable theta0 equal 180.0
+variable Kangle equal 20.0
+variable Kbond equal 200.0
+variable kappa equal 1.0
+variable debyecutoff equal 3.0
+variable T equal 310
+variable charge equal -1
+variable spacing equal 3
+
+# Setting system properties
+units nano
+dimension 3
+boundary p p p
+atom_style full
+pair_style coul/debye ${kappa} ${debyecutoff} # 
+bond_style harmonic
+angle_style harmonic
+
+# Making the atoms:
+read_data data.chaingrids_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge} #_straight
+
+velocity all create $T 87287 # I can reset the velocities.
+
+pair_coeff * * 
+bond_coeff * ${Kbond} 1.0
+angle_coeff * ${Kangle} ${theta0}
+############################ Equilibration part #####################################
+
+# Minimize really messes up the structure
+#minimize 1.0e-4 1.0e-6 100 1000
+group movingmonomers type 2
+
+###fix wallmembrane movingmonomers wall/lj126 zlo 0.0 1.042 1.0 2.5 units box # Skipping the wall for now
+
+compute bendingenergy all pe angle
+compute stretchingenergy all pe bond
+
+fix lgvfix movingmonomers langevin $T $T 100.0 699483
+fix 1 movingmonomers nve
+
+timestep ${simdt}
+
+run ${equilib}
+
+############################ Run #####################################
+
+log log.chaingrid_quadratic_M9N101_gridspacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_charge${charge}_T$T_theta0is180_dtfac${tfac}_twofirst_are_fixed
+dump 1 all custom 10000 chaingrid_quadratic_M9N101_gridspacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_charge${charge}_T$T_theta0is180_dtfac${tfac}_twofirst_are_fixed.lammpstrj id type x y z vx vy vz # For visualization
+##dump 2 all xyz 100 snapshot_debye_harmonic_bond_and_angle_Langevin_nowall.xyz # For treatment by MDAnalysis tools, which it seems I won't use.
+thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy
+thermo 10000
+run ${runvar}
+clear
+next tfac
+jump SELF tfloop
