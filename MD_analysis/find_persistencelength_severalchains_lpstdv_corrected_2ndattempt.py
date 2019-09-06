@@ -13,8 +13,9 @@ start_time = time.process_time()
 
 arctest     = False
 ### Input file parameters
-Kangle      = 20
-Kbond       = 200#0
+Kangle      = 20#125000
+Kbond       = 2000
+factor      = Kangle/float(Kbond)
 T           = 310
 M           = 9
 N           = 101 ###
@@ -23,11 +24,11 @@ epsilon     = ljdebye
 sigma       = 1
 ljcutoff    = 1.12246204830937
 debyecutoff = 3
-factor      = 0.05#250
+#factor      = 0.05#250
 #Kbond       = 2000#Kangle*factor
 #Kangle      = Kbond*factor
 charge      = -1
-spacing     = 40
+spacing     = 4#0
 gridspacing = spacing
 K           = Kangle # Because we used this notation earlier, but using Kangle is less confusing
 wallenergy  = 1.042
@@ -60,20 +61,25 @@ outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_totallystraigh
 
 #	     #  chaingrid_quadratic_M9N101_Langevin_Kangle100_Kbond2000_factor0.05_T310_theta0is180_twofirst_are_fixed
 #gridspacing  = 40
-'''   # This one is for varying the factor.
-infilename   = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % (M,N,Kangle,Kbond,factor,T)
-plot1name    = 'costheta_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,spacing,Kangle,Kbond,factor,T)
-plot2name    = 'angledistr_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,spacing,Kangle,Kbond,factor,T)
-plot3name    = 'costheta_actualdistance_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,spacing,Kangle,Kbond,factor,T)
-outfilename  = 'bond_lengths_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,factor,T)
-
-outfilename2 = 'persistence_length_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,factor,T)
-outfilename3 = 'costhetas_neighbourbonds_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,factor,T)
-outfilename4 = 'ree_last_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,factor,T)
-outfilename5 = 'ree_average_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,factor,T)
-outfilename6 = 'persistence_length_actualdistance_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,factor,T)
-outfilename7 = 'endzs_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,factor,T)
-outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,factor,T)
+#'''   # This one is for varying the factor.
+# Kbond     = 2000:
+basename     = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed' % (M,N,Kangle,Kbond,factor,T)
+basename2    = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,factor,T)
+# Kbond     = 200:
+#basename     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.1f_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,factor,T)
+#basename2    = basename+'_test'
+infilename   = basename+'.lammpstrj'
+plot1name    = 'costheta_'+basename2+'.png'
+plot2name    = 'angledistr_'+basename2+'.png'
+plot3name    = 'costheta_actualdistance_'+basename2+'.png'
+outfilename  = 'bond_lengths_'+basename2+'.txt'
+outfilename2 = 'persistence_length_'+basename2+'.txt'
+outfilename3 = 'costhetas_neighbourbonds_'+basename2+'.txt'
+outfilename4 = 'ree_last_'+basename2+'.txt'
+outfilename5 = 'ree_average_'+basename2+'.txt'
+outfilename6 = 'persistence_length_actualdistance_'+basename2+'.txt'
+outfilename7 = 'endzs_'+basename2+'.txt'
+outfilename8 = 'bondlengths_systemwide_'+basename2+'.txt'
 #'''
 
 '''   # Changing the dielectric constant
@@ -159,7 +165,7 @@ outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_gridspacing%i_
 #'''
 
 # Output names for code testing: # go here!
-#'''
+'''
 Kangle = 2000.
 Kbond  = 2000.
 factor = Kangle/Kbond
@@ -293,7 +299,7 @@ startat             = 50            # To equilibrate. The number of ns we want t
 dt                  = 0.00045       # The time step of our simulation. 0.00045 ns default for nano
 skiplines           = 9             # If we hit 'ITEM:', skip this many steps...
 skipelem            = 0#10#1000#10000#10000#90000 # The number of elements we skip in order to equilibrate (set to 0 if the .lammpstrj file should be equilibrated)
-sampleevery         = 10#1 # Sample every 10th of the values written to file # The program gets WAY too slow if this is too small.
+sampleevery         = 0#1 # Sample every 10th of the values written to file # The program gets WAY too slow if this is too small.
 timefac             = dt*printeverynthstep*1e-9*sampleevery
 
 #### Automatic part
@@ -700,11 +706,11 @@ for i1 in range(len(costheta_chainsorted)):                     # Looping over a
 costheta1_rms_system      = np.sqrt(costheta1_rms_system/(costheta1_counter-1))
 
 for i in range(1,Nb):
-    costheta_totav_rms[i] = np.sqrt(costheta_totav_rms[i]/(Nt*M*(Nb-i)))
+    costheta_totav_rms[i] = np.sqrt(costheta_totav_rms[i]/(Nt*M*(Nb-i)-1)) # Corrected this! But I didn't use it for anything but plots before the change and the denominator is huge, so it should be find
     for k in range(M):
         costheta_rms[k,i] = np.sqrt(costheta_rms[k,i]/(Nthis[k,i]-1))
         for j in range(Nt):
-            costheta_eachMandt_rms[j,k,i] = np.sqrt(costheta_eachMandt_rms[j,k,i]/(Nb-i))
+            costheta_eachMandt_rms[j,k,i] = np.sqrt(costheta_eachMandt_rms[j,k,i]/(Nb-i)) # We use the uncorrected standard deviation as Nb-i=1 for the largest spacing 
 
 print("Found cos(theta)")
 
@@ -803,21 +809,21 @@ for k in range(len(costheta_chainmaster)):
         plt.figure(figsize=(6,5))
         plt.plot(separations_this, costhetas_this, '.', label='Values')
         plt.plot(separations_this, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
-        plt.plot(x_eline, y_eline, '--')
+        #plt.plot(x_eline, y_eline, '--')
         plt.xlabel(r'Bond distance $s$', fontsize=16)
         plt.ylabel(r'<cos($\theta$)>', fontsize=16)
         plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
         plt.legend(loc="upper right")
         plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$', fontsize=16)
         #plt.show()
-        plt.savefig('costheta_onefit_data_fit_allpoints_Ktheta%i' %Kangle)
+        plt.savefig('costheta_onefit_data_fit_allpoints_1_Ktheta%i' %Kangle)
         #
         plt.figure(figsize=(6,5))
         plt.plot(separation, costheta_eachMandt[j,i,:], label='Mean values')
         plt.plot(separation, cos_maxes_eachMandt[j,i,:], '.', label='Max. values')
         plt.plot(separation, cos_mins_eachMandt[j,i,:], '.', label='Min. values')
         plt.plot(separations_this, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
-        plt.plot(x_eline, y_eline, '--')
+        #plt.plot(x_eline, y_eline, '--')
         plt.xlabel(r'Bond distance $s$', fontsize=16)
         plt.ylabel(r'<cos($\theta$)>', fontsize=16)
         plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
@@ -825,12 +831,28 @@ for k in range(len(costheta_chainmaster)):
         plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$', fontsize=16)
         #plt.show()
         plt.savefig('costheta_onefit_data_fit_Ktheta%i' %Kangle)
+        #
+        if min(costheta_eachMandt[j,i,:])>0:
+            plt.figure(figsize=(6,5))
+            plt.plot(separation, costheta_eachMandt[j,i,:], label='Mean values')
+            plt.plot(separation, cos_maxes_eachMandt[j,i,:], '.', label='Max. values')
+            plt.plot(separation, cos_mins_eachMandt[j,i,:], '.', label='Min. values')
+            plt.plot(separations_this, fittedgraph_this, label='Fit')
+            plt.yscale('log')
+            plt.xlabel(r'Bond distance $s$', fontsize=16)
+            plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+            plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+            plt.legend(loc="upper right")
+            plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$', fontsize=16)
+            #plt.show()
+            plt.savefig('log_costheta_onefit_data_fit_Ktheta%i' %Kangle)
+        #
         # TEST:
         fittedgraph_this = costheta_exponential(separation, this_pl_TEST)
         plt.figure(figsize=(6,5))
         plt.plot(separation, costheta_eachMandt[j,i,:], label='Values')
         plt.plot(separation, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
-        plt.plot(x_eline, y_eline, '--')
+        #plt.plot(x_eline, y_eline, '--')
         plt.xlabel(r'Bond distance $s$', fontsize=16)
         plt.ylabel(r'<cos($\theta$)>', fontsize=16)
         plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
@@ -840,11 +862,25 @@ for k in range(len(costheta_chainmaster)):
         plt.savefig('costheta_onefit_data_fit_AVERAGINGFIRST_Ktheta%i' %Kangle)
     if i==1 and j==1:
         # TEST:
+        separations_this = np.array(separations_this)
+        fittedgraph_this = costheta_exponential(separations_this, this_pl)
+        plt.figure(figsize=(6,5))
+        plt.plot(separations_this, costhetas_this, '.', label='Values')
+        plt.plot(separations_this, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
+        #plt.plot(x_eline, y_eline, '--')
+        plt.xlabel(r'Bond distance $s$', fontsize=16)
+        plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+        plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+        plt.legend(loc="upper right")
+        plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$', fontsize=16)
+        #plt.show()
+        plt.savefig('costheta_onefit_data_fit_allpoints_2_Ktheta%i' %Kangle)
+        #
         fittedgraph_this = costheta_exponential(separation, this_pl_TEST)
         plt.figure(figsize=(6,5))
         plt.plot(separation, costheta_eachMandt[j,i,:], label='Values')
         plt.plot(separation, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
-        plt.plot(x_eline, y_eline, '--')
+        #plt.plot(x_eline, y_eline, '--')
         plt.xlabel(r'Bond distance $s$', fontsize=16)
         plt.ylabel(r'<cos($\theta$)>', fontsize=16)
         plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
@@ -852,13 +888,41 @@ for k in range(len(costheta_chainmaster)):
         plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$ using <cos($\theta$)>', fontsize=16)
         #plt.show()
         plt.savefig('costheta_onefit_data_fit_AVERAGINGFIRST_2_Ktheta%i' %Kangle)
+        if min(costheta_eachMandt[j,i,:])>0:
+            plt.figure(figsize=(6,5))
+            plt.plot(separation, costheta_eachMandt[j,i,:], label='Mean values')
+            plt.plot(separation, cos_maxes_eachMandt[j,i,:], '.', label='Max. values')
+            plt.plot(separation, cos_mins_eachMandt[j,i,:], '.', label='Min. values')
+            plt.plot(separation, fittedgraph_this, label='Fit')
+            plt.yscale('log')
+            plt.xlabel(r'Bond distance $s$', fontsize=16)
+            plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+            plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+            plt.legend(loc="upper right")
+            plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$', fontsize=16)
+            #plt.show()
+            plt.savefig('log_costheta_onefit_data_fit_2_Ktheta%i' %Kangle)
     if i==1 and j==2:
         # TEST:
+        separations_this = np.array(separations_this)
+        fittedgraph_this = costheta_exponential(separations_this, this_pl)
+        plt.figure(figsize=(6,5))
+        plt.plot(separations_this, costhetas_this, '.', label='Values')
+        plt.plot(separations_this, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
+        #plt.plot(x_eline, y_eline, '--')
+        plt.xlabel(r'Bond distance $s$', fontsize=16)
+        plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+        plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+        plt.legend(loc="upper right")
+        plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$', fontsize=16)
+        #plt.show()
+        plt.savefig('costheta_onefit_data_fit_allpoints_3_Ktheta%i' %Kangle)
+        #
         fittedgraph_this = costheta_exponential(separation, this_pl_TEST)
         plt.figure(figsize=(6,5))
         plt.plot(separation, costheta_eachMandt[j,i,:], label='Values')
         plt.plot(separation, fittedgraph_this, label='Fit')#plt.plot(x_persistencelength, y_persistencelength, '--')#plt.plot(x_eline, y_eline, '--')
-        plt.plot(x_eline, y_eline, '--')
+        #plt.plot(x_eline, y_eline, '--')
         plt.xlabel(r'Bond distance $s$', fontsize=16)
         plt.ylabel(r'<cos($\theta$)>', fontsize=16)
         plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
@@ -866,6 +930,20 @@ for k in range(len(costheta_chainmaster)):
         plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$ using <cos($\theta$)>', fontsize=16)
         #plt.show()
         plt.savefig('costheta_onefit_data_fit_AVERAGINGFIRST_3_Ktheta%i' %Kangle)
+        if min(costheta_eachMandt[j,i,:])>0:
+            plt.figure(figsize=(6,5))
+            plt.plot(separation, costheta_eachMandt[j,i,:], label='Mean values')
+            plt.plot(separation, cos_maxes_eachMandt[j,i,:], '.', label='Max. values')
+            plt.plot(separation, cos_mins_eachMandt[j,i,:], '.', label='Min. values')
+            plt.plot(separation, fittedgraph_this, label='Fit')
+            plt.yscale('log')
+            plt.xlabel(r'Bond distance $s$', fontsize=16)
+            plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+            plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+            plt.legend(loc="upper right")
+            plt.title(r'<cos($\theta$)> vs $s$, finding one $l_p$', fontsize=16)
+            #plt.show()
+            plt.savefig('log_costheta_onefit_data_fit_3_Ktheta%i' %Kangle)
     #'''
     # Then: Distance fit:
     popt2, pcov2           = curve_fit(costheta_exponential, distances_this, costhetas_this)
@@ -900,7 +978,8 @@ for i in range(M):
     pl_stdv2[i]       = np.sqrt(pl_stdv2[i]/float(Nt-1))
 pl_stdv_all           = np.sqrt(pl_stdv_all/float(M*Nt-1))
 pl_stdv_all2          = np.sqrt(pl_stdv_all2/float(M*Nt-1))
-fittedgraph = costheta_exponential(separation, persistencelength[-1]) # Graph of the exponential function of the last chain (averaged over time)
+fittedgraph     = costheta_exponential(separation, persistencelength[-1]) # Graph of the exponential function of the last chain (averaged over time)
+fittedgraph_tot = costheta_exponential(separation, np.mean(persistencelength))
 
 # Standard deviation in the mean persistence length:
 pl_stdv_mean  = 0
@@ -931,7 +1010,8 @@ lastpls_rms2 = np.sqrt(lastpls_rms2/(M-1))
 
 print("rms from the last values:", lastpls_rms)
 print("Nt:", Nt)
-fittedgraph2 = costheta_exponential(separation, persistencelength2[-1])
+fittedgraph2     = costheta_exponential(separation, persistencelength2[-1])
+fittedgraph2_tot = costheta_exponential(separation, np.mean(persistencelength2))
 
 
 print("K:", K)
@@ -967,18 +1047,19 @@ plt.plot(separation, costheta_totav, '.', label=r'Mean $\cos\theta$')
 plt.plot(separation, cos_max, '.', label=r'Max $\cos\theta$')
 plt.plot(separation, cos_min, '.', label=r'Min $\cos\theta$')
 if arctest==False:
-    plt.plot(separation, fittedgraph, label='Fit')
+    plt.plot(separation, fittedgraph_tot, label='Fit')
 else:
     plt.plot(separation,np.cos(np.pi*separation/(2*(Nb-1))), label='cos(pi*s/2N-1)')
 #plt.plot(x_persistencelength, y_persistencelength, '--')
 #plt.plot(x_eline, y_eline, '--')
-plt.xlabel(r'Bond distance', fontsize=16)
+plt.xlabel(r'Bond distance $s$', fontsize=16)
 plt.ylabel(r'<cos($\theta$)>', fontsize=16)
 plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
 plt.legend(loc="upper right")
 plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
 plt.savefig(plot1name)
 
+plot1oldname = 'lastchainvalues_'+plot1name
 plt.figure(figsize=(6,5))
 plt.errorbar(separation, costheta[-1,:], yerr=costheta_rms[-1,:], fmt="none", capsize=2, label='Values')
 plt.plot(separation, costheta[-1,:], '.')
@@ -988,19 +1069,114 @@ else:
     plt.plot(separation,np.cos(np.pi*separation/(2*Nb)), label='cos(pi*s/2N)')
 #plt.plot(x_persistencelength, y_persistencelength, '--')
 #plt.plot(x_eline, y_eline, '--')
+plt.xlabel(r'Bond distance $s$', fontsize=16)
+plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+plt.legend(loc="upper right")
+plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
+plt.savefig(plot1oldname)
+
+'''
+plot1name_loglog = 'loglog_'+plot1name
+plt.figure(figsize=(6,5))
+#plt.errorbar(separation, costheta[-1,:], yerr=costheta_rms[-1,:], fmt="none", capsize=2, label='Values')
+plt.loglog(separation, costheta_totav, label='Values')
+if arctest==False:
+    plt.plot(separation, fittedgraph_tot, label='Fit')
+else:
+    plt.plot(separation,np.cos(np.pi*separation/(2*(Nb-1))), label='cos(pi*s/2N-1)')
+#plt.plot(x_persistencelength, y_persistencelength, '--')
+#plt.plot(x_eline, y_eline, '--')
 plt.xlabel(r'Bond distance', fontsize=16)
 plt.ylabel(r'<cos($\theta$)>', fontsize=16)
 plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
 plt.legend(loc="upper right")
 plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
-plt.savefig('oldone_onechain')
+plt.savefig(plot1name_loglog)
+'''
 
+plot1name_log = 'log_'+plot1name
 plt.figure(figsize=(6,5))
-plt.plot(separation, fittedgraph, label='Fit, unit b')
-plt.plot(separation, fittedgraph2, label='Fit, exact b')
+#plt.errorbar(separation, costheta[-1,:], yerr=costheta_rms[-1,:], fmt="none", capsize=2, label='Values')
+plt.plot(separation, costheta_totav, label='Values')
+if arctest==False:
+    plt.plot(separation, fittedgraph_tot, label='Exp. fit')
+else:
+    plt.plot(separation,np.cos(np.pi*separation/(2*(Nb-1))), label='cos(pi*s/2N-1)')
 #plt.plot(x_persistencelength, y_persistencelength, '--')
 #plt.plot(x_eline, y_eline, '--')
-plt.xlabel(r'Bond distance', fontsize=16)
+plt.yscale('log')
+plt.xlabel(r'Bond distance $s$', fontsize=16)
+plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+plt.legend(loc="upper right")
+plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
+plt.savefig(plot1name_log)
+
+plot1sevname = 'severalfits_'+plot1name
+plt.figure(figsize=(6,5))
+plt.plot(separation, costheta_totav, '.', label=r'Mean $\cos\theta$')
+if arctest==False:
+    fg0  = costheta_exponential(separation, allvals_pl[0,0])
+    fg7  = costheta_exponential(separation, allvals_pl[0,4])
+    fg8  = costheta_exponential(separation, allvals_pl[1,4])
+    fg1  = costheta_exponential(separation, allvals_pl[1,1])
+    fg6  = costheta_exponential(separation, allvals_pl[1,0])
+    fg5  = costheta_exponential(separation, allvals_pl[2,3])
+    fg10 = costheta_exponential(separation, allvals_pl[int(M/8), int(Nt/8)])
+    fg4  = costheta_exponential(separation, allvals_pl[int(M/4), int(Nt/4)])
+    fg2  = costheta_exponential(separation, allvals_pl[int(M/2), int(Nt/2)])
+    fg9  = costheta_exponential(separation, allvals_pl[int(3*M/4), int(3*Nt/4)])
+    fg3  =  costheta_exponential(separation, allvals_pl[M-1,Nt-1])
+    plt.plot(separation, fg0,'--', label='Fit m=0,t=0')
+    plt.plot(separation, fg7,'--', label='Fit m=0,t=4')
+    plt.plot(separation, fg8,'--', label='Fit m=1,t=4')
+    plt.plot(separation, fg6,'--', label='Fit m=1,t=0')
+    plt.plot(separation, fg1,'--', label='Fit m=1,t=1')
+    plt.plot(separation, fg5,'--', label='Fit m=2,t=3')
+    plt.plot(separation, fg8,'--', label='Fit m=M/8,t=Nt/8')
+    plt.plot(separation, fg4,'--', label='Fit m=M/4,t=Nt/4')
+    plt.plot(separation, fg2,'--', label='Fit m=M/2,t=Nt/2')
+    plt.plot(separation, fg9,'--', label='Fit m=3M/2,t=3Nt/2')
+    plt.plot(separation, fg3,'--', label='Fit m=M-1,t=Nt-1')
+else:
+    plt.plot(separation,np.cos(np.pi*separation/(2*Nb)), label='cos(pi*s/2N)')
+#plt.plot(x_persistencelength, y_persistencelength, '--')
+#plt.plot(x_eline, y_eline, '--')
+plt.xlabel(r'Bond distance $s$', fontsize=16)
+plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+plt.legend(loc="upper right")
+plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
+plt.savefig(plot1sevname)
+
+plot1avname = 'averages_shortlegend_'+plot1name
+plt.figure(figsize=(6,5))
+plt.plot(separation, costheta_totav, '.', label=r'Mean $\cos\theta$')
+plt.plot(separation, costheta_eachMandt[0,0,:], '--', label=r'Averages')
+plt.plot(separation, costheta_eachMandt[0,1,:], '--')#, label=r'Average, t=0, m=1')
+plt.plot(separation, costheta_eachMandt[1,0,:], '--')#, label=r'Average, t=1, m=0')
+plt.plot(separation, costheta_eachMandt[1,1,:], '--')#, label=r'Average, t=1, m=1')
+plt.plot(separation, costheta_eachMandt[2,3,:], '--')#, label=r'Average, t=2, m=3')
+plt.plot(separation, costheta_eachMandt[int(Nt/4),int(M/4),:], '--')#, label=r'Average, t=Nt/4, m=M/4')
+plt.plot(separation, costheta_eachMandt[int(Nt/2),int(M/2),:], '--')#, label=r'Average, t=Nt/2, m=M/2')
+plt.plot(separation, costheta_eachMandt[int(3*Nt/4),int(3*M/4),:], '--')#, label=r'Average, t=3Nt/4, m=3M/4')
+plt.plot(separation, costheta_eachMandt[Nt-1,M-1,:], '--')#, label=r'Average, t=Nt-1, m=M-1')
+plt.xlabel(r'Bond distance $s$', fontsize=16)
+plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+plt.legend(loc="lower left")
+plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
+plt.savefig(plot1avname)
+
+
+
+plt.figure(figsize=(6,5))
+plt.plot(separation, fittedgraph_tot, label='Fit, unit b')
+plt.plot(separation, fittedgraph2_tot, label='Fit, exact b')
+#plt.plot(x_persistencelength, y_persistencelength, '--')
+#plt.plot(x_eline, y_eline, '--')
+plt.xlabel(r'Bond distance $s$', fontsize=16)
 plt.ylabel(r'<cos($\theta$)>', fontsize=16)
 plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
 plt.legend(loc="upper right")
