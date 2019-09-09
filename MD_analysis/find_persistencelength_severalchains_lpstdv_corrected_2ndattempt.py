@@ -12,9 +12,13 @@ def costheta_exponential(s,P):
 start_time = time.process_time()
 
 arctest     = False
+
+# Max number of iterations in curve_fit: # (Use default unless it crashes)
+thismaxfev  = 5000 # (default appears to be 400)
+
 ### Input file parameters
 Kangle      = 20#125000
-Kbond       = 2000
+Kbond       = 200#0
 factor      = Kangle/float(Kbond)
 T           = 310
 M           = 9
@@ -22,19 +26,21 @@ N           = 101 ###
 ljdebye     = 1.042
 epsilon     = ljdebye
 sigma       = 1
+kappa       = 1
 ljcutoff    = 1.12246204830937
 debyecutoff = 3
 #factor      = 0.05#250
 #Kbond       = 2000#Kangle*factor
 #Kangle      = Kbond*factor
 charge      = -1
-spacing     = 4#0
+mass        = 1
+spacing     = 7#4#0
 gridspacing = spacing
 K           = Kangle # Because we used this notation earlier, but using Kangle is less confusing
 wallenergy  = 1.042
 dielectric  = 1#50 #1 2 10 100
 systemtest  = False
-
+lotsofchains = False
 
 ### Input and output file names
 
@@ -63,8 +69,19 @@ outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_totallystraigh
 #gridspacing  = 40
 #'''   # This one is for varying the factor.
 # Kbond     = 2000:
-basename     = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed' % (M,N,Kangle,Kbond,factor,T)
-basename2    = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,factor,T)
+#basename     = 'chaingrid_quadratic_M%iN%i_Langevin_gridspacing%i_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
+basename     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
+#basename     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,spacing,Kangle,Kbond,charge,T)
+#basename     = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed' % T
+#basename     = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed' % T
+#basename     = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,Kangle,Kbond,factor,T)
+#basename     = 'chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
+#basename     = 'chaingrid_quadratic_M'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed'     # Actual run
+#basename     = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed' % (M,N,Kangle,Kbond,factor,T)
+#basename2    = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,factor,T)
+#basename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa%i_debyecutoff%i_charge%i_mass%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,kappa,debyecutoff,charge,mass,T)
+basename2     = basename 
+
 # Kbond     = 200:
 #basename     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.1f_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,factor,T)
 #basename2    = basename+'_test'
@@ -81,26 +98,6 @@ outfilename6 = 'persistence_length_actualdistance_'+basename2+'.txt'
 outfilename7 = 'endzs_'+basename2+'.txt'
 outfilename8 = 'bondlengths_systemwide_'+basename2+'.txt'
 #'''
-
-'''   # Changing the dielectric constant
-#	     # 'chaingrid_quadratic_M9N101_Langevin_Kangle20_Kbond200_debye_kappa1_debyecutoff3_charge-1_dielectric10_T310_theta0is180_twofirst_are_fixed.lammpstrj'
-#            # 'chaingrid_quadratic_M%iN%i_Langevin_gridspacing%i_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj'
-#            # 'chaingrid_quadratic_M9N101_Langevin_Kangle20_Kbond200_debye_kappa1_debyecutoff3_charge-1_dielectric100_T310_theta0is180_twofirst_are_fixed.lammpstrj'
-infilename   = 'chaingrid_quadratic_M%iN%i_Langevin_gridspacing%i_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-plot1name    = 'costheta_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-plot2name    = 'angledistr_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-plot3name    = 'costheta_actualdistance_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-
-outfilename  = 'bond_lengths_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-outfilename2 = 'persistence_length_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-outfilename3 = 'costhetas_neighbourbonds_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-outfilename4 = 'ree_last_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-outfilename5 = 'ree_average_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-outfilename6 = 'persistence_length_actualdistance_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-outfilename7 = 'endzs_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-#'''
-
 
 # Tester:
 '''
@@ -148,22 +145,6 @@ N = 101
 #'''
 
 
-''' # With wall potential: #### This is what I've been using recently (good for voxellation)
-infilename   = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-plot1name    = 'costheta_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.png'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-plot2name    = 'angledistr_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.png'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-plot3name    = 'costheta_actualdistance_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.png'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-outfilename  = 'bond_lengths_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-
-outfilename2 = 'persistence_length_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-outfilename3 = 'costhetas_neighbourbonds_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-outfilename4 = 'ree_last_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-outfilename5 = 'ree_average_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-outfilename6 = 'persistence_length_actualdistance_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-outfilename7 = 'endzs_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
-#'''
-
 # Output names for code testing: # go here!
 '''
 Kangle = 2000.
@@ -186,103 +167,11 @@ outfilename6 = 'persistence_length_actualdistance_test_short_Kangle%i.txt' % Kan
 outfilename7 = 'endzs_test_short_Kangle%i.txt' % Kangle
 outfilename8 = 'bondlengths_systemwide_short_Kangle%i.txt' % Kangle
 #'''
-# Varying the grid spacing # THIS IS NOW THE STANDARD FILE NAMES.
-'''
-infilename   = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % (M,N,spacing,Kangle,Kbond,charge,T)
-plot1name    = 'costheta_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,spacing,Kangle,Kbond,charge,T)
-plot2name    = 'angledistr_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,spacing,Kangle,Kbond,charge,T)
-plot3name    = 'costheta_actualdistance_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,spacing,Kangle,Kbond,charge,T)
-outfilename  = 'bond_lengths_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,charge,T)
-
-outfilename2 = 'persistence_length_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,charge,T)
-outfilename3 = 'costhetas_neighbourbonds_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,charge,T)
-outfilename4 = 'ree_last_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,charge,T)
-outfilename5 = 'ree_average_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,spacing,Kangle,Kbond,charge,T)
-outfilename6 = 'persistence_length_actualdistance_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed_varygridspacing.txt' % (M,N,spacing,Kangle,Kbond,charge,T)
-outfilename7 = 'endzs_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed_varygridspacing.txt' % (M,N,spacing,Kangle,Kbond,charge,T)
-outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed_varygridspacing.txt' % (M,N,spacing,Kangle,Kbond,charge,T)
-#'''
 
 # Varying the charge:
 #chaingrid_quadratic_M9N101_Langevin_Kangle${Kangle}_Kbond${Kbond}_charge${charge}_T$T_theta0is180_twofirst_are_fixed.lammpstrj
-''' # String appending method
-#               chaingrid_quadratic_M9N101_Langevin_Kangle20_Kbond200_debye_kappa1_debyecutoff3_charge0_T310_theta0is180_twofirst_are_fixed
-infilename   = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % T     # Actual run
-plot1name    = 'costheta_vs_separation_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.png' % T
-plot2name    = 'angledistr_sep5_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.png' % T
-plot3name    = 'costheta_vs_separation_actualdistance_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.png' % T
-outfilename  = 'bond_lengths_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename2 = 'persistence_length_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename3 = 'costhetas_neighbourbonds_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename4 = 'ree_last_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename5 = 'ree_average_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename6 = 'persistence_length_actualdistance_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename7 = 'endzs_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-#'''
 
 
-''' # String appending method
-infilename   = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % T     # Actual run
-plot1name    = 'costheta_vs_separation_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.png' % T
-plot2name    = 'angledistr_sep5_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.png' % T
-plot3name    = 'costheta_vs_separation_actualdistance_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.png' % T
-outfilename  = 'bond_lengths_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename2 = 'persistence_length_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename3 = 'costhetas_neighbourbonds_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename4 = 'ree_last_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename5 = 'ree_average_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename6 = 'persistence_length_actualdistance_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename7 = 'endzs_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed.txt' % T
-#'''
-
-
-''' # Sprintf method
-infilename   = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % (M,N,Kangle,Kbond,factor,T)     # Actual run
-plot1name    = 'costheta_vs_separation_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,Kangle,Kbond,factor,T)
-plot2name    = 'angledistr_sep5_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,Kangle,Kbond,factor,T)
-plot3name    = 'costheta_vs_separation_actualdistance_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.png' % (M,N,Kangle,Kbond,factor,T)
-outfilename  = 'bond_lengths_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,Kangle,Kbond,factor,T)
-outfilename2 = 'persistence_length_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,Kangle,Kbond,factor,T)
-outfilename3 = 'costhetas_neighbourbonds_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,Kangle,Kbond,factor,T)
-outfilename4 = 'ree_last_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,Kangle,Kbond,factor,T)
-outfilename5 = 'ree_average_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,Kangle,Kbond,factor,T)
-outfilename6 = 'persistence_length_actualdistance_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,Kangle,Kbond,factor,T)
-outfilename7 = 'endzs_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,Kangle,Kbond,factor,T)
-outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%i_T%i_theta0is180_twofirst_are_fixed.txt' % (M,N,Kangle,Kbond,factor,T)
-#'''
-
-
-'''
-infilename   = 'chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.lammpstrj' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)     # Actual run
-plot1name    = 'costheta_vs_separation_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.png' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-plot2name    = 'angledistr_sep5_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.png' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-plot3name    = 'costheta_vs_separation_actualdistance_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.png' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-outfilename  = 'bond_lengths_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.txt' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-outfilename2 = 'persistence_length_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.txt' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-outfilename3 = 'costhetas_neighbourbonds_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.txt' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-outfilename4 = 'ree_last_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.txt' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-outfilename5 = 'ree_average_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.txt' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-outfilename6 = 'persistence_length_actualdistance_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.txt' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-outfilename7 = 'endzs_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.txt' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.txt' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
-#'''
-
-'''
-infilename   = 'chaingrid_quadratic_M'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.lammpstrj'     # Actual run
-plot1name    = 'costheta_vs_separation_chaingrid_quadratic_M'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.png'
-plot2name    = 'angledistr_sep5_chaingrid_quadratic_M'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.png'
-plot3name    = 'costheta_vs_separation_actualdistance_chaingrid_quadratic_M'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.png'
-outfilename  = 'bond_lengths_chaingrid_quadratic_M'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.txt'
-outfilename2 = 'persistence_length_chaingrid_quadratic_'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.txt'
-outfilename3 = 'costhetas_neighbourbonds_chaingrid_quadratic_'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.txt'
-outfilename4 = 'ree_last_chaingrid_quadratic_'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.txt'
-outfilename5 = 'ree_average_chaingrid_quadratic_M'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.txt'
-outfilename6 = 'persistence_length_actualdistance_chaingrid_quadratic_M'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.txt'
-outfilename7 = 'endzs_chaingrid_quadratic_M'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.txt'
-outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M'+str(M)+'N'+str(N)+'_ljdebye_epsilon'+str(epsilon)+'_sigma'+str(sigma)+'_ljcutoff'+str(ljcutoff)+'_kappa1_debyecutoff'+str(debyecutoff)+'_Langevin_wall'+str(ljdebye)+'_Kangle'+str(Kangle)+'_Kbond'+str(Kbond)+'_T'+str(T)+'_theta0is180_twofirst_are_fixed.txt'
-'''
 
 
 ### Opening files
@@ -787,14 +676,14 @@ for k in range(len(costheta_chainmaster)):
     separations_this      = costheta_chainsorted_separations[k]  # Getting list of separations
     distances_this        = costheta_chainsorted_distances[k]    # Getting list of distances
     # First: Separation fit:
-    popt, pcov            = curve_fit(costheta_exponential, separations_this, costhetas_this)
+    popt, pcov            = curve_fit(costheta_exponential, separations_this, costhetas_this, maxfev=thismaxfev)
     this_pl               = popt[0]
     uncertainty           = np.sqrt(pcov[0])
     persistencelength[i] += this_pl                              # persistencelength is the average over fits found from {all ct in one time step and one chain}
     #pl_stdv[i]           = np.sqrt(pcov[0])
     allvals_pl[i,j]       = this_pl
     # Test of new implementation, separation fit: Averaging first:
-    popt, pcov            = curve_fit(costheta_exponential, separation, costheta_eachMandt[j,i,:])
+    popt, pcov            = curve_fit(costheta_exponential, separation, costheta_eachMandt[j,i,:], maxfev=thismaxfev)
     this_pl_TEST          = popt[0]                           # persistencelength is the average over fits found from {all ct in one time step and one chain}
     #pl_stdv[i]           = np.sqrt(pcov[0])
     #allvals_pl[i,j]       = this_pl
@@ -946,7 +835,7 @@ for k in range(len(costheta_chainmaster)):
             plt.savefig('log_costheta_onefit_data_fit_3_Ktheta%i' %Kangle)
     #'''
     # Then: Distance fit:
-    popt2, pcov2           = curve_fit(costheta_exponential, distances_this, costhetas_this)
+    popt2, pcov2           = curve_fit(costheta_exponential, distances_this, costhetas_this, maxfev=thismaxfev)
     this_pl2               = popt2[0]
     persistencelength2[i] += this_pl2
     #pl_stdv[i]           = np.sqrt(pcov[0])
@@ -1113,61 +1002,60 @@ plt.legend(loc="upper right")
 plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
 plt.savefig(plot1name_log)
 
-plot1sevname = 'severalfits_'+plot1name
-plt.figure(figsize=(6,5))
-plt.plot(separation, costheta_totav, '.', label=r'Mean $\cos\theta$')
-if arctest==False:
-    fg0  = costheta_exponential(separation, allvals_pl[0,0])
-    fg7  = costheta_exponential(separation, allvals_pl[0,4])
-    fg8  = costheta_exponential(separation, allvals_pl[1,4])
-    fg1  = costheta_exponential(separation, allvals_pl[1,1])
-    fg6  = costheta_exponential(separation, allvals_pl[1,0])
-    fg5  = costheta_exponential(separation, allvals_pl[2,3])
-    fg10 = costheta_exponential(separation, allvals_pl[int(M/8), int(Nt/8)])
-    fg4  = costheta_exponential(separation, allvals_pl[int(M/4), int(Nt/4)])
-    fg2  = costheta_exponential(separation, allvals_pl[int(M/2), int(Nt/2)])
-    fg9  = costheta_exponential(separation, allvals_pl[int(3*M/4), int(3*Nt/4)])
-    fg3  =  costheta_exponential(separation, allvals_pl[M-1,Nt-1])
-    plt.plot(separation, fg0,'--', label='Fit m=0,t=0')
-    plt.plot(separation, fg7,'--', label='Fit m=0,t=4')
-    plt.plot(separation, fg8,'--', label='Fit m=1,t=4')
-    plt.plot(separation, fg6,'--', label='Fit m=1,t=0')
-    plt.plot(separation, fg1,'--', label='Fit m=1,t=1')
-    plt.plot(separation, fg5,'--', label='Fit m=2,t=3')
-    plt.plot(separation, fg8,'--', label='Fit m=M/8,t=Nt/8')
-    plt.plot(separation, fg4,'--', label='Fit m=M/4,t=Nt/4')
-    plt.plot(separation, fg2,'--', label='Fit m=M/2,t=Nt/2')
-    plt.plot(separation, fg9,'--', label='Fit m=3M/2,t=3Nt/2')
-    plt.plot(separation, fg3,'--', label='Fit m=M-1,t=Nt-1')
-else:
-    plt.plot(separation,np.cos(np.pi*separation/(2*Nb)), label='cos(pi*s/2N)')
-#plt.plot(x_persistencelength, y_persistencelength, '--')
-#plt.plot(x_eline, y_eline, '--')
-plt.xlabel(r'Bond distance $s$', fontsize=16)
-plt.ylabel(r'<cos($\theta$)>', fontsize=16)
-plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
-plt.legend(loc="upper right")
-plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
-plt.savefig(plot1sevname)
-
-plot1avname = 'averages_shortlegend_'+plot1name
-plt.figure(figsize=(6,5))
-plt.plot(separation, costheta_totav, '.', label=r'Mean $\cos\theta$')
-plt.plot(separation, costheta_eachMandt[0,0,:], '--', label=r'Averages')
-plt.plot(separation, costheta_eachMandt[0,1,:], '--')#, label=r'Average, t=0, m=1')
-plt.plot(separation, costheta_eachMandt[1,0,:], '--')#, label=r'Average, t=1, m=0')
-plt.plot(separation, costheta_eachMandt[1,1,:], '--')#, label=r'Average, t=1, m=1')
-plt.plot(separation, costheta_eachMandt[2,3,:], '--')#, label=r'Average, t=2, m=3')
-plt.plot(separation, costheta_eachMandt[int(Nt/4),int(M/4),:], '--')#, label=r'Average, t=Nt/4, m=M/4')
-plt.plot(separation, costheta_eachMandt[int(Nt/2),int(M/2),:], '--')#, label=r'Average, t=Nt/2, m=M/2')
-plt.plot(separation, costheta_eachMandt[int(3*Nt/4),int(3*M/4),:], '--')#, label=r'Average, t=3Nt/4, m=3M/4')
-plt.plot(separation, costheta_eachMandt[Nt-1,M-1,:], '--')#, label=r'Average, t=Nt-1, m=M-1')
-plt.xlabel(r'Bond distance $s$', fontsize=16)
-plt.ylabel(r'<cos($\theta$)>', fontsize=16)
-plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
-plt.legend(loc="lower left")
-plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
-plt.savefig(plot1avname)
+if lotsofchains==True:
+    plot1sevname = 'severalfits_'+plot1name
+    plt.figure(figsize=(6,5))
+    plt.plot(separation, costheta_totav, '.', label=r'Mean $\cos\theta$')
+    if arctest==False:
+        fg0  = costheta_exponential(separation, allvals_pl[0,0])
+        fg7  = costheta_exponential(separation, allvals_pl[0,4])
+        fg8  = costheta_exponential(separation, allvals_pl[1,4])
+        fg1  = costheta_exponential(separation, allvals_pl[1,1])
+        fg6  = costheta_exponential(separation, allvals_pl[1,0])
+        fg5  = costheta_exponential(separation, allvals_pl[2,3])
+        fg10 = costheta_exponential(separation, allvals_pl[int(M/8), int(Nt/8)])
+        fg4  = costheta_exponential(separation, allvals_pl[int(M/4), int(Nt/4)])
+        fg2  = costheta_exponential(separation, allvals_pl[int(M/2), int(Nt/2)])
+        fg9  = costheta_exponential(separation, allvals_pl[int(3*M/4), int(3*Nt/4)])
+        fg3  =  costheta_exponential(separation, allvals_pl[M-1,Nt-1])
+        plt.plot(separation, fg0,'--', label='Fit m=0,t=0')
+        plt.plot(separation, fg7,'--', label='Fit m=0,t=4')
+        plt.plot(separation, fg8,'--', label='Fit m=1,t=4')
+        plt.plot(separation, fg6,'--', label='Fit m=1,t=0')
+        plt.plot(separation, fg1,'--', label='Fit m=1,t=1')
+        plt.plot(separation, fg5,'--', label='Fit m=2,t=3')
+        plt.plot(separation, fg8,'--', label='Fit m=M/8,t=Nt/8')
+        plt.plot(separation, fg4,'--', label='Fit m=M/4,t=Nt/4')
+        plt.plot(separation, fg2,'--', label='Fit m=M/2,t=Nt/2')
+        plt.plot(separation, fg9,'--', label='Fit m=3M/2,t=3Nt/2')
+        plt.plot(separation, fg3,'--', label='Fit m=M-1,t=Nt-1')
+    else:
+        plt.plot(separation,np.cos(np.pi*separation/(2*Nb)), label='cos(pi*s/2N)')
+    plt.xlabel(r'Bond distance $s$', fontsize=16)
+    plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+    plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+    plt.legend(loc="upper right")
+    plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
+    plt.savefig(plot1sevname)
+     
+    plot1avname = 'averages_shortlegend_'+plot1name
+    plt.figure(figsize=(6,5))
+    plt.plot(separation, costheta_totav, '.', label=r'Mean $\cos\theta$')
+    plt.plot(separation, costheta_eachMandt[0,0,:], '--', label=r'Averages')
+    plt.plot(separation, costheta_eachMandt[0,1,:], '--')#, label=r'Average, t=0, m=1')
+    plt.plot(separation, costheta_eachMandt[1,0,:], '--')#, label=r'Average, t=1, m=0')
+    plt.plot(separation, costheta_eachMandt[1,1,:], '--')#, label=r'Average, t=1, m=1')
+    plt.plot(separation, costheta_eachMandt[2,3,:], '--')#, label=r'Average, t=2, m=3')
+    plt.plot(separation, costheta_eachMandt[int(Nt/4),int(M/4),:], '--')#, label=r'Average, t=Nt/4, m=M/4')
+    plt.plot(separation, costheta_eachMandt[int(Nt/2),int(M/2),:], '--')#, label=r'Average, t=Nt/2, m=M/2')
+    plt.plot(separation, costheta_eachMandt[int(3*Nt/4),int(3*M/4),:], '--')#, label=r'Average, t=3Nt/4, m=3M/4')
+    plt.plot(separation, costheta_eachMandt[Nt-1,M-1,:], '--')#, label=r'Average, t=Nt-1, m=M-1')
+    plt.xlabel(r'Bond distance $s$', fontsize=16)
+    plt.ylabel(r'<cos($\theta$)>', fontsize=16)
+    plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+    plt.legend(loc="lower left")
+    plt.title(r'<cos($\theta$)> vs separation', fontsize=16) # (last chain)', fontsize=16)
+    plt.savefig(plot1avname)
 
 
 
@@ -1242,7 +1130,7 @@ outfile6.close()
 
 outfile7 = open(outfilename7, 'w')
 
-print("Largest end z:",max(endzs[0]))
+print("Largest end z:",max(endzs[0])) # NB! This is over time, not chain!!! (The problem is only here)
 print("Largest end z:",max(endzs[1]))
 print("Largest end z:",max(endzs[2]))
 print("Largest end z:",max(endzs[3]))
