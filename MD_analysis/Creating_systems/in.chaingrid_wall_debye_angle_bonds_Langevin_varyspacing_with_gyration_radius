@@ -1,12 +1,12 @@
 label nloop
-variable spacing index 40
+variable spacing index 300
 
 ######################### Setting the sytem ####################################
 # Set variables
 variable theta0 equal 180.0
 variable ljparam equal 1.042 # Taken from Bathe GAG paper
-variable Kangle equal 25.0
-variable Kbond equal 2000.0
+variable Kangle equal 20.0
+variable Kbond equal 200.0
 variable kappa equal 1.0
 variable debyecutoff equal 3.0
 variable T equal 310
@@ -22,7 +22,7 @@ bond_style harmonic
 angle_style harmonic
 
 # Making the atoms:
-read_data data.chaingrids_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge} #_straight
+read_data data.chaingrids_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge}_mass1 #_straight
 log log.chaingrid_quadratic_M9N101_gridspacing${spacing}_Langevin_wall${ljparam}_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_charge${charge}_T$T_theta0is180_twofirst_are_fixed_with_rgyr
 
 velocity all create $T 87287 # I can reset the velocities.

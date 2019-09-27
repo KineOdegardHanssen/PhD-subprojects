@@ -1,0 +1,80 @@
+label nloop
+variable Kangle index 20 200 2000 #1.0 1.5 2.0 #1 #10 5
+
+######################### Setting the sytem ####################################
+# Set variables
+variable R0 equal 1.5
+variable theta0 equal 180.0
+variable R0sq equal ${R0}*${R0}
+variable Kfene equal 30.0#${Kfenebase}/${R0sq}
+variable Kfenebase equal 30.0*${R0sq}
+#variable kappa equal 1.0
+#variable debyecutoff equal 3.0
+variable T equal 310
+variable charge equal -1
+variable M equal 1
+variable N equal 101
+variable Ly equal 1
+variable Nall equal $M*$N
+variable mass equal 1
+variable spacing equal 300
+variable epsilon equal 1.042
+variable fenesigma equal 1.0
+variable mass equal 1
+
+# 3d Lennard-Jones gas
+units nano
+dimension 3
+boundary p p f
+atom_style full
+pair_style zero 10.0#lj/cut/coul/debye 1.0 1.222 3.0
+#pair_modify shift yes # To have WCA
+bond_style fene
+special_bonds fene # Does not work on its own
+angle_style harmonic
+
+# Making the atoms:
+read_data data.chaingrids_N${Nall}_Nchains$M_Ly${Ly}_gridspacing${spacing}_twofixed_charge${charge}_mass${mass} #_straight #_straight
+log log.onechain_M$MN$N_gridspacing${spacing}_Langevin_nowall_Kangle${Kangle}_KfeneR0sq${Kfenebase}_R0${R0}_feneepsilon${epsilon}_fenesigma${fenesigma}_T$T_theta0is180_twofirst_are_fixed_with_rgyr
+
+pair_coeff * * #1.042 1.0 # 1.222
+bond_coeff * ${Kfene} ${R0} ${epsilon} ${fenesigma} # For FENE only # epsilon=0
+angle_coeff * ${Kangle} ${theta0}
+
+############################ Make snapshot #####################################
+
+# Minimize really messes up the structure
+#minimize 1.0e-4 1.0e-6 100 1000
+
+group movingmonomers type 2
+group chain1 id 1:$N         # The atoms in chain 1
+
+neighbor 1.0 bin
+#neigh_modify once no every 1 delay 0 check yes
+
+fix wallmembrane movingmonomers wall/lj126 zlo 0.0 1.042 1.0 2.5 units box
+
+fix lgvfix movingmonomers langevin 390.0 390.0 100.0 699483
+fix 1 movingmonomers nve
+
+# The energy computes:
+compute bendingenergy all pe angle
+compute stretchingenergy all pe bond
+compute coulombenergy all pe pair
+
+# The radius of gyration computes:
+compute rgyrchain1 chain1 gyration
+
+
+############################ Equilibrate ##############################################
+run 1333400
+
+####################### Run and write to file #########################################
+
+dump 1 all custom 1000 onechain_M$MN$N_gridspacing${spacing}_Langevin_nowall_Kangle${Kangle}_KfeneR0sq${Kfenebase}_R0${R0}_feneepsilon${epsilon}_fenesigma${fenesigma}_T$T_theta0is180_twofirst_are_fixed.lammpstrj id type x y z vx vy vz # For visualization
+thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy c_coulombenergy c_rgyrchain1
+thermo 1000
+run 10000000
+clear
+next Kangle
+jump SELF nloop

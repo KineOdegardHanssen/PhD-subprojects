@@ -1,34 +1,32 @@
-######################### Setting the sytem ####################################
-variable spacing equal 1
+# Spacing
+variable spacing equal 100
 
+######################### Setting the sytem ####################################
 # Set variables
 variable theta0 equal 180.0
 variable ljparam equal 1.042 # Taken from Bathe GAG paper
 variable ljcutoff equal 2.0^(1.0/6.0) 
 variable sigma equal 1.0
-variable Kbond equal 200.0
+variable Kbond equal 2000.0
 variable Kangle equal 20.0
 variable T equal 310
 variable kappa equal 1.0
 variable debyecutoff equal 3.0
-variable M equal 9
-variable N equal 101
-variable Nall equal $M*$N
-variable Ly equal 3
-variable charge equal -1
 
 # 3d Lennard-Jones gas
 units nano
 dimension 3
 boundary p p f
 atom_style full
-pair_style lj/cut/coul/debye ${kappa} ${ljcutoff} ${debyecutoff} 
+#pair_style lj/cut/coul/debye ${kappa} ${ljcutoff} ${debyecutoff} 
+pair_style lj/cut ${ljcutoff}
+#pair_modify shift yes # To have WCA # Does not help
 bond_style harmonic
 angle_style harmonic
 
 # Making the atoms:
-read_data data.chaingrids_N${Nall}_Nchains$M_Ly${Ly}_gridspacing${spacing}_twofixed_charge-1#_mass1 #_mass1 only for spacing=300
-log log.chaingrid_quadratic_M$MN$N_gridspacing${spacing}_ljdebye_epsilon${ljparam}_sigma${sigma}_ljcutoff${ljcutoff}_kappa${kappa}_debyecutoff${debyecutoff}_charge${charge}_Langevin_wall${ljparam}_Kangle${Kangle}_Kbond${Kbond}_T$T_theta0is180_twofirst_are_fixed
+read_data data.chaingrids_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge-1 #_straight
+log log.chaingrid_quadratic_M9N101_gridspacing${spacing}_lj_epsilon${ljparam}_sigma${sigma}_ljcutoff${ljcutoff}_kappa${kappa}_Langevin_Kangle${Kangle}_Kbond${Kbond}_T$T_theta0is180_twofirst_are_fixed_withwall
 
 velocity all create $T 87287 # I can reset the velocities.
 
@@ -36,11 +34,11 @@ pair_coeff * * ${ljparam} ${sigma}
 bond_coeff * ${Kbond} 1.0
 angle_coeff * ${Kangle} ${theta0}
 
-
 ############################ Make snapshot #####################################
 
 # Minimize really messes up the structure
 #minimize 1.0e-4 1.0e-6 100 1000
+
 
 # Making groups for integration and processing:
 group movingmonomers type 2  # The atoms that will move
@@ -79,12 +77,17 @@ compute rgyrchain7 chain7 gyration
 compute rgyrchain8 chain8 gyration
 compute rgyrchain9 chain9 gyration
 
-
 ############################ Equilibrate ##############################################
 run 1333400
+#run 132200 # I ran this with dump 1 all custom 1. Didn't tell me anything useful. #Test. With spacing=100, it crashes at 132268 
 
 ####################### Run and write to file #########################################
-dump 1 all custom 10000 chaingrid_quadratic_M$MN$N_gridspacing${spacing}_ljdebye_epsilon${ljparam}_sigma${sigma}_ljcutoff${ljcutoff}_kappa${kappa}_debyecutoff${debyecutoff}_charge${charge}_Langevin_wall${ljparam}_Kangle${Kangle}_Kbond${Kbond}_T$T_theta0is180_twofirst_are_fixed.lammpstrj id type mol x y z vx vy vz # For visualization
+
+
+#log log.chaingrid_quadratic_M9N101_ljdebye_epsilon${ljparam}_sigma${sigma}_ljcutoff${ljcutoff}_kappa${kappa}_debyecutoff${debyecutoff}_Langevin_wall${ljparam}_Kangle${Kangle}_Kbond${Kbond}_T$T_theta0is180_twofirst_are_fixed
+#dump 1 all custom 10000 chaingrid_quadratic_M9N101_ljdebye_epsilon${ljparam}_sigma${sigma}_ljcutoff${ljcutoff}_kappa${kappa}_debyecutoff${debyecutoff}_Langevin_wall${ljparam}_Kangle${Kangle}_Kbond${Kbond}_T$T_theta0is180_twofirst_are_fixed.lammpstrj id type mol x y z vx vy vz # For visualization
+
+dump 1 all custom 10000 chaingrid_quadratic_M9N101_gridspacing${spacing}_lj_epsilon${ljparam}_sigma${sigma}_ljcutoff${ljcutoff}_kappa${kappa}_Langevin_Kangle${Kangle}_Kbond${Kbond}_T$T_theta0is180_twofirst_are_fixed_withwall.lammpstrj id type mol x y z vx vy vz # For visualization
 thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy c_coulombenergy c_rgyrchain1 c_rgyrchain2 c_rgyrchain3 c_rgyrchain4 c_rgyrchain5 c_rgyrchain6 c_rgyrchain7 c_rgyrchain8 c_rgyrchain9
 thermo 10000
 run 10000000

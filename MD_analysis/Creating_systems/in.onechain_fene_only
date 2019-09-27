@@ -1,0 +1,72 @@
+label nloop
+variable R0 index 1.2#1.0 1.5 2.0 #1 #10 5
+
+######################### Setting the sytem ####################################
+# Set variables
+variable theta0 equal 180.0
+variable Kfenebase equal 200.0
+variable R0sq equal ${R0}*${R0}
+variable Kfene equal ${Kfenebase}/${R0sq}
+variable T equal 310
+variable charge equal -1
+variable M equal 1
+variable N equal 101
+variable Ly equal 1
+variable Nall equal $M*$N
+variable mass equal 1
+variable spacing equal 300
+variable epsilon equal 1.042
+
+# 3d Lennard-Jones gas
+units nano
+dimension 3
+boundary p p p
+atom_style full
+pair_style zero 10.0
+bond_style fene
+#special_bonds fene # Does not work on its own
+angle_style zero
+
+# Making the atoms:
+read_data data.chaingrids_N${Nall}_Nchains$M_Ly${Ly}_gridspacing${spacing}_twofixed_charge${charge}_mass${mass} #_straight #_straight
+log log.onechain_M$MN$N_gridspacing${spacing}_Langevin_wall${epsilon}_KfeneR0sq${Kfenebase}_${R0}_T$T_theta0is180_twofirst_are_fixed_with_rgyr
+
+pair_coeff * *
+bond_coeff * ${Kfene} ${R0} 0.0 1.0 # For FENE only # epsilon=0
+angle_coeff *
+
+############################ Make snapshot #####################################
+
+# Minimize really messes up the structure
+#minimize 1.0e-4 1.0e-6 100 1000
+
+group movingmonomers type 2
+group chain1 id 1:$N         # The atoms in chain 1
+
+neighbor 1.0 bin
+#neigh_modify once no every 1 delay 0 check yes
+
+#fix wallmembrane movingmonomers wall/lj126 zlo 0.0 1.042 1.0 2.5 units box
+
+fix lgvfix movingmonomers langevin 390.0 390.0 100.0 699483
+fix 1 movingmonomers nve
+
+# The energy computes:
+compute bendingenergy all pe angle
+compute stretchingenergy all pe bond
+compute coulombenergy all pe pair
+
+# The radius of gyration computes:
+compute rgyrchain1 chain1 gyration
+
+############################ Equilibrate ##############################################
+run 1333400
+
+####################### Run and write to file #########################################
+dump 1 all custom 1000 onechain_M$MN$N_gridspacing${spacing}_Langevin_wall${epsilon}_KfeneR0sq${Kfenebase}_${R0}_T$T_theta0is180_twofirst_are_fixed.lammpstrj id type x y z vx vy vz # For visualization
+thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy c_coulombenergy c_rgyrchain1
+thermo 1000
+run 10000000
+clear
+next spacing
+jump SELF nloop

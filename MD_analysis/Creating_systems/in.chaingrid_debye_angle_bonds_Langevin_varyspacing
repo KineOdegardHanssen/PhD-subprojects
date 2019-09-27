@@ -1,5 +1,5 @@
 label nloop
-variable spacing index 100 #1 #10 5
+variable spacing index 300 #1 #10 5
 
 ######################### Setting the sytem ####################################
 # Set variables
@@ -21,7 +21,7 @@ bond_style harmonic
 angle_style harmonic
 
 # Making the atoms:
-read_data data.chaingrids_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge} #_straight
+read_data data.chaingrids_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge}_mass1 # Uncomment end of this filename sometimes #_straight
 log log.chaingrid_quadratic_M9N101_gridspacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_charge${charge}_T$T_theta0is180_twofirst_are_fixed
 
 velocity all create $T 87287 # I can reset the velocities.
