@@ -14,7 +14,7 @@ start_time = time.process_time()
 arctest     = False
 
 # Max number of iterations in curve_fit: # (Use default unless it crashes)
-thismaxfev  = 5000 # (default appears to be 400)
+thismaxfev  = 5000#400# # (default appears to be 400)
 
 ### Input file parameters
 Kangle      = 20#125000
@@ -34,7 +34,7 @@ debyecutoff = 3
 #Kangle      = Kbond*factor
 charge      = -1
 mass        = 1
-spacing     = 7#4#0
+spacing     = 300#4#0
 gridspacing = spacing
 K           = Kangle # Because we used this notation earlier, but using Kangle is less confusing
 wallenergy  = 1.042
@@ -70,7 +70,7 @@ outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_totallystraigh
 #'''   # This one is for varying the factor.
 # Kbond     = 2000:
 #basename     = 'chaingrid_quadratic_M%iN%i_Langevin_gridspacing%i_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_dielectric%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,charge,dielectric,T)
-basename     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
+#basename     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
 #basename     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,spacing,Kangle,Kbond,charge,T)
 #basename     = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge' % (M,N,Kangle,Kbond)+ str(charge) +'_T%i_theta0is180_twofirst_are_fixed' % T
 #basename     = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor' % (M,N,Kangle,Kbond)+ str(factor) +'_T%i_theta0is180_twofirst_are_fixed' % T
@@ -80,7 +80,65 @@ basename     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangl
 #basename     = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed' % (M,N,Kangle,Kbond,factor,T)
 #basename2    = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,factor,T)
 #basename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa%i_debyecutoff%i_charge%i_mass%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,kappa,debyecutoff,charge,mass,T)
+#basename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa%i_debyecutoff%i_charge%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,kappa,debyecutoff,charge,T)
+#basename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_lj_epsilon%.3f_sigma%i_ljcutoff%.14f_kappa1_Langevin_Kangle%i_Kbond%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,epsilon,sigma,ljcutoff,Kangle,Kbond,T)
+#basename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_ljdebye_epsilon%.3f_sigma%i_ljcutoff%.14f_kappa1_debyecutoff3_Langevin_Kangle%i_Kbond%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,epsilon,sigma,ljcutoff,Kangle,Kbond,T) # charge-1 on this one
+#basename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_ljdebye_epsilon%.3f_sigma%i_ljcutoff%.14f_kappa1_debyecutoff3_Langevin_Kangle%i_Kbond%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,epsilon, sigma, ljcutoff,Kangle,Kbond,T)
+#basename2     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_lj_epsilon1p042_sigma%i_ljcutoff1p12246204830937_kappa1_Langevin_Kangle%i_Kbond%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,sigma,Kangle,Kbond,T)
+#basename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_ljdebye_epsilon%.3f_sigma%i_ljcutoff%.14f_kappa1_debyecutoff3_charge%i_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,epsilon,sigma,ljcutoff,charge,epsilon,Kangle,Kbond,T) # charge-1 on this one
+#basename      = 'chaingrid_quadratic_M1N101_gridspacing300_Langevin_Kbond200_wall1.042_T310_theta0is180_twofirst_are_fixed' #'onechain_M1N101_gridspacing300_Langevin_wall1.042_KfeneR0sq200_1.2_T310_theta0is180_twofirst_are_fixed'
+#'onechain_M1N101_gridspacing300_Langevin_wall1.042_KfeneR0sq200_1.2_bondepsilon1.042_fenesigma0.8_T310_theta0is180_twofirst_are_fixed'
+#M             = 1
+#KfeneR0sq     = 67.5#200#67.5 # 200
+#Kangle        = 0#2000 # 200 # 2000
+#R0            = 1.5#1.2
+#sigma         = 1.0#0.8
+#basename      = 'onechain_M%iN%i_gridspacing%i_Langevin_nowall_Kangle%i_KfeneR0sq%i_R0%.1f_feneepsilon%.3f_fenesigma%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,spacing,Kangle,KfeneR0sq,R0,epsilon,sigma,T)
+#basename      = 'onechain_M%iN%i_gridspacing%i_Langevin_nowall_Kangle%i_KfeneR0sq%i_R0%.1f_feneepsilon%.3f_fenesigma%.1f_T%i_theta0is180_twofirst_are_fixed' % (M,N,spacing,Kangle,KfeneR0sq,R0,epsilon,sigma,T)
+#basename      = 'onechain_M1N101_gridspacing300_Langevin_wall1.042_KfeneR0sq67.5_1.5_bondepsilon1.042_fenesigma1_T310_theta0is180_twofirst_are_fixed'
+#basename      = 'onechain_M%iN%i_gridspacing%i_Langevin_nowall_Kangle%i_KfeneR0sq%i_R0%.1f_fenesigma%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,spacing,Kangle,KfeneR0sq,R0,sigma,T)
+M             = 9
+spacing       = 7
+gridspacing   = spacing
+## Lennard-Jones units:
+Kangle        = 14.0186574854529#20
+Kbond         = 140.186574854529#200
+K             = Kangle
+T             = 3
+effectivedielectric = 0.00881819074717447
+##
+# chaingrid_quadratic_M9N101_ljunits_gridspacing10_Langevin_Kangle20_Kbond200_debye_kappa1_debyecutoff3_chargeelementary-1_T3_theta0is180_twofirst_are_fixed
+#basename      = 'chaingrid_quadratic_M%iN%i_ljunits_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_chargeelementary%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,spacing,Kangle,Kbond,charge,T)
+#basename      = 'chaingrid_quadratic_M%iN%i_ljunits_gridspacing%i_Langevin_Kangle%.13f_Kbond%.12f_debye_kappa1_debyecutoff3_chargeelementary%i_T%i_theta0is180_correctconversions_twofirst_are_fixed' % (M,N,spacing,Kangle,Kbond,charge,T)
+basename      = 'chaingrid_quadratic_M%iN%i_ljunits_gridspacing%i_Langevin_Kangle%.13f_Kbond%.12f_debye_kappa1_debyecutoff3_chargeelementary%i_effectivedielectric%.17f_T%i_theta0is180' % (M,N,spacing,Kangle,Kbond,charge,effectivedielectric,T)
 basename2     = basename 
+#basename2     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_ljdebye_epsilon%.3f_sigma%i_ljcutoff%.14f_kappa1_debyecutoff3_charge%i_Langevin_Kangle%i_Kbond%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,epsilon,sigma,ljcutoff,charge,Kangle,Kbond,T) # charge-1 on this one
+
+## FENE for tethered chains ##
+M        = 1
+spacing  = 300
+R0       = 1.5
+T        = 310
+dt       = 0.0001
+KfeneR0sq   = 200
+bondepsilon = 1.042
+fenesigma   = 1
+gridspacing = spacing
+basename    = 'onechain_M%iN%i_gridspacing%i_Langevin_KfeneR0sq%i_R0is%.1f_T%i_theta0is180_dt%.4f_twofirst_are_fixed' % (M,N,spacing,KfeneR0sq,R0, T,dt)
+#basename    = 'onechain_M%iN%i_gridspacing%i_Langevin_KfeneR0sq%i_R0is%.1f_bondepsilon%.3f_fenesigma%i_T%i_theta0is180_dt%.4f_twofirst_are_fixed' % (M,N,spacing,KfeneR0sq,R0, bondepsilon, fenesigma, T,dt)
+#basename    = 'onechain_M%iN%i_gridspacing%i_Langevin_KfeneR0sq%i_R0is%.1f_bondepsilon%.3f_fenesigma%i_T%i_theta0is180_dt%.4f_specialbonds_twofirst_are_fixed' % (M,N,spacing,KfeneR0sq,R0, bondepsilon, fenesigma, T,dt)
+basename2   = basename
+##                        ##
+
+'''
+## FENE testing ## # Yeesh... I have to do this for two bonds if I want to use this program
+M = 1
+N = 3
+Nt = 10
+basename  = 'twobonds_test_gridspacing300_Langevin_Kfene30_R0is1.5_bondepsilon1_fenesigma1_T310_dt0.0001_specialbonds011'
+basename2 = basename
+##              ##
+'''
 
 # Kbond     = 200:
 #basename     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_factor%.1f_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,Kangle,Kbond,factor,T)
@@ -171,7 +229,7 @@ outfilename8 = 'bondlengths_systemwide_short_Kangle%i.txt' % Kangle
 # Varying the charge:
 #chaingrid_quadratic_M9N101_Langevin_Kangle${Kangle}_Kbond${Kbond}_charge${charge}_T$T_theta0is180_twofirst_are_fixed.lammpstrj
 
-
+print('spacing:', gridspacing)
 
 
 ### Opening files
@@ -255,6 +313,10 @@ z_curr = np.zeros((M,N))
 tempzs = np.zeros(M)
 times = []
 
+indexshift = 0
+if M==1:
+    indexshift = -1
+
 print("infilename:", infilename)
 
 #skipelem = 0#10000#10000#10000#90000
@@ -307,9 +369,9 @@ while i<totlines:
         # Order:  id  type mol  x   y   z  vx   vy   vz
         #         [0] [1]  [2] [3] [4] [5] [6] [7]  [8]
         ind   = int(words[0])-1 # Atom ids go from zero to N-1.
-        x     = float(words[3])
-        y     = float(words[4])
-        z     = float(words[5])
+        x     = float(words[3+indexshift])
+        y     = float(words[4+indexshift])
+        z     = float(words[5+indexshift])
         # Making array indices:
         #print("ind:", ind)
         ind1  = int(index1[ind])
