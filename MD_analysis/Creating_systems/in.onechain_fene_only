@@ -1,5 +1,5 @@
 label nloop
-variable R0 index 1.2#1.0 1.5 2.0 #1 #10 5
+variable R0 index 1.5#1.0 1.5 2.0 #1 #10 5
 
 ######################### Setting the sytem ####################################
 # Set variables
@@ -16,6 +16,7 @@ variable Nall equal $M*$N
 variable mass equal 1
 variable spacing equal 300
 variable epsilon equal 1.042
+variable dt equal 0.0001
 
 # 3d Lennard-Jones gas
 units nano
@@ -29,7 +30,7 @@ angle_style zero
 
 # Making the atoms:
 read_data data.chaingrids_N${Nall}_Nchains$M_Ly${Ly}_gridspacing${spacing}_twofixed_charge${charge}_mass${mass} #_straight #_straight
-log log.onechain_M$MN$N_gridspacing${spacing}_Langevin_wall${epsilon}_KfeneR0sq${Kfenebase}_${R0}_T$T_theta0is180_twofirst_are_fixed_with_rgyr
+log log.onechain_M$MN$N_gridspacing${spacing}_Langevin_R0is${R0}_T$T_theta0is180_dt${dt}_twofirst_are_fixed_with_rgyr
 
 pair_coeff * *
 bond_coeff * ${Kfene} ${R0} 0.0 1.0 # For FENE only # epsilon=0
@@ -39,6 +40,8 @@ angle_coeff *
 
 # Minimize really messes up the structure
 #minimize 1.0e-4 1.0e-6 100 1000
+
+timestep ${dt}
 
 group movingmonomers type 2
 group chain1 id 1:$N         # The atoms in chain 1
@@ -63,10 +66,10 @@ compute rgyrchain1 chain1 gyration
 run 1333400
 
 ####################### Run and write to file #########################################
-dump 1 all custom 1000 onechain_M$MN$N_gridspacing${spacing}_Langevin_wall${epsilon}_KfeneR0sq${Kfenebase}_${R0}_T$T_theta0is180_twofirst_are_fixed.lammpstrj id type x y z vx vy vz # For visualization
+dump 1 all custom 1000 onechain_M$MN$N_gridspacing${spacing}_Langevin_R0is${R0}_T$T_theta0is180_dt${dt}_twofirst_are_fixed.lammpstrj id type x y z vx vy vz # For visualization
 thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy c_coulombenergy c_rgyrchain1
 thermo 1000
 run 10000000
 clear
-next spacing
+next R0
 jump SELF nloop
