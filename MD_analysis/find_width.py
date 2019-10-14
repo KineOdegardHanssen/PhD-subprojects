@@ -41,6 +41,7 @@ wallenergy  = 1.042
 dielectric  = 1#50 #1 2 10 100
 systemtest  = False
 lotsofchains = False
+flubbedup    = False
 
 ### Input and output file names
 
@@ -93,6 +94,35 @@ outfilename8 = 'bondlengths_systemwide_chaingrid_quadratic_M%iN%i_totallystraigh
 
 #'_onechain_M1N101_gridspacing300_Langevin_wall1.042_KfeneR0sq200_1.2_T310_theta0is180_twofirst_are_fixed.txt', '_onechain_M1N101_gridspacing300_Langevin_wall1.042_KfeneR0sq200_1.2_bondepsilon1.042_fenesigma0.8_T310_theta0is180_twofirst_are_fixed.txt']
 
+# Just Kangle and Kbond # Spacing is 40
+'''
+M = 9
+N = 101
+T = 310
+Kangle = 20
+Kbond  = 2000
+factor = Kangle/float(Kbond)
+basename  = 'chaingrid_quadratic_M%iN%i_Langevin_Kangle%i_Kbond%i_factor%.2f_T%i_theta0is180_twofirst_are_fixed' % (M,N,Kangle,Kbond,factor,T)
+basename2 = basename
+#chaingrid_quadratic_M9N101_Langevin_Kangle1000_Kbond2000_factor0.50_T310_theta0is180_twofirst_are_fixed.lammpstrj
+#chaingrid_quadratic_M9N101_Langevin_Kangle1000_Kbond2000_factor0.5_T310_theta0is180_twofirst_are_fixed.lammpstrj
+#chaingrid_quadratic_M9N101_Langevin_Kangle100_Kbond2000_factor0.05_T310_theta0is180_twofirst_are_fixed.lammpstrj
+#chaingrid_quadratic_M9N101_Langevin_Kangle2000_Kbond2000_factor1.00_T310_theta0is180_twofirst_are_fixed.lammpstrj
+#chaingrid_quadratic_M9N101_Langevin_Kangle200_Kbond2000_factor0.10_T310_theta0is180_twofirst_are_fixed.lammpstrj
+#chaingrid_quadratic_M9N101_Langevin_Kangle20_Kbond2000_factor0.01_T310_theta0is180_twofirst_are_fixed.lammpstrj
+#chaingrid_quadratic_M9N101_Langevin_Kangle20_Kbond2000_factor100_T310_theta0is180_twofirst_are_fixed.lammpstrj
+'''
+
+M = 1
+basename  = 'tester_totally_straight_tiltedonly'#'tester_totally_straight'
+basename2 = basename
+#flubbedup = True
+
+M = 9
+basename = 'testsystem_chaingrid_straight'
+basename = 'testsystem_chaingrid_straight_differentorientations'
+basename = 'testsystem_chaingrid_straight_differentorientations_varying_with_time'
+basename2 = basename
 ## FENE
 '''
 M             = 1
@@ -126,7 +156,7 @@ effectivedielectric = 0.00881819074717447
 basename      = 'chaingrid_quadratic_M%iN%i_ljunits_gridspacing%i_Langevin_Kangle%.13f_Kbond%.12f_debye_kappa1_debyecutoff3_chargeelementary%i_effectivedielectric%.17f_T%i_theta0is180' % (M,N,spacing,Kangle,Kbond,charge,effectivedielectric,T)
 basename2     = basename 
 #basename2     = 'chaingrid_quadratic_M%iN%i_gridspacing%i_ljdebye_epsilon%.3f_sigma%i_ljcutoff%.14f_kappa1_debyecutoff3_charge%i_Langevin_Kangle%i_Kbond%i_T%i_theta0is180_twofirst_are_fixed' % (M,N,gridspacing,epsilon,sigma,ljcutoff,charge,Kangle,Kbond,T) # charge-1 on this one
-'''
+#'''
 ## FENE for tethered chains ##
 '''
 M           = 1
@@ -158,7 +188,7 @@ basename2 = basename
 '''
 
 # LJ, Debye, bending, FENE in LJ units:
-#'''
+'''
 KfeneR0sq   = 67.5
 R0          = 1.5
 Kangle      = 5#14.0186574854529
@@ -213,7 +243,7 @@ outfilename8 = 'bondlengths_systemwide_testsystem_chaingrid_'+testtype+'.txt'
 #'''
 
 # Tester 2:
-#'''
+'''
 N = 100
 systemtest   = True
 arctest      = False
@@ -221,6 +251,7 @@ foldername   = 'MC_for_testing/'
 #p = Path(foldername)
 #p.mkdir(exist_ok=True)
 basename     = 'M%iN%i_1000trials_freelyjointedchains' % (M,N) # /home/kine/Projects_PhD/P2_PolymerMD'
+basename2    = basename
 testtype     = 'MC_for_testing/'+basename
 infilename   = testtype+'.lammpstrj'
 plot1name    = 'omega_vs_h_'+basename+'.png'
@@ -276,7 +307,7 @@ startat             = 50            # To equilibrate. The number of ns we want t
 dt                  = 0.00045       # The time step of our simulation. 0.00045 ns default for nano
 skiplines           = 9             # If we hit 'ITEM:', skip this many steps...
 skipelem            = 0#10#1000#10000#10000#90000 # The number of elements we skip in order to equilibrate (set to 0 if the .lammpstrj file should be equilibrated)
-sampleevery         = 10#1 # Sample every 10th of the values written to file # The program gets WAY too slow if this is too small.
+sampleevery         = 0#1 # Sample every 10th of the values written to file # The program gets WAY too slow if this is too small.
 timefac             = dt*printeverynthstep*1e-9*sampleevery
 
 #### Automatic part
@@ -574,7 +605,28 @@ for i in range(Nt):
         for j in range(1,N-1): # We know that the distance is zero for the start- and the end bead.
             x_point = x_points[i,k,j,:]
             distances[i,k,j] =  np.linalg.norm(np.cross((x_point-x_start),(x_point-x_end)))/np.linalg.norm(x_end-x_start)
-
+            print('----------------------------------------')
+            print('distances[i,k,j]:',distances[i,k,j])
+            print('x_start:',x_start)
+            print('x_end:',x_end)
+            print('x_end-x_start:',x_end-x_start)
+            print('np.linalg.norm(x_end-x_start):',np.linalg.norm(x_end-x_start)) # This should not be nan, because we get a non-nan value
+            print('x_point-x_start:',x_point-x_start)
+            print('x_point-x_end:',x_point-x_end)
+            print('np.cross((x_point-x_start),(x_point-x_end)):',np.cross((x_point-x_start),(x_point-x_end)))
+            print('np.linalg.norm(np.cross((x_point-x_start),(x_point-x_end))):',np.linalg.norm(np.cross((x_point-x_start),(x_point-x_end))))
+            if math.isnan(distances[i,k,j]):
+                print('distances[i,k,j]:',distances[i,k,j])
+                print('x_start:',x_start)
+                print('x_end:',x_end)
+                print('x_end-x_start:',x_end-x_start)
+                print('np.linalg.norm(x_end-x_start):',np.linalg.norm(x_end-x_start)) # This should not be nan, because we get a non-nan value
+                print('x_point-x_start:',x_point-x_start)
+                print('x_point-x_end:',x_point-x_end)
+                print('np.cross((x_point-x_start),(x_point-x_end)):',np.cross((x_point-x_start),(x_point-x_end)))
+                print('np.linalg.norm(np.cross((x_point-x_start),(x_point-x_end))):',np.linalg.norm(np.cross((x_point-x_start),(x_point-x_end))))
+                
+print('----------------------------------------')
 print('Done with finding distances')
 end_time = time.process_time()
 print("Time:", end_time-start_time, " s")
@@ -584,14 +636,15 @@ boxes  = np.array([2,4,5,10,20,25,50]) # Number of boxes
 Nboxes = len(boxes)                    # The number of different ways we divide the system into boxes
 hs     = (N-1)/boxes                   # The number of atoms in one box
 Nh     = len(hs)
-box_average     = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
-box_sq_average  = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
-box_abs_average = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
-box_rms         = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
-avgs_vs_time    = np.zeros((Nt,Nh))        # For binning values
-avgs_sq_vs_time = np.zeros((Nt,Nh))        # For binning values
-rmses_vs_time   = np.zeros((Nt,Nh))        # For binning values
-counter_t       = np.zeros((Nt, Nh))
+box_average      = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
+box_sq_average   = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
+box_abs_average  = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
+box_rms          = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
+avgs_vs_time     = np.zeros((Nt,Nh))        # For binning values
+avgs_sq_vs_time  = np.zeros((Nt,Nh))        # For binning values
+rmses_vs_time    = np.zeros((Nt,Nh))        # For binning values
+counter_t        = np.zeros((Nt,Nh))
+absavgs_rms      = np.zeros(Nh)
 # Should I take the average over time straight away?
 for i in range(Nt):                   # Looping over time
     for k in range(M):                # Looping over chains
@@ -603,21 +656,27 @@ for i in range(Nt):                   # Looping over time
                 #print('type h:', type(h))
                 #print('h:',h)
                 #print('type m:', type(m))
-                avg    = np.mean(distances[i,k,m*h:(m+1)*h-1])
-                avg_sq = np.mean(distances[i,k,m*h:(m+1)*h-1]**2)
-                absavg = np.mean(np.absolute(distances[i,k,m*h:(m+1)*h-1])) # Do I need this
-                avgs_vs_time[i,l]     += np.sum(distances[i,k,m*h:(m+1)*h-1])
-                avgs_sq_vs_time[i,l]  += np.sum(distances[i,k,m*h:(m+1)*h-1]**2)
+                avg    = np.mean(distances[i,k,m*h:(m+1)*h])
+                avg_sq = np.mean(distances[i,k,m*h:(m+1)*h]**2)
+                absavg = np.mean(np.absolute(distances[i,k,m*h:(m+1)*h])) # Do I need this
+                avgs_vs_time[i,l]     += np.sum(distances[i,k,m*h:(m+1)*h])
+                avgs_sq_vs_time[i,l]  += np.sum(distances[i,k,m*h:(m+1)*h]**2)
                 for n in range(h):    # Looping over the beads in each box
                     rms += (distances[i,k,m*h+n]-avg)**2
+                    #if l==(Nh-1) and m==0:
+                    #    print('n:',n, ', distance:', distances[i,k,m*h+n])
                 rms = np.sqrt(rms/(h-1))         # rms for each box
-                if i==1 and l==0: # blocks in each
-                    print('rms:', rms)
+                #if i==1 and l==0: # blocks in each
+                #    print('rms:', rms)
                 box_average[i,k,l,m]     = avg
                 box_sq_average[i,k,l,m]  = avg_sq
                 box_abs_average[i,k,l,m] = absavg
                 box_rms[i,k,l,m]         = rms
-                
+                #if l==(Nh-1) and m==0:
+                #    print('h =',h,': l==Nh-1, absavg:',absavg)
+                #    print('abs(d) in m=0:',np.absolute(distances[i,k,m*h:(m+1)*h])) # Do I need this
+                #print('distances:',distances[i,k,m*h:(m+1)*h])
+                #print('avg distance:', avg)
 
 for i in range(Nt):
     for l in range(Nh):
@@ -645,12 +704,12 @@ for l in range(Nh):        # Looping over each choice of box size
     for i in range(Nt):    # Looping over time
         for k in range(M): # Looping over chains
             for m in range(boxes[l]): # Looping over each box
-                avgs[l,m]      += np.mean(distances[i,k,m*h:(m+1)*h-1])
-                avgs_sq[l,m]   += np.mean(distances[i,k,m*h:(m+1)*h-1]**2)
-                absavgs[l,m]   += np.mean(np.absolute(distances[i,k,m*h:(m+1)*h-1]))
-                avgs_tot[l]    += np.mean(distances[i,k,m*h:(m+1)*h-1])
-                avgs_sq_tot[l] += np.mean(distances[i,k,m*h:(m+1)*h-1]**2)
-                absavgs_tot[l] += np.mean(np.absolute(distances[i,k,m*h:(m+1)*h-1]))
+                avgs[l,m]      += np.mean(distances[i,k,m*h:(m+1)*h])
+                avgs_sq[l,m]   += np.mean(distances[i,k,m*h:(m+1)*h]**2)
+                absavgs[l,m]   += np.mean(np.absolute(distances[i,k,m*h:(m+1)*h]))
+                avgs_tot[l]    += np.mean(distances[i,k,m*h:(m+1)*h])
+                avgs_sq_tot[l] += np.mean(distances[i,k,m*h:(m+1)*h]**2)
+                absavgs_tot[l] += np.mean(np.absolute(distances[i,k,m*h:(m+1)*h]))
 
 avgs        /= Nt*M
 avgs_sq     /= Nt*M
@@ -659,10 +718,12 @@ avgs_tot    /= Nt*M
 avgs_sq_tot /= Nt*M
 absavgs_tot /= Nt*M
 
+'''
 for i in range(Nboxes):
     avgs_tot    /= boxes[i]
     avgs_sq_tot /= boxes[i]
     absavgs_tot /= boxes[i]
+'''
 
 rms_main_from_varianceformulation     = np.sqrt(avgs_sq_tot-(avgs_tot**2))
 rms_temp_avs_from_varianceformulation = np.zeros(Nh)
@@ -698,16 +759,36 @@ print("Time:", end_time-start_time, " s")
 
 rms_av  = np.zeros(Nh)
 rms_rms = np.zeros(Nh)
+absavgs_correct      = np.zeros(Nh)
+absavgs_correct_rms  = np.zeros(Nh)
+absavgs_oneblock     = np.zeros(Nh)
+absavgs_oneblock_rms = np.zeros(Nh)
+
+
 for l in range(Nh):
-    rms_av[l]  = np.mean(box_rms[:,:,l,0:boxes[l]-1]) # This is dangerous, I think. Some elements here will be empty.
+    rms_av[l]          = np.mean(box_rms[:,:,l,0:boxes[l]])                 # Printing tests below verified that this is the right way to treat the arrays
+    absavgs_correct[l] = np.mean(box_abs_average[:,:,l,0:boxes[l]])
+    absavgs_oneblock[l] = np.mean(box_abs_average[:,:,l,0])                 # Just taking one block to actually get information about the scaling with h
+    #if l==(Nh-1):
+    #    print('box_abs_average[:,:,Nh-1,0]:',box_abs_average[:,:,l,0])
+    #print('box_abs_average[2,2,l,0:boxes[l]-1]:',box_abs_average[2,2,l,0:boxes[l]-1])
+    #print('box_abs_average[2,2,l,0:boxes[l]]:',box_abs_average[2,2,l,0:boxes[l]])           # Get exactly what we need
+    #print('box_abs_average[2,2,l,0:boxes[l]+1]:',box_abs_average[2,2,l,0:boxes[l]+1])
+    #print('box_abs_average[2,2,l,:]:',box_abs_average[2,2,l,:])
+    #print('box_abs_average[0,0,l,:]:',box_abs_average[0,0,l,:])
+    
 
 for l in range(Nh):
     h = int(hs[l])
     for i in range(Nt):
         for k in range(M):
+            absavgs_oneblock_rms[l] += (box_abs_average[i,k,l,0]-absavgs_oneblock[l])**2
             for m in range(boxes[l]):
                 rms_rms[l] += (box_rms[i,k,l,m]-rms_av[l])**2
-    rms_rms[l] = np.sqrt(rms_rms[l]/(h*M*Nt-1)) 
+                absavgs_correct_rms[l] += (box_abs_average[i,k,l,m]-absavgs_correct[l])**2
+    rms_rms[l]              = np.sqrt(rms_rms[l]/(h*M*Nt-1))
+    absavgs_correct_rms[l]  = np.sqrt(absavgs_correct_rms[l]/(h*M*Nt-1))
+    absavgs_oneblock_rms[l] = np.sqrt(absavgs_oneblock_rms[l]/(M*Nt-1))
 
 print('Done with rms of rms')
 end_time = time.process_time()
@@ -718,18 +799,54 @@ print('rms_av:', rms_av)
 
 sqrths = hs**(1/2.)
 
+coeffs = np.polyfit(sqrths,rms_av,1)
+a      = coeffs[0]
+b      = coeffs[1]
+p      = np.poly1d(coeffs)
+fitarray = p(sqrths)
+
+# Print coeffs and data points to file
+
+
+'''# Don't really need this
 plt.figure(figsize=(6,5))
-plt.errorbar(sqrths,rms_av, yerr=rms_rms,  fmt="none", capsize=2)#, label='results')
+plt.errorbar(sqrths,rms_av, yerr=rms_rms,  fmt="none", capsize=2, label='Results')
 plt.plot(sqrths,rms_av, 'o')
+plt.plot(sqrths,fitarray, label='Fit')
 plt.xlabel(r'$h^{1/2}$', fontsize=16)
 plt.ylabel(r'$\Delta\omega$', fontsize=16)
 plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
-#plt.legend(loc="upper right")
+plt.legend(loc="lower right")
 plt.title(r'$\Delta\omega$ vs $h^{1/2}$, from average ds', fontsize=16)
-plt.savefig('shouldwork')
+plt.savefig(plot1name)
+'''
+
+'''
+plt.figure(figsize=(6,5))
+plt.errorbar(hs,rms_av, yerr=rms_rms,  fmt="none", capsize=2)#, label='results')
+plt.plot(sqrths,rms_av, 'o')
+plt.xlabel(r'Height $h$', fontsize=16)
+plt.ylabel(r'$\Delta\omega$', fontsize=16)
+plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
+#plt.legend(loc="upper right")
+plt.title(r'$\Delta\omega$ vs $h$', fontsize=16)
+plt.savefig(plot1name)
+'''
+
+plt.figure(figsize=(6,5))
+plt.errorbar(sqrths,rms_av, yerr=rms_rms,  fmt="none", capsize=2, label='Results')
+plt.plot(sqrths,rms_av, 'o')
+plt.plot(sqrths,fitarray, label='Fit')
+plt.xlabel(r'$h^{1/2}$', fontsize=16)
+plt.ylabel(r'$\Delta\omega$', fontsize=16)
+#plt.tight_layout(pad=3.0,w_pad=0.0, h_pad=0.5)
+plt.tight_layout(pad=3.0)#, w_pad=0.0, h_pad=0.5)
+plt.legend(loc="lower right")
+plt.title(r'$\Delta\omega$ vs $h^{1/2}$, from average ds', fontsize=16)
+plt.savefig(plot2name)
 
 
-
+'''
 plt.figure(figsize=(6,5))
 plt.errorbar(sqrths,rms_main_from_varianceformulation, yerr=rms_rms_from_varianceformulation,  fmt="none", capsize=2)#, label='results')
 plt.xlabel(r'$h^{1/2}$', fontsize=16)
@@ -758,12 +875,17 @@ plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
 #plt.legend(loc="upper right")
 plt.title(r'$\Delta\omega$ vs $h$', fontsize=16)
 plt.savefig(plot2name)
-
+'''
 print('Plotting done, writing to file')
 
-outfile.write('Order: h, absavg_tot, rmses. Averages over time, chains and boxes')
+
+outfile.write('Fit to linear function delta omega=a**x+b, x=h^(1/2.). Order: a, b:')
+outfile.write('%.16f %.16f\n' % (a,b))
+outfile.write('Order: h, absavgs_oneblock, absavgs_oneblock_rms, rms_av, rms_rms. Averages over time, chains and boxes\n')
+#outfile.write('Order: h, absavgs_correct, absavgs_correct_rms, rms_av, rms_rms. Averages over time, chains and boxes\n')
 for l in range(Nh):
-    outfile.write('%i %.16f %.16f\n' % (hs[l], absavgs_tot[l], rmses[l]))
+    outfile.write('%i %.16f %.16f %.16f %.16f\n' % (hs[l], absavgs_oneblock[l], absavgs_oneblock_rms[l], rms_av[l], rms_rms[l]))
+    #outfile.write('%i %.16f %.16f %.16f %.16f\n' % (hs[l], absavgs_correct[l], absavgs_correct_rms[l], rms_av[l], rms_rms[l]))
 
 outfile.close()
 
