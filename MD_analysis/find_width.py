@@ -636,13 +636,10 @@ boxes  = np.array([2,4,5,10,20,25,50]) # Number of boxes
 Nboxes = len(boxes)                    # The number of different ways we divide the system into boxes
 hs     = (N-1)/boxes                   # The number of atoms in one box
 Nh     = len(hs)
-box_average      = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
-box_sq_average   = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
+#box_average      = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
+#box_sq_average   = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
 box_abs_average  = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
 box_rms          = np.zeros((Nt, M, Nh,int(max(hs)))) # This array will have redundant entries. Need to remedy that somehow
-avgs_vs_time     = np.zeros((Nt,Nh))        # For binning values
-avgs_sq_vs_time  = np.zeros((Nt,Nh))        # For binning values
-rmses_vs_time    = np.zeros((Nt,Nh))        # For binning values
 counter_t        = np.zeros((Nt,Nh))
 absavgs_rms      = np.zeros(Nh)
 # Should I take the average over time straight away?
@@ -659,8 +656,6 @@ for i in range(Nt):                   # Looping over time
                 avg    = np.mean(distances[i,k,m*h:(m+1)*h])
                 avg_sq = np.mean(distances[i,k,m*h:(m+1)*h]**2)
                 absavg = np.mean(np.absolute(distances[i,k,m*h:(m+1)*h])) # Do I need this
-                avgs_vs_time[i,l]     += np.sum(distances[i,k,m*h:(m+1)*h])
-                avgs_sq_vs_time[i,l]  += np.sum(distances[i,k,m*h:(m+1)*h]**2)
                 for n in range(h):    # Looping over the beads in each box
                     rms += (distances[i,k,m*h+n]-avg)**2
                     #if l==(Nh-1) and m==0:
@@ -668,8 +663,8 @@ for i in range(Nt):                   # Looping over time
                 rms = np.sqrt(rms/(h-1))         # rms for each box
                 #if i==1 and l==0: # blocks in each
                 #    print('rms:', rms)
-                box_average[i,k,l,m]     = avg
-                box_sq_average[i,k,l,m]  = avg_sq
+                #box_average[i,k,l,m]     = avg
+                #box_sq_average[i,k,l,m]  = avg_sq
                 box_abs_average[i,k,l,m] = absavg
                 box_rms[i,k,l,m]         = rms
                 #if l==(Nh-1) and m==0:
@@ -678,14 +673,6 @@ for i in range(Nt):                   # Looping over time
                 #print('distances:',distances[i,k,m*h:(m+1)*h])
                 #print('avg distance:', avg)
 
-for i in range(Nt):
-    for l in range(Nh):
-        # hs[l]: Number of distances in block, boxes[l]: Number of blocks. M: Number of chains
-        # hs[l]*boxes[l]: Number of distances in one chain
-        # hs[l]*boxes[l]*M: Number of distances in the system at one time step
-        avgs_vs_time[i,l]    /= (hs[l]*boxes[l]*M)  
-        avgs_sq_vs_time[i,l] /= (hs[l]*boxes[l]*M)
-        rmses_vs_time[i,l]    = np.sqrt(avgs_sq_vs_time[i,l]-avgs_vs_time[i,l])
 
 print('Done with first avgs and rms')
 end_time = time.process_time()
@@ -698,7 +685,6 @@ absavgs     = np.zeros((Nh,int(max(hs))))
 avgs_tot    = np.zeros(Nh)
 absavgs_tot = np.zeros(Nh)
 avgs_sq_tot = np.zeros(Nh)
-rmses       = np.zeros(Nh)
 for l in range(Nh):        # Looping over each choice of box size
     h = int(hs[l])
     for i in range(Nt):    # Looping over time
@@ -718,56 +704,23 @@ avgs_tot    /= Nt*M
 avgs_sq_tot /= Nt*M
 absavgs_tot /= Nt*M
 
-'''
-for i in range(Nboxes):
-    avgs_tot    /= boxes[i]
-    avgs_sq_tot /= boxes[i]
-    absavgs_tot /= boxes[i]
-'''
-
-rms_main_from_varianceformulation     = np.sqrt(avgs_sq_tot-(avgs_tot**2))
-rms_temp_avs_from_varianceformulation = np.zeros(Nh)
-rms_rms_from_varianceformulation      = np.zeros(Nh)
-for i in range(Nt):
-    for l in range(Nh):
-        rms_temp_avs_from_varianceformulation[l] += np.sqrt(avgs_sq_vs_time[i,l]-avgs_vs_time[i,l]**2)
-rms_temp_avs_from_varianceformulation /= Nt
-
-
-for l in range(Nh):
-    for i in range(Nt):
-        rms_rms_from_varianceformulation[l] += (rmses_vs_time[i,l]-rms_temp_avs_from_varianceformulation[l])**2
-    rms_rms_from_varianceformulation[l] = np.sqrt(rms_rms_from_varianceformulation[l]/(Nt*(Nt-1)))
-
 print('Done with total averages')
 
 end_time = time.process_time()
 print("Time:", end_time-start_time, " s")
 
-for l in range(Nh):                    # Looping over each choice of box size
-    h = int(hs[l])
-    for i in range(Nt):                # Looping over time
-        for k in range(M):             # Looping over chains
-            for m in range(boxes[l]):  # Looping over each box
-                for n in range(h):     # Looping over the beads in each box
-                    rmses[l] += (distances[i,k,m*h+n]-avgs_tot[l])**2 # I have used the total average # 'Cause when you calculate the rms, you should subtract with the same average for all values
-    rmses[l] = np.sqrt(rmses[l]/(h*M*Nt-1))
-
-print('Done with total rms')
-end_time = time.process_time()
-print("Time:", end_time-start_time, " s")
 
 rms_av  = np.zeros(Nh)
 rms_rms = np.zeros(Nh)
-absavgs_correct      = np.zeros(Nh)
-absavgs_correct_rms  = np.zeros(Nh)
+#absavgs_correct      = np.zeros(Nh)
+#absavgs_correct_rms  = np.zeros(Nh)
 absavgs_oneblock     = np.zeros(Nh)
 absavgs_oneblock_rms = np.zeros(Nh)
 
 
 for l in range(Nh):
     rms_av[l]          = np.mean(box_rms[:,:,l,0:boxes[l]])                 # Printing tests below verified that this is the right way to treat the arrays
-    absavgs_correct[l] = np.mean(box_abs_average[:,:,l,0:boxes[l]])
+    #absavgs_correct[l] = np.mean(box_abs_average[:,:,l,0:boxes[l]])
     absavgs_oneblock[l] = np.mean(box_abs_average[:,:,l,0])                 # Just taking one block to actually get information about the scaling with h
     #if l==(Nh-1):
     #    print('box_abs_average[:,:,Nh-1,0]:',box_abs_average[:,:,l,0])
@@ -785,9 +738,9 @@ for l in range(Nh):
             absavgs_oneblock_rms[l] += (box_abs_average[i,k,l,0]-absavgs_oneblock[l])**2
             for m in range(boxes[l]):
                 rms_rms[l] += (box_rms[i,k,l,m]-rms_av[l])**2
-                absavgs_correct_rms[l] += (box_abs_average[i,k,l,m]-absavgs_correct[l])**2
+                #absavgs_correct_rms[l] += (box_abs_average[i,k,l,m]-absavgs_correct[l])**2
     rms_rms[l]              = np.sqrt(rms_rms[l]/(h*M*Nt-1))
-    absavgs_correct_rms[l]  = np.sqrt(absavgs_correct_rms[l]/(h*M*Nt-1))
+    #absavgs_correct_rms[l]  = np.sqrt(absavgs_correct_rms[l]/(h*M*Nt-1))
     absavgs_oneblock_rms[l] = np.sqrt(absavgs_oneblock_rms[l]/(M*Nt-1))
 
 print('Done with rms of rms')
@@ -808,23 +761,10 @@ fitarray = p(sqrths)
 # Print coeffs and data points to file
 
 
-'''# Don't really need this
-plt.figure(figsize=(6,5))
-plt.errorbar(sqrths,rms_av, yerr=rms_rms,  fmt="none", capsize=2, label='Results')
-plt.plot(sqrths,rms_av, 'o')
-plt.plot(sqrths,fitarray, label='Fit')
-plt.xlabel(r'$h^{1/2}$', fontsize=16)
-plt.ylabel(r'$\Delta\omega$', fontsize=16)
-plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
-plt.legend(loc="lower right")
-plt.title(r'$\Delta\omega$ vs $h^{1/2}$, from average ds', fontsize=16)
-plt.savefig(plot1name)
-'''
-
 '''
 plt.figure(figsize=(6,5))
 plt.errorbar(hs,rms_av, yerr=rms_rms,  fmt="none", capsize=2)#, label='results')
-plt.plot(sqrths,rms_av, 'o')
+plt.plot(hs,rms_av, 'o')
 plt.xlabel(r'Height $h$', fontsize=16)
 plt.ylabel(r'$\Delta\omega$', fontsize=16)
 plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
@@ -842,40 +782,10 @@ plt.ylabel(r'$\Delta\omega$', fontsize=16)
 #plt.tight_layout(pad=3.0,w_pad=0.0, h_pad=0.5)
 plt.tight_layout(pad=3.0)#, w_pad=0.0, h_pad=0.5)
 plt.legend(loc="lower right")
-plt.title(r'$\Delta\omega$ vs $h^{1/2}$, from average ds', fontsize=16)
+plt.title(r'$\Delta\omega$ vs $h^{1/2}$', fontsize=16)
 plt.savefig(plot2name)
 
 
-'''
-plt.figure(figsize=(6,5))
-plt.errorbar(sqrths,rms_main_from_varianceformulation, yerr=rms_rms_from_varianceformulation,  fmt="none", capsize=2)#, label='results')
-plt.xlabel(r'$h^{1/2}$', fontsize=16)
-plt.ylabel(r'$\Delta\omega$', fontsize=16)
-plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
-#plt.legend(loc="upper right")
-plt.title(r'$\Delta\omega$ vs $h^{1/2}$, from average ds', fontsize=16)
-plt.savefig('fromvariance')
-
-
-plt.figure(figsize=(6,5))
-plt.errorbar(hs,rmses, yerr=rms_rms,  fmt="none", capsize=2)#, label='results')
-plt.xlabel(r'Height $h$', fontsize=16)
-plt.ylabel(r'$\Delta\omega$', fontsize=16)
-plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
-#plt.legend(loc="upper right")
-plt.title(r'$\Delta\omega$ vs $h$', fontsize=16)
-plt.savefig(plot1name)
-
-
-plt.figure(figsize=(6,5))
-plt.errorbar(sqrths,rmses, yerr=rms_rms,  fmt="none", capsize=2)#, label='results')
-plt.xlabel(r'$h^{1/2}$', fontsize=16)
-plt.ylabel(r'$\Delta\omega$', fontsize=16)
-plt.tight_layout(pad=2.0)#, w_pad=0.0, h_pad=0.5)
-#plt.legend(loc="upper right")
-plt.title(r'$\Delta\omega$ vs $h$', fontsize=16)
-plt.savefig(plot2name)
-'''
 print('Plotting done, writing to file')
 
 
