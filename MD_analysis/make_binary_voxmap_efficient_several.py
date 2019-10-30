@@ -404,10 +404,9 @@ for lindex in lineindices:
     for i in range(Nx):
         for j in range(Ny):
             for k in range(Nz):
-                smallest_dist = 1e20                 # No distance is this big.
+                smallest_dist = 1e20 # No distance is this big.
                 searchmore    = True
                 atomsfound    = False
-                nbnumber      = 0                    # For looking in neighbouring boxes
                 xc            = x_centres[i]
                 yc            = y_centres[j]
                 zc            = z_centres[k]
@@ -415,33 +414,42 @@ for lindex in lineindices:
                 qrtdistance   = len_voxel/4.         # If the atom is closer to the centre than half the box length, we don't need to search another box.
                 thisbox       = box[i,j,k]
                 natoms_box    = len(thisbox)
-                # I can wrap these two parts into one # ... or not...
-                # What's most efficient, I think, is storing the indices of the box and its neighbours in a list
-                # Should I go from three indices to one index and back again? Easier in terms of storage, but...
-                # Or should I just do EVERYTHING in one index and then convert when needed?
-                while searchmore==True:                
-                    if natoms_box==0:
-                        atomsfound = False
-                    else:                   # Only inspect box if there are atoms in it.
-                        atomsfound = True
-                        for l in range(len(thisbox)):
-                            vecthis = posvecs[thisbox[l]] # Getting the position vector of an atom in the box
-                            distvec = centrevec-vecthis
-                            dotprod = np.dot(distvec,distvec)
-                            if dotprod<smallest_dist:
-                                smallest_dist = dotprod
-                                if dotprod < qrtdistance:
-                                    searchmore = False
-                                    # Do not break. There could be another atom that is even closer.
-                        nbnumber += 1
-                        thisbox = box[i,j,k]
-                        
+                if natoms_box==0:
+                    atomsfound = False
+                else:                   # Only inspect box if there are atoms in it.
+                    atomsfound = True
+                    for l in range(natoms_box):
+                        vecthis = posvecs[thisbox[l]] # Getting the position vector of an atom in the box
+                        distvec = centrevec-vecthis
+                        dotprod = np.dot(distvec,distvec)
+                        if dotprod<smallest_dist:
+                            smallest_dist = dotprod
+                            if dotprod < qrtdistance:
+                                searchmore = False     # If the atom is sufficiently close to the centre of the box, I don't need to search the neighbouring boxes
                 
+                neighbournumber = 0
                 while searchmore==True:
                     # Adding +/-1 to all the indices should yield the closest atom. 
                     # But we might hit a boundary at some point. 
-                    neighbournumber = 1 # Adding +/-1 to the indices
+                    neighbournumber += 1 # Adding +/-1 to the indices
+                    if i+neighbournumber>=0 and i+neighbournumber<n:
+                        thisbox       = box[i+neighbournumber,j,k]
+                        natoms_box    = len(thisbox)
+                        if natoms_box>0:
+                            for l in range(natoms_box):
+                                vecthis = posvecs[thisbox[l]] # Getting the position vector of an atom in the box
+                                distvec = centrevec-vecthis
+                                dotprod = np.dot(distvec,distvec)
+                                if dotprod<smallest_dist:
+                                    smallest_dist = dotprod
+                                    #Have some test to check 
+                                    #if dotprod < qrtdistance:
+                                    #    searchmore = False     # If the atom is sufficiently close to the centre of the box, I don't need to search the neighbouring boxes
+                            
                     
+def find_atomdists_givenbox(thisbox,centrevec):
+    
+    
                 
                 ### Remove this:
                 # Loop over all the atoms. Oh vey.
