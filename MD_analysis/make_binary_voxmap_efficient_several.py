@@ -27,25 +27,52 @@ def find_atomdists_givenbox(smallest_dist, natoms_box, searchmore, thisbox, cent
                 searchmore = False     # If the atom is sufficiently close to the centre of the box, I don't need to search the neighbouring boxes
     return smallest_dist, searchmore
 
-def order_distances(Nx,Ny,Nz):
+def order_distances(Nx,Ny,Nz): # Is this too big now?
     # This is actually complicated (because we have cut the system so that generally Nx=Ny!=Nz). Do the easy part first.
-    #deltax, deltay, deltaz
-    
+    ## Making lists
     distance_indices    = []
     voxcentres_distance = []
-    for deltax in range(Nx):
-        for deltay in range(Ny):
-            for deltaz in range(Nz):
-                vcd= np.sqrt(Nx**2+Ny**2+Nz**2) # Distance between centres of voxels
+    ## Getting elements
+    for deltax in range(-Nx+1,Nx): # Should this go from -Nx to Nx? Then this is huuuuge. # Maybe half will do? # At least in the x- and y- directions...
+        for deltay in range(-Ny+1,Ny):
+            for deltaz in range(-Nz+1,Nz):
+                vcd = np.sqrt(deltax**2+deltay**2+deltaz**2) # Distance between centres of voxels
                 voxcentres_distance.append(vcd)
                 distance_indices.append([deltax,deltay,deltaz])
-    # Co-sort the arrays. Order voxcentres_distance by increasing values without messing with the nice correspondence between that array and distance_indices
+    ## Co-sort the arrays. Order voxcentres_distance by increasing values without messing with the nice correspondence between that array and distance_indices
     voxcentres_distance, distance_indices = (list(t) for t in zip(*sorted(zip(voxcentres_distance, distance_indices))))
-    # Make an array of the different distances
-    # AND count the number of different distances
+    ## Make an array of the different distances
+    ## AND count the number of different distances
     voxcentres_distance_array = np.array(voxcentres_distance)
-    voxcentres_distance_slim, number_each_dist  = np.unique(voxcentres_distance_array, return_counts=True)
-    return voxcentres_distance, distance_indices, voxcentres_distance_slim, number_each_dist
+    voxcentres_distance_slim, number_each_dist = np.unique(voxcentres_distance_array, return_counts=True)
+    print('voxcentres_distance_slim',voxcentres_distance_slim)
+    print('voxcentres_distance_array',voxcentres_distance_array)
+    ## Gather tha distance indices into one neat array as well:
+    gathered_indices = []
+    start_counter    = 0
+    #print('distance_indices:',distance_indices)
+    #print('shape(distance_indices):',np.shape(distance_indices))
+    for i in range(len(voxcentres_distance_slim)):
+        nthis = number_each_dist[i]-1 # I need the -1 for some reason... Must have messed up at some point.
+        end_counter = start_counter + nthis
+        #gathered_indices.append([distance_indices[start_counter:end_counter]]) # Unfortunately, I am working with a list here...
+        temp_list = []
+        for j in range(nthis+1):
+            temp_list.append(distance_indices[start_counter+j])
+            if i==0 or i==1 or i==2 or i==3:
+                print('i =', i, ', j =', j, '; index: ', start_counter+j, '; dist =', voxcentres_distance[start_counter+j])
+        gathered_indices.append(temp_list)
+        if i==0 or i==1 or i==2 or i==3:
+            print('i =', i)
+            print('start_counter:', start_counter)
+            print('end_counter:', end_counter)
+            print('nthis:', nthis)
+            print('voxcentres_distance[',start_counter,']:',voxcentres_distance[start_counter])
+            print('; voxcentres_distance[',start_counter+nthis,']:',voxcentres_distance[start_counter+nthis])
+            print('; voxcentres_distance[',start_counter+nthis+1,']:',voxcentres_distance[start_counter+nthis+1])
+        start_counter = end_counter+1
+    ## return
+    return voxcentres_distance_slim, gathered_indices, number_each_dist
     
     
                 
@@ -137,7 +164,7 @@ outfilename_base  = 'voxelmap_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_
 #infilename   = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % (M,N,spacing,Kangle,Kbond,charge,T)
 infilename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
 # chaingrid_quadratic_M9N101_gridspacing40_Langevin_wall1.042_Kangle20_Kbond200_debye_kappa1_debyecutoff3_charge-1_T310_theta0is180_twofirst_are_fixed.lammpstrj
-outfilename_base  = 'voxelmap_test_short'
+outfilename_base  = 'voxelmap_test_short_TESTII'
 
 #'''
 # Varying the grid spacing # THIS IS NOW THE STANDARD FILE NAMES.
@@ -209,9 +236,9 @@ for i in range(M):
         counter += 1
 
 # These I need.
-xes     = np.zeros((M,N)) # Is storing the position after chain AND number in chain really neccessary? And should I perhaps store as a vector?
-ys      = np.zeros((M,N))
-zs      = np.zeros((M,N))
+xes     = np.zeros(Nall) # Is storing the position after chain AND number in chain really neccessary? And should I perhaps store as a vector?
+ys      = np.zeros(Nall)
+zs      = np.zeros(Nall)
 posvecs = np.zeros((Nall,3))
     
 tempzs = np.zeros(M)  # Do I need this?
@@ -272,7 +299,7 @@ for lindex in lineindices:
         posvecs[ind,1] = y
         posvecs[ind,2] = z
     
-    Natoms = len(x)
+    Natoms = len(xes)
     '''
     for i in range(M*N):
         print("Atomid-1 =", i, ": chain:", index1[i], ", atom nr.", index2[i])
@@ -389,8 +416,15 @@ for lindex in lineindices:
     #print('voxN:',voxN)
     
     ### Place atoms in boxes ###
+    
+    ## Ready the distances:
+    print('About to enter order_distances')
+    voxcentres_distance_slim, gathered_indices, number_each_dist = order_distances(Nx,Ny,Nz)
+    
     box        = make_3Dlist(Nx, Ny, Nz) # Make box to use
     box[:,:,:] = []
+    
+    
     
     # Point
     
@@ -474,7 +508,7 @@ for lindex in lineindices:
                     neighbours3 = [[i+nb,j+nb,k+nb],[i-nb,j+nb,k+nb],[i+nb,j-nb,k+nb],[i+nb,j+nb,k-nb],[i-nb,j-nb,k+nb],[i+nb,j-nb,k-nb], [i-nb,j+nb,k-nb],[i-nb,j-nb,k-nb]]
                     
                     #atomsfound_now = False
-                    
+                    '''
                     if atomsfound==True: # If we have an atom in one of the 
                     
                     if (i+neighbournumber)<Nx:
@@ -497,7 +531,7 @@ for lindex in lineindices:
                         natoms_box    = len(thisbox)
                         if natoms_box>0:
                             smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
-                            
+                    '''        
                     # Need another test to turn searchmore off.
                 #print('n:',n)
                 #print('smallest_dist:', smallest_dist)
