@@ -15,6 +15,41 @@ def make_3Dlist(a, b, c): # Borrowed this from GeeksforGeeks (and renamed it)
     lst = [[ [0 for col in range(a)] for col in range(b)] for row in range(c)] 
     return lst 
 
+# Function taking a box and calculating the distance between its atoms and a box centre
+def find_atomdists_givenbox(smallest_dist, natoms_box, searchmore, thisbox, centrevec):
+    for l in range(natoms_box):
+        vecthis = posvecs[thisbox[l]] # Getting the position vector of an atom in the box
+        distvec = centrevec-vecthis
+        dotprod = np.dot(distvec,distvec)
+        if dotprod<smallest_dist:
+            smallest_dist = dotprod
+            if dotprod < qrtdistance:
+                searchmore = False     # If the atom is sufficiently close to the centre of the box, I don't need to search the neighbouring boxes
+    return smallest_dist, searchmore
+
+def order_distances(Nx,Ny,Nz):
+    # This is actually complicated (because we have cut the system so that generally Nx=Ny!=Nz). Do the easy part first.
+    #deltax, deltay, deltaz
+    
+    distance_indices    = []
+    voxcentres_distance = []
+    for deltax in range(Nx):
+        for deltay in range(Ny):
+            for deltaz in range(Nz):
+                vcd= np.sqrt(Nx**2+Ny**2+Nz**2) # Distance between centres of voxels
+                voxcentres_distance.append(vcd)
+                distance_indices.append([deltax,deltay,deltaz])
+    # Co-sort the arrays. Order voxcentres_distance by increasing values without messing with the nice correspondence between that array and distance_indices
+    voxcentres_distance, distance_indices = (list(t) for t in zip(*sorted(zip(voxcentres_distance, distance_indices))))
+    # Make an array of the different distances
+    # AND count the number of different distances
+    voxcentres_distance_array = np.array(voxcentres_distance)
+    voxcentres_distance_slim, number_each_dist  = np.unique(voxcentres_distance_array, return_counts=True)
+    return voxcentres_distance, distance_indices, voxcentres_distance_slim, number_each_dist
+    
+    
+                
+
 
 # Function for curve_fit
 def costheta_exponential(s,P):
@@ -404,73 +439,66 @@ for lindex in lineindices:
     for i in range(Nx):
         for j in range(Ny):
             for k in range(Nz):
-                smallest_dist = 1e20 # No distance is this big.
-                searchmore    = True
-                atomsfound    = False
-                xc            = x_centres[i]
-                yc            = y_centres[j]
-                zc            = z_centres[k]
-                centrevec     = np.array([xc,yc,zc]) # Should probably just have stored this at once...
-                qrtdistance   = len_voxel/4.         # If the atom is closer to the centre than half the box length, we don't need to search another box.
-                thisbox       = box[i,j,k]
-                natoms_box    = len(thisbox)
+                smallest_dist  = 1e20 # No distance is this big.
+                searchmore     = True
+                atomsfound     = False
+                xc             = x_centres[i]
+                yc             = y_centres[j]
+                zc             = z_centres[k]
+                centrevec      = np.array([xc,yc,zc]) # Should probably just have stored this at once...
+                qrtdistance    = len_voxel/4.         # If the atom is closer to the centre than half the box length, we don't need to search another box.
+                thisbox        = box[i,j,k]
+                natoms_box     = len(thisbox)
+                atomsfound_box = [False,False,False]
                 if natoms_box==0:
                     atomsfound = False
                 else:                   # Only inspect box if there are atoms in it.
                     atomsfound = True
-                    for l in range(natoms_box):
-                        vecthis = posvecs[thisbox[l]] # Getting the position vector of an atom in the box
-                        distvec = centrevec-vecthis
-                        dotprod = np.dot(distvec,distvec)
-                        if dotprod<smallest_dist:
-                            smallest_dist = dotprod
-                            if dotprod < qrtdistance:
-                                searchmore = False     # If the atom is sufficiently close to the centre of the box, I don't need to search the neighbouring boxes
+                    atomsfound_box = [i,j,k]
+                    smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,thisbox,centrevec)
                 
-                neighbournumber = 0
+                nbn = 0 # neighbournumber 
                 while searchmore==True:
                     # Adding +/-1 to all the indices should yield the closest atom. 
                     # But we might hit a boundary at some point. 
-                    neighbournumber += 1 # Adding +/-1 to the indices
-                    if i+neighbournumber>=0 and i+neighbournumber<n:
+                    nbn += 1 # Adding +/-1 to the indices
+                    #indexes = [[i+1,j,k],[i,j+1,k],[i,j,k+1],[i-1,j,k],[i,j-1,k],[i,j,k-1],[i+1,j+1,k],[i,j+1,k+1],[i+1,j,k+1],[i+1,j-1,k],[i,j+1,k-1],[i+1,j,k-1], [i-1,j+1,k],[i,j-1,k+1],[i-1,j,k+1],]
+                    jumps = 1
+                    jumps = 2
+                    jumps = 3
+                    #                  1         2        3           4        5        6 
+                    neighbours1 = [[i+nb,j,k],[i,j+nb,k],[i,j,k+nb],[i-nb,j,k],[i,j-nb,k],[i,j,k-nb]] # Nearest neighbours of the box of centrevec
+                    #                  1            2           3          4            5           6            7          8           9            10          11         12 
+                    neighbours2 = [[i+nb,j+nb,k],[i,j+nb,k+nb],[i+nb,j,k+nb],[i+nb,j-nb,k],[i,j+nb,k-nb],[i+nb,j,k-nb], [i-nb,j+nb,k],[i,j-nb,k+nb],[i-nb,j,k+nb], [i-nb,j-nb,k],[i,j-nb,k-nb],[i-nb,j,k-nb]] # Diagonals # Share a line with
+                    #                   1                 2                3                 4                5                6                 7                8
+                    neighbours3 = [[i+nb,j+nb,k+nb],[i-nb,j+nb,k+nb],[i+nb,j-nb,k+nb],[i+nb,j+nb,k-nb],[i-nb,j-nb,k+nb],[i+nb,j-nb,k-nb], [i-nb,j+nb,k-nb],[i-nb,j-nb,k-nb]]
+                    
+                    #atomsfound_now = False
+                    
+                    if atomsfound==True: # If we have an atom in one of the 
+                    
+                    if (i+neighbournumber)<Nx:
                         thisbox       = box[i+neighbournumber,j,k]
                         natoms_box    = len(thisbox)
                         if natoms_box>0:
-                            for l in range(natoms_box):
-                                vecthis = posvecs[thisbox[l]] # Getting the position vector of an atom in the box
-                                distvec = centrevec-vecthis
-                                dotprod = np.dot(distvec,distvec)
-                                if dotprod<smallest_dist:
-                                    smallest_dist = dotprod
-                                    #Have some test to check 
-                                    #if dotprod < qrtdistance:
-                                    #    searchmore = False     # If the atom is sufficiently close to the centre of the box, I don't need to search the neighbouring boxes
+                            smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
+                    if i-neighbournumber>=0:
+                        thisbox       = box[i+neighbournumber,j,k]
+                        natoms_box    = len(thisbox)
+                        if natoms_box>0:
+                            smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
+                    if (j+neighbournumber)<Ny:
+                        thisbox       = box[i,j+neighbournumber,k]
+                        natoms_box    = len(thisbox)
+                        if natoms_box>0:
+                            smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
+                    if j-neighbournumber>=0:
+                        thisbox       = box[i+neighbournumber,j+neighbournumber,k]
+                        natoms_box    = len(thisbox)
+                        if natoms_box>0:
+                            smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
                             
-                    
-def find_atomdists_givenbox(thisbox,centrevec):
-    
-    
-                
-                ### Remove this:
-                # Loop over all the atoms. Oh vey.
-                for m in range(Nall):
-                    vecthis = posvecs[m,:]
-                    distvec = centrevec-vecthis
-                    dotprod = np.dot(distvec,distvec)
-                    if dotprod<smallest_dist:
-                        smallest_dist = dotprod
-                '''
-                for m in range(M):       # Loop over the chains 
-                    x_thischain = xes[m] # Change these if I use multiple timesteps
-                    y_thischain = ys[m]  # Change these if I use multiple timesteps
-                    z_thischain = zs[m]  # Change these if I use multiple timesteps
-                    for nc in range(N):  # Loop over the atoms in a chain
-                        vecthis = np.array([x_thischain[nc],y_thischain[nc],z_thischain[nc]]) # Is this really cost-efficient? I should probably just import the data into position arrays...
-                        distvec = centrevec-vecthis
-                        dotprod = np.dot(distvec,distvec)
-                        if dotprod<smallest_dist:
-                            smallest_dist = dotprod
-                '''
+                    # Need another test to turn searchmore off.
                 #print('n:',n)
                 #print('smallest_dist:', smallest_dist)
                 voxval         = np.sqrt(smallest_dist)
