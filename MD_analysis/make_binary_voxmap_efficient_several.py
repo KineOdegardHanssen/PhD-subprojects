@@ -12,7 +12,7 @@ import glob
 ### CODE DON'T WORK FOR NPT!!!
 
 def make_3Dlist(a, b, c): # Borrowed this from GeeksforGeeks (and renamed it)
-    lst = [[ [0 for col in range(a)] for col in range(b)] for row in range(c)] 
+    lst = [[ [[] for col in range(c)] for col in range(b)] for row in range(a)] 
     return lst 
 
 # Function taking a box and calculating the distance between its atoms and a box centre
@@ -422,9 +422,6 @@ for lindex in lineindices:
     voxcentres_distance_slim, gathered_indices, number_each_dist = order_distances(Nx,Ny,Nz)
     
     box        = make_3Dlist(Nx, Ny, Nz) # Make box to use
-    box[:,:,:] = []
-    
-    
     
     # Point
     
@@ -440,7 +437,10 @@ for lindex in lineindices:
         nx = int(xes[i]/len_voxel)
         ny = int(ys[i]/len_voxel)
         nz = int(zs[i]/len_voxel)
-        box[nx,ny,nz].append(i)     # I hope this works...
+        print('Nx:', Nx, 'Ny:', Ny, 'Nz:', Nz)
+        print('nx:', nx, '; ny:', ny, '; nz:', nz)
+        print('shape(box):', np.shape(box))
+        box[nx][ny][nz].append(i)     # I hope this works...
     
     
     # What Anders wrote down. I don't really understand all of it...:
@@ -481,7 +481,7 @@ for lindex in lineindices:
                 zc             = z_centres[k]
                 centrevec      = np.array([xc,yc,zc]) # Should probably just have stored this at once...
                 qrtdistance    = len_voxel/4.         # If the atom is closer to the centre than half the box length, we don't need to search another box.
-                thisbox        = box[i,j,k]
+                thisbox        = box[i][j][k]
                 natoms_box     = len(thisbox)
                 atomsfound_box = [False,False,False]
                 if natoms_box==0:
