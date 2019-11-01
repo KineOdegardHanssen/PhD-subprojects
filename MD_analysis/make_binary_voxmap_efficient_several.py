@@ -62,6 +62,8 @@ def order_distances(Nx,Ny,Nz): # Is this too big now?
             if i==0 or i==1 or i==2 or i==3:
                 print('i =', i, ', j =', j, '; index: ', start_counter+j, '; dist =', voxcentres_distance[start_counter+j])
         gathered_indices.append(temp_list)
+        # Test of code:
+        '''
         if i==0 or i==1 or i==2 or i==3:
             print('i =', i)
             print('start_counter:', start_counter)
@@ -70,6 +72,7 @@ def order_distances(Nx,Ny,Nz): # Is this too big now?
             print('voxcentres_distance[',start_counter,']:',voxcentres_distance[start_counter])
             print('; voxcentres_distance[',start_counter+nthis,']:',voxcentres_distance[start_counter+nthis])
             print('; voxcentres_distance[',start_counter+nthis+1,']:',voxcentres_distance[start_counter+nthis+1])
+        '''
         start_counter = end_counter+1
     ## return
     return voxcentres_distance_slim, gathered_indices, number_each_dist
@@ -420,6 +423,7 @@ for lindex in lineindices:
     ## Ready the distances:
     print('About to enter order_distances')
     voxcentres_distance_slim, gathered_indices, number_each_dist = order_distances(Nx,Ny,Nz)
+    Ndistances = len(voxcentres_distance_slim)
     
     box        = make_3Dlist(Nx, Ny, Nz) # Make box to use
     
@@ -437,9 +441,9 @@ for lindex in lineindices:
         nx = int(xes[i]/len_voxel)
         ny = int(ys[i]/len_voxel)
         nz = int(zs[i]/len_voxel)
-        print('Nx:', Nx, 'Ny:', Ny, 'Nz:', Nz)
-        print('nx:', nx, '; ny:', ny, '; nz:', nz)
-        print('shape(box):', np.shape(box))
+        #print('Nx:', Nx, 'Ny:', Ny, 'Nz:', Nz)
+        #print('nx:', nx, '; ny:', ny, '; nz:', nz)
+        #print('shape(box):', np.shape(box))
         box[nx][ny][nz].append(i)     # I hope this works...
     
     
@@ -484,54 +488,55 @@ for lindex in lineindices:
                 thisbox        = box[i][j][k]
                 natoms_box     = len(thisbox)
                 atomsfound_box = [False,False,False]
+                atomsfound_nbbox_index = False
                 if natoms_box==0:
                     atomsfound = False
                 else:                   # Only inspect box if there are atoms in it.
                     atomsfound = True
                     atomsfound_box = [i,j,k]
-                    smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,thisbox,centrevec)
+                    atomsfound_nbbox_index = 0
+                    smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
                 
                 nbn = 0 # neighbournumber 
                 while searchmore==True:
                     # Adding +/-1 to all the indices should yield the closest atom. 
                     # But we might hit a boundary at some point. 
-                    nbn += 1 # Adding +/-1 to the indices
-                    #indexes = [[i+1,j,k],[i,j+1,k],[i,j,k+1],[i-1,j,k],[i,j-1,k],[i,j,k-1],[i+1,j+1,k],[i,j+1,k+1],[i+1,j,k+1],[i+1,j-1,k],[i,j+1,k-1],[i+1,j,k-1], [i-1,j+1,k],[i,j-1,k+1],[i-1,j,k+1],]
-                    jumps = 1
-                    jumps = 2
-                    jumps = 3
-                    #                  1         2        3           4        5        6 
-                    neighbours1 = [[i+nb,j,k],[i,j+nb,k],[i,j,k+nb],[i-nb,j,k],[i,j-nb,k],[i,j,k-nb]] # Nearest neighbours of the box of centrevec
-                    #                  1            2           3          4            5           6            7          8           9            10          11         12 
-                    neighbours2 = [[i+nb,j+nb,k],[i,j+nb,k+nb],[i+nb,j,k+nb],[i+nb,j-nb,k],[i,j+nb,k-nb],[i+nb,j,k-nb], [i-nb,j+nb,k],[i,j-nb,k+nb],[i-nb,j,k+nb], [i-nb,j-nb,k],[i,j-nb,k-nb],[i-nb,j,k-nb]] # Diagonals # Share a line with
-                    #                   1                 2                3                 4                5                6                 7                8
-                    neighbours3 = [[i+nb,j+nb,k+nb],[i-nb,j+nb,k+nb],[i+nb,j-nb,k+nb],[i+nb,j+nb,k-nb],[i-nb,j-nb,k+nb],[i+nb,j-nb,k-nb], [i-nb,j+nb,k-nb],[i-nb,j-nb,k-nb]]
+                    nbn += 1 # Searching the boxes that are just a little bit further out (i.e. going from distance 0 to 1 or 1 to sqrt(2))
                     
+                    if nbn==Ndistances:
+                        print('WARNING: Failed to end atom search. Might not have found any atom.')
+                        print('smallest_dist:', smallest_dist)
+                        break
+                    
+                    if atomsfound_nbbox_index!=False:
+                        if nbn-atomsfound_nbbox_index==2:
+                            break # We have found an atom, and only need to search in the boxes closest to that one # Could chech nbn-atomsfound_nbbox+1 and set searchmore to False...
+                    
+                    #voxcentres_distance_slim, gathered_indices, number_each_dist
+                    
+                    distance_to_voxel  = voxcentres_distance_slim[nbn]
+                    indices_nbn_voxels = gathered_indices[nbn]
+                    N_nbn_voxels       = number_each_dist[nbn]
+                    
+                    for indices in indices_nbn_voxels:
+                        # Extract indices
+                        deltai = indices[0]
+                        deltaj = indices[1]
+                        deltak = indices[2]
+                        # Check if this neighbour exists:
+                        newi = i+deltai
+                        newj = j+deltaj
+                        newk = k+deltak
+                        if newi<Nx and newi>=0 and newj<Ny and newj>=0 and newk<Nz and newk>=0:      
+                            thisbox    = box[newi][newj][newk]
+                            natoms_box = len(thisbox) 
+                            if natoms_box>0:
+                                smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
+                                atomsfound_box = [newi,newj,newk]
+                                atomsfound_nbbox_index = nbn
+                                atomsfound = True # This here?
                     #atomsfound_now = False
-                    '''
-                    if atomsfound==True: # If we have an atom in one of the 
-                    
-                    if (i+neighbournumber)<Nx:
-                        thisbox       = box[i+neighbournumber,j,k]
-                        natoms_box    = len(thisbox)
-                        if natoms_box>0:
-                            smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
-                    if i-neighbournumber>=0:
-                        thisbox       = box[i+neighbournumber,j,k]
-                        natoms_box    = len(thisbox)
-                        if natoms_box>0:
-                            smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
-                    if (j+neighbournumber)<Ny:
-                        thisbox       = box[i,j+neighbournumber,k]
-                        natoms_box    = len(thisbox)
-                        if natoms_box>0:
-                            smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
-                    if j-neighbournumber>=0:
-                        thisbox       = box[i+neighbournumber,j+neighbournumber,k]
-                        natoms_box    = len(thisbox)
-                        if natoms_box>0:
-                            smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
-                    '''        
+                        
                     # Need another test to turn searchmore off.
                 #print('n:',n)
                 #print('smallest_dist:', smallest_dist)
