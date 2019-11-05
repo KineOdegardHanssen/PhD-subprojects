@@ -2,12 +2,14 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt               # To plot
 from scipy.optimize import curve_fit
 from pathlib import Path
+from numba import jit
 import numpy as np
 import random
 import math
 import time
 import os
 import glob
+
 
 ### CODE DON'T WORK FOR NPT!!!
 
@@ -18,7 +20,7 @@ def make_3Dlist(a, b, c): # Borrowed this from GeeksforGeeks (and renamed it)
 # Function taking a box and calculating the distance between its atoms and a box centre
 def find_atomdists_givenbox(smallest_dist, natoms_box, searchmore, thisbox, centrevec):
     for l in range(natoms_box):
-        vecthis = posvecs[thisbox[l]] # Getting the position vector of an atom in the box
+        vecthis = thisbox[l]#posvecs[thisbox[l]] # Getting the position vector of an atom in the box # Maybe I should just give the coordinates. I.e. thisbox[l]=[x,y,z]. Probably faster
         distvec = centrevec-vecthis
         dotprod = np.dot(distvec,distvec)
         if dotprod<smallest_dist:
@@ -29,14 +31,18 @@ def find_atomdists_givenbox(smallest_dist, natoms_box, searchmore, thisbox, cent
                 searchmore = False     # If the atom is sufficiently close to the centre of the box, I don't need to search the neighbouring boxes
     return smallest_dist, searchmore
 
-def order_distances(Nx,Ny,Nz): # Is this too big now?
+def order_distances(Nx,Ny,Nz,cap): # Is this too big now?
     # This is actually complicated (because we have cut the system so that generally Nx=Ny!=Nz). Do the easy part first.
     ## Making lists
     distance_indices    = []
     voxcentres_distance = []
+    xlimit_lower  = int((-Nx+1)*cap)
+    xlimit_higher = int(Nx*cap)
+    ylimit_lower  = int((-Ny+1)*cap)
+    ylimit_higher = int(Ny*cap)
     ## Getting elements
-    for deltax in range(-Nx+1,Nx): # Should this go from -Nx to Nx? Then this is huuuuge. # Maybe half will do? # At least in the x- and y- directions...
-        for deltay in range(-Ny+1,Ny):
+    for deltax in range(xlimit_lower,xlimit_higher): # Should this go from -Nx to Nx? Then this is huuuuge. # Maybe half will do? # At least in the x- and y- directions...
+        for deltay in range(ylimit_lower,ylimit_higher):
             for deltaz in range(-Nz+1,Nz):
                 vcd = np.sqrt(deltax**2+deltay**2+deltaz**2) # Distance between centres of voxels
                 voxcentres_distance.append(vcd)
@@ -91,12 +97,17 @@ start_time = time.process_time()
 
 ### There is a possible issue here if I want to go from NVT to NPT. That will determine how much I will put in the loop... 
 
+### Distances to consider
+cap = 0.75 # Lowering the number of distances to consider. Should find an atom before we reach the other side of the box
+
 ### Number of time frames
 Nframes     = 3                                 # Number of time steps we want to include here
 totframes   = 10000000/10000                    # Total number of time steps in the file # This should be 1000
 startframe  = 300#0#100#250
 endframe    = 450#totframes-1#200#750# 
-indices     = np.linspace(startframe,endframe,Nframes)#np.linspace(0,totframes-1,Nframes)  # Might need to take floor() of the values here, just in case
+indices     = np.array([startframe])#np.linspace(startframe,endframe,Nframes)#np.linspace(0,totframes-1,Nframes)  # Might need to take floor() of the values here, just in case
+Nframes     = len(indices) # Just a safeguard
+
 for i in range(Nframes):
     indices[i] = math.floor(indices[i])
 
@@ -424,7 +435,7 @@ for lindex in lineindices:
     
     ## Ready the distances:
     print('About to enter order_distances')
-    voxcentres_distance_slim, gathered_indices, number_each_dist = order_distances(Nx,Ny,Nz)
+    voxcentres_distance_slim, gathered_indices, number_each_dist = order_distances(Nx,Ny,Nz,cap)
     Ndistances = len(voxcentres_distance_slim)
     
     box        = make_3Dlist(Nx, Ny, Nz) # Make box to use
@@ -446,7 +457,7 @@ for lindex in lineindices:
         #print('Nx:', Nx, 'Ny:', Ny, 'Nz:', Nz)
         #print('nx:', nx, '; ny:', ny, '; nz:', nz)
         #print('shape(box):', np.shape(box))
-        box[nx][ny][nz].append(i)     # I hope this works...
+        box[nx][ny][nz].append([xes[i],ys[i],zs[i]])     # I hope this works...
     
     
     # What Anders wrote down. I don't really understand all of it...:
@@ -474,8 +485,10 @@ for lindex in lineindices:
     print('Find voxel values')
     l = 0 # Can't even remember what this was for...
     n = 0
+    nbn_max = 0
     print('posvecs[25,:]:',posvecs[25,:])
     voxelvalues = np.zeros(voxN)
+    #@jit(cache=True) # Get error. Huh
     for i in range(Nx):
         for j in range(Ny):
             for k in range(Nz):
@@ -513,6 +526,9 @@ for lindex in lineindices:
                         print('smallest_dist:', smallest_dist)
                         break
                     
+                    if nbn>nbn_max:
+                        nbn_max = nbn
+                    
                     if atomsfound_nbbox_index!=False:
                         if nbn-atomsfound_nbbox_index==2:
                             break # We have found an atom, and only need to search in the boxes closest to that one # Could chech nbn-atomsfound_nbbox+1 and set searchmore to False...
@@ -522,6 +538,9 @@ for lindex in lineindices:
                     distance_to_voxel  = voxcentres_distance_slim[nbn]
                     indices_nbn_voxels = gathered_indices[nbn]
                     N_nbn_voxels       = number_each_dist[nbn]
+                    
+                    #if atomsfound==True:
+                    #    print('[i,j,k]:,', [i,j,k], 'nbn=', nbn, 'delta [i,j,k]:', [deltai,deltaj,deltak], ', smallest_dist:', np.sqrt(smallest_dist))
                     
                     for indices in indices_nbn_voxels:
                         # Extract indices
@@ -545,8 +564,7 @@ for lindex in lineindices:
                         
                     # Need another test to turn searchmore off.
                 #print('n:',n)
-                smallest_dist = np.sqrt(smallest_dist) # Have used np.dot. But is dot faster than np.norm?
-                print('smallest_dist:', smallest_dist, '; atomsfound_box_dist:', atomsfound_box_dist, ' atom found?:', atomsfound)
+                #print('smallest_dist:', smallest_dist, '; atomsfound_box_dist:', atomsfound_box_dist, ' atom found?:', atomsfound)
                 voxval         = np.sqrt(smallest_dist)
                 voxelvalues[n] = voxval
                 voxmat[i,j,k]  = voxval
@@ -591,11 +609,6 @@ for lindex in lineindices:
     #'''
     
     outfile_txt  = open(outfilename_txt,'w')
-    outfile_x    = open(outfilename_x,'w')
-    outfile_y    = open(outfilename_y,'w')
-    outfile_z    = open(outfilename_z,'w')
-    outfile_vox  = open(outfilename_vox,'w')
-    outfile_vmat = open(outfilename_vmat,'w')
     
     
     np.save(outfilename_npy,outarray)
@@ -611,6 +624,10 @@ for lindex in lineindices:
        outfile_txt.write('%i %.16f\n' % (i,outarray[i,3]))
     outfile_txt.close()
     print('DONE WITH ONE, ONTO THE NEXT!\n')
+    counter += 1
+
+print('nbn_max:', nbn_max)
+print(Ndistances)
 
 # Plotting and printing
 '''
