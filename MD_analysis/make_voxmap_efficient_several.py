@@ -17,6 +17,7 @@ def make_3Dlist(a, b, c): # Borrowed this from GeeksforGeeks (and renamed it)
     lst = [[ [[] for col in range(c)] for col in range(b)] for row in range(a)] 
     return lst 
 
+'''
 # Function taking a box and calculating the distance between its atoms and a box centre
 def find_atomdists_givenbox(smallest_dist, natoms_box, searchmore, thisbox, centrevec):
     for l in range(natoms_box):
@@ -30,6 +31,7 @@ def find_atomdists_givenbox(smallest_dist, natoms_box, searchmore, thisbox, cent
             if dotprod < qrtdistance:
                 searchmore = False     # If the atom is sufficiently close to the centre of the box, I don't need to search the neighbouring boxes
     return smallest_dist, searchmore
+'''
 
 def order_distances(Nx,Ny,Nz,cap): # Is this too big now?
     # This is actually complicated (because we have cut the system so that generally Nx=Ny!=Nz). Do the easy part first.
@@ -449,6 +451,9 @@ for lindex in lineindices:
     #list.extend(list2) adds the elements in list2 to the end of the list.
     
     # Loop over all atoms and place them in box # Index the atoms from 1 to N+1?
+    # Also, make a list over the filled voxels. BECAUSE MOST OF THEM ARE JUST EMPTY!
+    Nfb         = 0
+    filledboxes = []
     for i in range(Natoms):
         # Finding x,y,z-coordinates
         nx = int(xes[i]/len_voxel)
@@ -458,7 +463,10 @@ for lindex in lineindices:
         #print('nx:', nx, '; ny:', ny, '; nz:', nz)
         #print('shape(box):', np.shape(box))
         box[nx][ny][nz].append([xes[i],ys[i],zs[i]])     # I hope this works...
-    
+        if len(box[nx][ny][nz])==1:
+            filledboxes.append(np.array([nx,ny,nz]))
+            Nfb+=1
+    print('Number of filled boxes:', Nfb, '; total number of boxes:', Nx*Ny*Nz, '; Ndistances:', Ndistances)
     
     # What Anders wrote down. I don't really understand all of it...:
     # It doesn't seem like linked lists are that useful in Python, more in C++. 
@@ -492,28 +500,87 @@ for lindex in lineindices:
     for i in range(Nx):
         for j in range(Ny):
             for k in range(Nz):
+                time_before = time.process_time()
                 found          = 0
                 smallest_dist  = 1e20 # No distance is this big.
+                distance0      = 1e20 # No distance is this big.
                 searchmore     = True
                 atomsfound     = False
                 xc             = x_centres[i]
                 yc             = y_centres[j]
                 zc             = z_centres[k]
                 centrevec      = np.array([xc,yc,zc]) # Should probably just have stored this at once...
+                coordvec       = np.array([i,j,k])
                 qrtdistance    = len_voxel/4.         # If the atom is closer to the centre than half the box length, we don't need to search another box.
+                voxeldistance  = np.zeros(Nfb) 
+                for bx in range(Nfb):
+                    voxeldistance[bx] = np.linalg.norm(np.array([i,j,k])-filledboxes[bx])
+                nbindex = np.argmin(voxeldistance)
+                minval  = voxeldistance[nbindex]
+                test_minval = minval
+                # Nearest neighbour boxes:
+                while test_minval==minval:  # Should have an extra test and have everything in one loop
+                    #print('minval:', minval)
+                    voxeldistance[nbindex]=1e20
+                    nnbindex = np.argmin(voxeldistance)
+                    theseindices = filledboxes[bx]
+                    nbx          = theseindices[0]
+                    nby          = theseindices[1]
+                    nbz          = theseindices[2]
+                    thisbox      = box[nbx][nby][nbz]
+                    natoms_box = len(thisbox)
+                    for l in range(natoms_box):
+                        vecthis = thisbox[l]
+                        distvec = centrevec-vecthis
+                        dotprod = np.dot(distvec,distvec)
+                        if dotprod<smallest_dist:
+                            #print('dotprod =', dotprod, '; smallest_dist = ', smallest_dist)
+                            smallest_dist = dotprod
+                    nbindex = np.argmin(voxeldistance)
+                    test_minval  = voxeldistance[nbindex]
+                # Next-nearest neighbours:
+                test_minval = minval
+                while test_minval==minval:
+                    voxeldistance[bx]=1e20
+                    theseindices = filledboxes[bx]
+                    nbx          = theseindices[0]
+                    nby          = theseindices[1]
+                    nbz          = theseindices[2]
+                    thisbox      = box[nbx][nby][nbz]
+                    natoms_box = len(thisbox)
+                    for l in range(natoms_box):
+                        vecthis = thisbox[l]
+                        distvec = centrevec-vecthis
+                        dotprod = np.dot(distvec,distvec)
+                        if dotprod<smallest_dist:
+                            #print('dotprod =', dotprod, '; smallest_dist = ', smallest_dist)
+                            smallest_dist = dotprod
+                    nbindex = np.argmin(voxeldistance)
+                    test_minval  = voxeldistance[nbindex]
+                '''
                 thisbox        = box[i][j][k]
                 natoms_box     = len(thisbox)
-                atomsfound_box = [False,False,False]
-                atomsfound_box_dist = [False,False,False]
+                #atomsfound_box = [False,False,False]
+                #atomsfound_box_dist = [False,False,False]
                 atomsfound_nbbox_index = False
                 if natoms_box==0:
                     atomsfound = False # I don't need this anymore...
                 else:                   # Only inspect box if there are atoms in it.
                     atomsfound = True  # I don't need this anymore...
-                    atomsfound_box = [i,j,k] # I don't need this so far. Might be handy later on.
-                    atomsfound_box_dist = [0,0,0]
+                    #atomsfound_box = [i,j,k] # I don't need this so far. Might be handy later on.
+                    #atomsfound_box_dist = [0,0,0]
                     atomsfound_nbbox_index = 0
-                    smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
+                    # Function taking a box and calculating the distance between its atoms and a box centre
+                    for l in range(natoms_box):
+                        vecthis = thisbox[l]
+                        distvec = centrevec-vecthis
+                        dotprod = np.dot(distvec,distvec)
+                        if dotprod<smallest_dist:
+                            #print('dotprod =', dotprod, '; smallest_dist = ', smallest_dist)
+                            smallest_dist = dotprod
+                            #print('After updating: smallest_dist =', smallest_dist)
+                        if dotprod < qrtdistance:
+                            searchmore = False     # If the atom is sufficiently close to the centre of the box, I don't need to search the neighbouring boxes
                 
                 nbn = 0 # neighbournumber 
                 while searchmore==True:
@@ -552,17 +619,29 @@ for lindex in lineindices:
                         newj = j+deltaj
                         newk = k+deltak
                         if newi<Nx and newi>=0 and newj<Ny and newj>=0 and newk<Nz and newk>=0:      
+                            #timebefore_getting = time.process_time()
                             thisbox    = box[newi][newj][newk]
-                            natoms_box = len(thisbox) 
+                            #timeafter_getting = time.process_time()
+                            #print('Time needed to get thisbox:',timeafter_getting-timebefore_getting)
+                            natoms_box = len(thisbox)
+                            #print('natoms_box:',natoms_box)
                             if natoms_box>0:
-                                smallest_dist, searchmore = find_atomdists_givenbox(smallest_dist,natoms_box,searchmore,thisbox,centrevec)
-                                atomsfound_box = [newi,newj,newk] # I don't need this so far. Might be handy later on.
-                                atomsfound_box_dist = [deltai,deltaj,deltak]
+                                for l in range(natoms_box):
+                                    vecthis = thisbox[l]
+                                    distvec = centrevec-vecthis
+                                    dotprod = np.dot(distvec,distvec)
+                                    if dotprod<smallest_dist:
+                                        #print('dotprod =', dotprod, '; smallest_dist = ', smallest_dist)
+                                        smallest_dist = dotprod
+                                        #print('After updating: smallest_dist =', smallest_dist)
+                                        #atomsfound_box = [newi,newj,newk] # I don't need this so far. Might be handy later on.
+                                        #atomsfound_box_dist = [deltai,deltaj,deltak]
                                 atomsfound_nbbox_index = nbn
                                 atomsfound = True # I don't really need this anymore...
                     #atomsfound_now = False
                         
                     # Need another test to turn searchmore off.
+                    '''
                 #print('n:',n)
                 #print('smallest_dist:', smallest_dist, '; atomsfound_box_dist:', atomsfound_box_dist, ' atom found?:', atomsfound)
                 voxval         = np.sqrt(smallest_dist)
@@ -573,6 +652,8 @@ for lindex in lineindices:
                 outarray[n,2]  = zc
                 outarray[n,3]  = voxval
                 n+=1
+                time_after = time.process_time()
+                #print('Time to get closest atom:', time_after-time_before)
     # It's running, so that's a plus. The distances seem way to big, though...
     print('The absolutely smallest distance:', min(voxelvalues))
     print('max(voxelvalues):', max(voxelvalues))
