@@ -356,105 +356,6 @@ def logarithmic_binning_setbins(largestexp, base, data, plot):
 
 ### For MD data handling: ###
 
-def is_percolating_MDdata(filename):
-    isitpercolating = 0 # 0 if it isn't, 1 if it is
-    
-    # Get file
-    vmat      = np.load(infilename_vmat)
-    # Get dimensions
-    dims      = np.shape(vmat) 
-    Lx        = dims[0]
-    Ly        = dims[1]
-    Lz        = dims[2]
-    
-    
-    lw, num = measurements.label(vmat)
-        
-    b = arange(lw.max() + 1) # create an array of values from 0 to lw.max() + 1
-    shuffle(b) # shuffle this array
-    shuffledLw = b[lw] # replace all values with values from b
-    
-    # Calculate areas
-    area = measurements.sum(vmat, lw, index=arange(lw.max() + 1))
-    areaImg = area[lw]
-    # Bounding box
-    # The cluster with the largest area is not always the one with the largest bounding box
-    maxarea = areaImg.max()
-    #indices_maxarea = indices_max_all(area)      # Finds the index of the cluster(s) that have the largest area
-    indices_maxarea, value_maxarea = indices_Nlargest(area,10)   # Finds the index of the clusters that have areas corresponding to the N largest occurances
-    
-    # Just assuming that the largest cluster is the spanning cluster: (Seems fair from comparing with the other method)
-    if(len(indices_maxarea)>0):
-        for j in range(len(indices_maxarea)):
-            sliced = measurements.find_objects(lw == indices_maxarea[j])
-            #print("len, sliced:", len(sliced))
-            if(len(sliced)>0):
-                print('sliced:',sliced)
-                sliceX = sliced[0][2]  # I have no idea if this works in 3d...
-                sliceY = sliced[0][1]
-                slicez = sliced[0][0]
-                #print("sliceX.start:", sliceX.start, ", sliceX.stop:", sliceX.stop)
-                #print("sliceY.start:", sliceY.start, ", sliceY.stop:", sliceY.stop)
-                # Checking if the cluster spans the system:
-                if (sliceX.stop-sliceX.start)==Lx or (sliceY.stop-sliceY.start)==Ly or (sliceZ.stop-sliceZ.start)==Lz: # Am I interested in which direction it percolates? Might be in the future...
-                    isitpercolating = 1.0
-                    break
-
-    return isitpercolating   
-
-def is_percolating_MDdata_specified_directions(filename):
-    isitpercolating = 0 # 0 if it isn't, 1 if it is
-    isitpercolating_x = 0
-    isitpercolating_y = 0
-    isitpercolating_z = 0
-    
-    # Get file
-    vmat      = np.load(infilename_vmat)
-    # Get dimensions
-    dims      = np.shape(vmat) 
-    Lx        = dims[0]
-    Ly        = dims[1]
-    Lz        = dims[2]
-    
-    
-    lw, num = measurements.label(vmat)
-        
-    b = arange(lw.max() + 1) # create an array of values from 0 to lw.max() + 1
-    shuffle(b) # shuffle this array
-    shuffledLw = b[lw] # replace all values with values from b
-    
-    # Calculate areas
-    area = measurements.sum(vmat, lw, index=arange(lw.max() + 1))
-    areaImg = area[lw]
-    # Bounding box
-    # The cluster with the largest area is not always the one with the largest bounding box
-    maxarea = areaImg.max()
-    #indices_maxarea = indices_max_all(area)      # Finds the index of the cluster(s) that have the largest area
-    indices_maxarea, value_maxarea = indices_Nlargest(area,10)   # Finds the index of the clusters that have areas corresponding to the N largest occurances
-    
-    # Just assuming that the largest cluster is the spanning cluster: (Seems fair from comparing with the other method)
-    if(len(indices_maxarea)>0):
-        for j in range(len(indices_maxarea)):
-            sliced = measurements.find_objects(lw == indices_maxarea[j])
-            #print("len, sliced:", len(sliced))
-            if(len(sliced)>0):
-                #print('sliced:',sliced)
-                sliceX = sliced[0][2]  # I have no idea if this works in 3d...
-                sliceY = sliced[0][1]
-                slicez = sliced[0][0]
-                #print("sliceX.start:", sliceX.start, ", sliceX.stop:", sliceX.stop)
-                #print("sliceY.start:", sliceY.start, ", sliceY.stop:", sliceY.stop)
-                # Checking if the cluster spans the system:
-                if (sliceX.stop-sliceX.start)==Lx:
-                    isitpercolating_x = 1.0
-                if (sliceY.stop-sliceY.start)==Ly:
-                    isitpercolating_y = 1.0
-                if (sliceZ.stop-sliceZ.start)==Lz:
-                    isitpercolating_z = 1.0
-    if isitpercolating_x==1.0 and isitpercolating_y==1.0 and isitpercolating_z==1.0:
-        isitpercolating = 1.0
-    return isitpercolating, isitpercolating_x, isitpercolating_y, isitpercolating_z
-
 def is_the_given_matrix_percolating(vmat):
     isitpercolating = 0 # 0 if it isn't, 1 if it is
     isitpercolating_x = 0
@@ -466,10 +367,12 @@ def is_the_given_matrix_percolating(vmat):
     Lx        = dims[0]
     Ly        = dims[1]
     Lz        = dims[2]
-    
+    print('Lx:', Lx, 'Ly:', Ly, 'Lz:', Lz)
     
     lw, num = measurements.label(vmat)
-        
+    
+    print('num:', num)
+    
     b = arange(lw.max() + 1) # create an array of values from 0 to lw.max() + 1
     shuffle(b) # shuffle this array
     shuffledLw = b[lw] # replace all values with values from b
@@ -477,6 +380,8 @@ def is_the_given_matrix_percolating(vmat):
     # Calculate areas
     area = measurements.sum(vmat, lw, index=arange(lw.max() + 1))
     areaImg = area[lw]
+    
+    #print('Number of clusters:', len(area))
     # Bounding box
     # The cluster with the largest area is not always the one with the largest bounding box
     maxarea = areaImg.max()
@@ -484,15 +389,17 @@ def is_the_given_matrix_percolating(vmat):
     indices_maxarea, value_maxarea = indices_Nlargest(area,10)   # Finds the index of the clusters that have areas corresponding to the N largest occurances
     
     # Just assuming that the largest cluster is the spanning cluster: (Seems fair from comparing with the other method)
-    if(len(indices_maxarea)>0):
+    #print('NEW MATRIX!!')
+    if(len(indices_maxarea)>0 and num!=0):
         for j in range(len(indices_maxarea)):
             sliced = measurements.find_objects(lw == indices_maxarea[j])
             #print("len, sliced:", len(sliced))
             if(len(sliced)>0):
-                #print('sliced:',sliced)
-                sliceX = sliced[0][2]  # I have no idea if this works in 3d...
+                if num==1:
+                    print('num =', num ,'; sliced:',sliced)
+                sliceX = sliced[0][0]  # I have no idea if this works in 3d...
                 sliceY = sliced[0][1]
-                slicez = sliced[0][0]
+                sliceZ = sliced[0][2]
                 #print("sliceX.start:", sliceX.start, ", sliceX.stop:", sliceX.stop)
                 #print("sliceY.start:", sliceY.start, ", sliceY.stop:", sliceY.stop)
                 # Checking if the cluster spans the system:
@@ -502,32 +409,11 @@ def is_the_given_matrix_percolating(vmat):
                     isitpercolating_y = 1.0
                 if (sliceZ.stop-sliceZ.start)==Lz:
                     isitpercolating_z = 1.0
-    if isitpercolating_x==1.0 and isitpercolating_y==1.0 and isitpercolating_z==1.0:
-        isitpercolating = 1.0
+                if isitpercolating_x==1.0 and isitpercolating_y==1.0 and isitpercolating_z==1.0:
+                    isitpercolating = 1.0
+                    break
     return isitpercolating, isitpercolating_x, isitpercolating_y, isitpercolating_z
 
-
-def percolation_rate_MDdata(filenames):
-    Nframes = len(filenames)
-    Pi_av   = 0
-    for filename in filenames:
-        Pi_av += is_percolating_MDdata(filename)
-    Pi_av /= float(Nframes)
-    return Pi_av
-
-def percolation_rate_MDdata_specified_directions(filenames):
-    Nframes = len(filenames)
-    Pi_av   = 0
-    Pi_av_x = 0
-    Pi_av_y = 0
-    Pi_av_z = 0
-    for filename in filenames:
-        Pi_av, Pi_av_x, Pi_av_y, Pi_av_z += is_percolating_MDdata_specified_directions(filename)
-    Pi_av /= float(Nframes)
-    Pi_av_x /= float(Nframes)
-    Pi_av_y /= float(Nframes)
-    Pi_av_z /= float(Nframes)
-    return Pi_av, Pi_av_x, Pi_av_y, Pi_av_z
 
 if __name__=="__main__":
     Lx = 100

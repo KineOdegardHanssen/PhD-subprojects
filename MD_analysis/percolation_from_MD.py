@@ -77,7 +77,7 @@ start_time = time.process_time()
 # Threshold:
 thr   = 0.4 # Set any number here
 Nthr  = 5
-thrs  = np.linspace(2.1,4.0,Nthr) # Or something
+thrs  = np.linspace(2.1,100.0,Nthr) # Or something
 
 # Pi_av, percolation probability vs threshold:
 Pi_av   = np.zeros(Nthr) # Needs to be of the same length as the number of thresholds
@@ -94,6 +94,7 @@ Pi_rms_z = np.zeros(Nthr) # Needs to be of the same length as the number of thre
 # Bools for plotting
 issphere        = False # For plotting if we have a spherical pore
 plotconfig      = True
+plotbool        = True
 
 
 ### Grid setting
@@ -161,7 +162,7 @@ outfilename  = 'voxelmap_chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%
 #infilename   = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj' % (M,N,spacing,Kangle,Kbond,charge,T)
 #infilename      = 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%i_Kbond%i_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj'  % (M,N,spacing,wallenergy,Kangle,Kbond,charge,T)
 
-infilename_base = 'voxelmap_test_short_TESTII'#'spherepore_three'#'equal_distances_four'#'halving_distances'#'voxelmap_test_short'
+infilename_base = 'voxelmap_test_short'#_TESTII'#'spherepore_three'#'equal_distances_four'#'halving_distances'#'voxelmap_test_short'
 #'''
 # Varying the grid spacing # THIS IS NOW THE STANDARD FILE NAMES.
 '''
@@ -195,9 +196,16 @@ outfilename  = 'voxelmap_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_w
 foldername             = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/'
 plotfoldername         = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/Plots/'
 distfoldername         = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/Distmatrices/'
+percfoldername         = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/Percolation/'
 infilename_totalbase   = foldername + infilename_base
 plotname_totalbase     = plotfoldername + infilename_base
 distfilename_totalbase = distfoldername + infilename_base
+outfilename_percdata   = percfoldername + '_percolation_data.txt'
+plotname_percolation_alldirs = percfoldername + infilename_base + '_percolation_total'
+plotname_percolation_xdir    = percfoldername + infilename_base + '_percolation_xdir'
+plotname_percolation_ydir    = percfoldername + infilename_base + '_percolation_ydir'
+plotname_percolation_zdir    = percfoldername + infilename_base + '_percolation_zdir'
+plotname_percolation_everyonetogether = percfoldername + infilename_base + '_percolation_everythingtogether'
 ### For each frame:
 
 ### Loading data
@@ -251,10 +259,16 @@ for timeind in range(Nsteps):
     z_vals    = np.load(infilename_z)
     vmat      = np.load(infilename_vmat) # I guess I should use this one...
     
-    print('shape, vmat:', np.shape(vmat))
+    #print('shape, vmat:', np.shape(vmat))
     
     matsize   = np.size(vmat)
     dx_map    = x_vals[1] - x_vals[0] # Grid size
+    
+    dims      = np.shape(vmat) 
+    Lx        = dims[0]
+    Ly        = dims[1]
+    Lz        = dims[2]
+    print('Lx:', Lx, 'Ly:', Ly, 'Lz:', Lz)
     
     #print('dx_map',dx_map)
     
@@ -263,26 +277,29 @@ for timeind in range(Nsteps):
     # Should I just make a bunch of binary matrices?
     for thrind in range(Nthr):
         thr = thrs[thrind]
-        thrindstring     = '_binary_thr' + str(thr) + '_timestep'+str(timestep)
-        outfilename      = infilename_totalbase + thrindstring
-        plotname_this    = plotname_totalbase + thrindstring + '_str_elem_' + str(str_elem_string)
-        distname_this    = distfilename_totalbase + thrindstring 
-        outfilename_text = outfilename + '.txt'
-        plotname         = plotname_this + '_binary_inputmatrix.png'
-        distfilename     = distname_this + '_distmatr' # Should I have this here?
-        outfile          = open(outfilename,'w') 
-        plotname_2       = plotname_this + '_pureinput.png'
-        print('infilename_vmat:', infilename_vmat)
-        print('outfilename:', outfilename)
+        #print('infilename_vmat:', infilename_vmat)
         
-        print('vmat:',vmat)
-        print('min(vmat):', np.amin(vmat))
+        #print('vmat:',vmat)
+        #print('min(vmat):', np.amin(vmat))
         
-        vmat_binary      = vmat > thr # This yields 'solid' 0 and 'pore' 1. What we did in FYS4460.
+        vmat_binary      = vmat > thr # This yields 'solid' 0 and 'pore' 1. perctools finds clusters of value 1 (True) and checks if these are connected
         #vmat_binary      = vmat > thr # Testing.
         #print(vmat_binary)
         
-        perc_all, perc_x, perc_y, perc_z = perctools.is_the_given_matrix_percolating(vmat)
+        if plotbool==True and timeind==(Nsteps-1): # Save the last time step for testing
+            thrindstring     = '_binary_thr' + str(thr) + '_timestep'+str(timestep)
+            plotname_this    = percfoldername + thrindstring + '.png'
+            
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            pos = np.where(vmat_binary==False)         # Will only plot the solid. Can infer the percolation from that 
+            if issphere:
+                pos = np.where(vmat_binary==True)
+            ax.scatter(pos[0], pos[1], pos[2], c='black')
+            plt.savefig(plotname_this)
+        
+        
+        perc_all, perc_x, perc_y, perc_z = perctools.is_the_given_matrix_percolating(vmat_binary)
         Pi_av_store[timeind,thrind]      = perc_all
         Pi_av_x_store[timeind,thrind]    = perc_x
         Pi_av_y_store[timeind,thrind]    = perc_y
@@ -297,10 +314,15 @@ for timeind in range(Nsteps):
 
 # Finding Pi_av and Pi_rms: 
 
-Pi_av   /= Nsteps
-Pi_av_x /= Nsteps
-Pi_av_y /= Nsteps
-Pi_av_z /= Nsteps
+Pi_av   /= float(Nsteps)
+Pi_av_x /= float(Nsteps)
+Pi_av_y /= float(Nsteps)
+Pi_av_z /= float(Nsteps)
+
+outfile = open(outfilename_percdata,'w')
+
+# Making a header
+outfile.write('Threshold; Pi_av, Pi_rms, Pi_av_x, Pi_rms_x, Pi_av_y, Pi_rms_y, Pi_av_z, Pi_rms_z\n')
 
 for thrind in range(Nthr):
     for timeind in range(Nsteps):
@@ -311,7 +333,8 @@ for thrind in range(Nthr):
     Pi_rms[thrind]   = np.sqrt(Pi_rms[thrind]/(Nsteps-1))
     Pi_rms_x[thrind] = np.sqrt(Pi_rms_x[thrind]/(Nsteps-1))
     Pi_rms_y[thrind] = np.sqrt(Pi_rms_y[thrind]/(Nsteps-1))
-    Pi_rms_z[thrind] = np.sqrt(Pi_rms_z[thrind]/(Nsteps-1)) 
+    Pi_rms_z[thrind] = np.sqrt(Pi_rms_z[thrind]/(Nsteps-1))
+    outfile.write('%.5f %.16f %.16f %.16f %.16f %.16f %.16f %.16f %.16f\n' % (thrs[thrind], Pi_av[thrind], Pi_rms[thrind], Pi_av_x[thrind], Pi_rms_x[thrind], Pi_av_y[thrind], Pi_rms_y[thrind], Pi_av_z[thrind], Pi_rms_z[thrind]))
 
  
 # Set of plot commands:
@@ -353,7 +376,40 @@ plt.title('Percolation probability vs threshold value, z-direction')
 plt.tight_layout()
 plt.savefig(plotname_percolation_zdir)
 
-    
+plt.figure(figsize=(6,5))
+plt.errorbar(thrs, Pi_av, yerr=Pi_rms, capsize=2, label='all dirs')
+plt.errorbar(thrs, Pi_av_x, yerr=Pi_rms_x, capsize=2, label='x-dir')
+plt.errorbar(thrs, Pi_av_y, yerr=Pi_rms_y, capsize=2, label='y-dir')
+plt.errorbar(thrs, Pi_av_z, yerr=Pi_rms_z, capsize=2, label='z-dir')
+plt.plot(thrs, Pi_av_z, 'o')
+plt.xlabel('Threshold [in voxel lengths]')
+plt.ylabel(r'Percolation probability, $\Pi$')
+plt.title('Percolation probability vs threshold value')
+plt.legend(loc='center right')
+plt.tight_layout()
+plt.savefig(plotname_percolation_everyonetogether)
+
+print('thrs:', thrs)
+print('Pi_av_x_store[:,0]:',Pi_av_x_store[:,0])
+print('Pi_av_x_store[:,1]:',Pi_av_x_store[:,1])
+print('Pi_av_x_store[:,2]:',Pi_av_x_store[:,2])
+print('Pi_av_x_store[:,3]:',Pi_av_x_store[:,3])
+print('Pi_av_x_store[:,4]:',Pi_av_x_store[:,4], '\n')
+
+
+print('Pi_av_y_store[:,0]:',Pi_av_y_store[:,0])
+print('Pi_av_y_store[:,1]:',Pi_av_y_store[:,1])
+print('Pi_av_y_store[:,2]:',Pi_av_y_store[:,2])
+print('Pi_av_y_store[:,3]:',Pi_av_y_store[:,3])
+print('Pi_av_y_store[:,4]:',Pi_av_y_store[:,4], '\n')
+
+print('Pi_av_z_store[:,0]:',Pi_av_z_store[:,0])
+print('Pi_av_z_store[:,1]:',Pi_av_z_store[:,1])
+print('Pi_av_z_store[:,2]:',Pi_av_z_store[:,2])
+print('Pi_av_z_store[:,3]:',Pi_av_z_store[:,3])
+print('Pi_av_z_store[:,4]:',Pi_av_z_store[:,4])
+
+ 
 # No need for BoundingBox or stuff like that. Should I label clusters, or just let the morhpology functions do their work?
 # Should use a sphere for structuring element, I guess. Can see if ndimage provides that or if I should come up with it myself.
 
