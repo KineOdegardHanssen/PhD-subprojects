@@ -85,6 +85,12 @@ Pi_av_x = np.zeros(Nthr) # Needs to be of the same length as the number of thres
 Pi_av_y = np.zeros(Nthr) # Needs to be of the same length as the number of thresholds
 Pi_av_z = np.zeros(Nthr) # Needs to be of the same length as the number of thresholds
 
+# Pi_rms, rms of Pi_av:
+Pi_rms   = np.zeros(Nthr) # Needs to be of the same length as the number of thresholds
+Pi_rms_x = np.zeros(Nthr) # Needs to be of the same length as the number of thresholds
+Pi_rms_y = np.zeros(Nthr) # Needs to be of the same length as the number of thresholds
+Pi_rms_z = np.zeros(Nthr) # Needs to be of the same length as the number of thresholds
+
 # Bools for plotting
 issphere        = False # For plotting if we have a spherical pore
 plotconfig      = True
@@ -213,25 +219,13 @@ timestepnumbers = np.unique(allthetimesteps) # And I want the unique time step n
 #timestepnumbers = np.array(['2340000','3340000'])        # FOR TESTING ONLY!!! UNCOMMENT AS SOON AS THE PLOTS LOOK THE SAME!
 Nsteps          = len(timestepnumbers)
 
-### Arrays for finding the average and stdv:
-accfracs_p_collect         = np.zeros((Nsteps, Nthr, Nr))
-porefracs_collect          = np.zeros((Nsteps, Nthr, Nr))
-diffporefrac_collect       = np.zeros((Nsteps, Nthr, Nr-1))
-differenceporefrac_collect = np.zeros((Nsteps, Nthr, Nr-1))
-poredistr_collect          = np.zeros((Nsteps, Nthr, Nr-1))
-ball_elements              = np.zeros((Nsteps, Nthr, Nr))
+# To compute time averages and rms:
+Pi_av_store   = np.zeros((Nsteps,Nthr)) # Needs to be of the same length as the number of thresholds
+Pi_av_x_store = np.zeros((Nsteps,Nthr)) # Needs to be of the same length as the number of thresholds
+Pi_av_y_store = np.zeros((Nsteps,Nthr)) # Needs to be of the same length as the number of thresholds
+Pi_av_z_store = np.zeros((Nsteps,Nthr)) # Needs to be of the same length as the number of thresholds
 
-# Readying the structuring elements before reading the data
-structuring_elements       = []
-ball_elements_stored       = np.zeros(Nr)
 
-for i in range(Nr):
-    radius = radii[i]
-    if isball==True:
-        structuring_elements.append(morphology.ball(radius))
-    if iscube==True:
-        structuring_elements.append(morphology.cube(radius))
-    ball_elements_stored[i]   = np.sum(np.sum(np.sum(structuring_elements[i]))) # Can do this outside of the loop, but it is probably not very costly anyways.
 
 print('!!! timestepnumbers:',timestepnumbers)
 # Can loop from here:
@@ -288,123 +282,77 @@ for timeind in range(Nsteps):
         #vmat_binary      = vmat > thr # Testing.
         #print(vmat_binary)
         
-        Pi_av[thrind], Pi_av_x[thrind], Pi_av_y[thrind], Pi_av_z[thrind] += is_the_given_matrix_percolating(vmat)
+        perc_all, perc_x, perc_y, perc_z = perctools.is_the_given_matrix_percolating(vmat)
+        Pi_av_store[timeind,thrind]      = perc_all
+        Pi_av_x_store[timeind,thrind]    = perc_x
+        Pi_av_y_store[timeind,thrind]    = perc_y
+        Pi_av_z_store[timeind,thrind]    = perc_z
+        Pi_av[thrind]                   += perc_all
+        Pi_av_x[thrind]                 += perc_x
+        Pi_av_y[thrind]                 += perc_y
+        Pi_av_z[thrind]                 += perc_z
     # Loop over thresholds finished
 # Loop over time steps finished
 # We use that to get the averages, so I don't think I will do much analysis before this point.
 
-'''
-porefracs      = np.zeros((Nr,Nthr))
-accfracs_p     = np.zeros((Nr,Nthr))
-porevoxels     = np.zeros((Nr,Nthr))
-poredistr      = np.zeros((Nr,Nthr))
-porefracs_rms  = np.zeros((Nr,Nthr))
-accfracs_p_rms = np.zeros((Nr,Nthr))
-porevoxels_rms = np.zeros((Nr,Nthr))
-poredistr_rms  = np.zeros((Nr,Nthr))
-'''
+# Finding Pi_av and Pi_rms: 
 
+Pi_av   /= Nsteps
+Pi_av_x /= Nsteps
+Pi_av_y /= Nsteps
+Pi_av_z /= Nsteps
 
-# Need a kind of post-proccessing loop?
 for thrind in range(Nthr):
-    thr = thrs[thrind]
-    # For plotting:
-    outfilename      = infilename_totalbase + '_binary_thr' + str(thr) + '_str_elem_' + str(str_elem_string) + '_r%i-%i' % (rstart,rend) #+ 'TEST' #+ '_timestep'+str(timestep) # I can skip timestep in this name when I'm sure everything is right
-    outfilename_text = outfilename + '.txt'
-    plotnamebase     = plotname_totalbase + '_binary_thr' + str(thr) + '_str_elem_' + str(str_elem_string) + '_r%i-%i' % (rstart,rend)
-    plotname         = plotnamebase + '.png'
-    #outfile          = open(outfilename,'w')
-    plotname_acc      = plotnamebase + '_accvolfrac_pore.png'
-    plotname_pore     = plotnamebase + '_porefrac.png'
-    plotname_pore_differentiated = plotnamebase + '_porefrac_differentiated_from_accumulated.png'
-    plotname_pore_difference     = plotnamebase + '_porefrac_difference_from_accumulated.png'
-    plotname_pore_numbers        = plotnamebase + '_porenos_from_difference.png'
-    
-    for i in range(Nr): # Do I really need to treat these as 2d-arrays, though? Can't I just overwrite them for each thr?
-        accfracs_p[i,thrind], accfracs_p_rms[i,thrind]                 = av_and_rms(accfracs_p_collect[:,thrind,i])
-        porefracs[i,thrind], porefracs_rms[i,thrind]                   = av_and_rms(porefracs_collect[:,thrind,i])
-    for i in range(Nr-1):    
-        diffporefrac[i,thrind], diffporefrac_rms[i,thrind]             = av_and_rms(diffporefrac_collect[:,thrind,i])
-        differenceporefrac[i,thrind], differenceporefrac_rms[i,thrind] = av_and_rms(differenceporefrac_collect[:,thrind,i])       
-        print('array in:', poredistr_collect[:,thrind,i])
-        poredistr[i,thrind], poredistr_rms[i,thrind]                   = av_and_rms(poredistr_collect[:,thrind,i])
-        print('average:', poredistr[i,thrind], '; rms:', poredistr_rms[i,thrind], '\n')
-        if i==0:
-            print('poredistr[i,thrind]:',poredistr[i,thrind])
-    
-    plt.figure(figsize=(6,5))
-    #plt.errorbar(separation, costheta[-1,:], yerr=costheta_rms[-1,:], fmt="none", capsize=2, label='Values')
-    plt.errorbar(radii,accfracs_p[:,thrind], yerr=accfracs_p_rms[:,thrind], fmt="none", capsize=2)#, label='Values')
-    plt.plot(radii,accfracs_p[:,thrind], 'o')
-    plt.xlabel('Radius r [voxels]')
-    plt.ylabel('Accumulated volume fraction, pores')
-    plt.title('Accumulated pore volume fraction, str. elem=%s' % str_elem_string)
-    plt.tight_layout()
-    plt.savefig(plotname_acc)
-    
-    plt.figure(figsize=(6,5))
-    plt.errorbar(radii,porefracs[:,thrind], yerr=porefracs_rms[:,thrind], capsize=2) #fmt="none", capsize=2)#, label='Values')
-    plt.plot(radii,porefracs[:,thrind], 'o')
-    plt.xlabel('Radius r [voxels]')
-    plt.ylabel('Accumulated pore fraction')
-    plt.title('Pore fraction, str. elem=%s' % str_elem_string)
-    plt.tight_layout()
-    plt.savefig(plotname_pore)
-    
-    plt.figure(figsize=(6,5))
-    plt.errorbar(diffradii,diffporefrac[:,thrind], yerr=diffporefrac_rms[:,thrind], capsize=2) #fmt="none", capsize=2)#, label='Values')
-    plt.plot(diffradii,diffporefrac[:,thrind], 'o')
-    plt.xlabel('Radius r [voxels]')
-    plt.ylabel('Pore fraction')
-    plt.title('Pore fraction, str. elem=%s, differentiated from acc' % str_elem_string)
-    plt.tight_layout()
-    plt.savefig(plotname_pore_differentiated)
-    
-    #'''
-    plt.figure(figsize=(6,5))
-    #plt.plot(differenceradii,differenceporefrac)
-    plt.errorbar(differenceradii,differenceporefrac[:,thrind], yerr=differenceporefrac_rms[:,thrind], capsize=2) #fmt="none", capsize=2)#, label='Values')
-    plt.plot(differenceradii,differenceporefrac[:,thrind], 'o')
-    plt.xlabel('Radius r [voxels]')
-    plt.ylabel('Pore fraction')
-    plt.title('Pore fraction, str. elem=%s, difference from acc' % str_elem_string)
-    plt.tight_layout()
-    plt.savefig(plotname_pore_difference)
-    #'''
-    '''
-    plt.figure(figsize=(6,5))
-    plt.errorbar(differenceradii,poredistr[:,thrind], yerr=poredistr_rms[:,thrind], fmt="none", capsize=2) #fmt="none", capsize=2)#, label='Values')
-    plt.plot(differenceradii,poredistr[:,thrind], 'o')
-    plt.xlabel('Radius r [voxels]')
-    plt.ylabel('Number of pores')
-    plt.title('Number of pores, str. elem=%s, difference from acc' % str_elem_string)
-    plt.tight_layout()
-    plt.savefig(plotname_pore_numbers)
-    
-    print('dx_map:', dx_map)
-    '''
+    for timeind in range(Nsteps):
+        Pi_rms[thrind]   += (Pi_av_store[timeind,thrind] - Pi_av[thrind])**2
+        Pi_rms_x[thrind] += (Pi_av_x_store[timeind,thrind] - Pi_av_x[thrind])**2
+        Pi_rms_y[thrind] += (Pi_av_y_store[timeind,thrind] - Pi_av_y[thrind])**2
+        Pi_rms_z[thrind] += (Pi_av_z_store[timeind,thrind] - Pi_av_z[thrind])**2
+    Pi_rms[thrind]   = np.sqrt(Pi_rms[thrind]/(Nsteps-1))
+    Pi_rms_x[thrind] = np.sqrt(Pi_rms_x[thrind]/(Nsteps-1))
+    Pi_rms_y[thrind] = np.sqrt(Pi_rms_y[thrind]/(Nsteps-1))
+    Pi_rms_z[thrind] = np.sqrt(Pi_rms_z[thrind]/(Nsteps-1)) 
 
-'''    
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-import numpy as np
+ 
+# Set of plot commands:
+plt.figure(figsize=(6,5))
+plt.errorbar(thrs, Pi_av, yerr=Pi_rms, capsize=2) #fmt="none", capsize=2)#, label='Values')
+plt.plot(thrs, Pi_av, 'o')
+plt.xlabel('Threshold [in voxel lengths]')
+plt.ylabel(r'Percolation probability, $\Pi$')
+plt.title('Percolation probability vs threshold value, all directions')
+plt.tight_layout()
+plt.savefig(plotname_percolation_alldirs)
+
+plt.figure(figsize=(6,5))
+plt.errorbar(thrs, Pi_av_x, yerr=Pi_rms_x, capsize=2) #fmt="none", capsize=2)#, label='Values')
+plt.plot(thrs, Pi_av_x, 'o')
+plt.xlabel('Threshold [in voxel lengths]')
+plt.ylabel(r'Percolation probability, $\Pi$')
+plt.title('Percolation probability vs threshold value, x-direction')
+plt.tight_layout()
+plt.savefig(plotname_percolation_xdir)
 
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
+plt.figure(figsize=(6,5))
+plt.errorbar(thrs, Pi_av_y, yerr=Pi_rms_y, capsize=2) #fmt="none", capsize=2)#, label='Values')
+plt.plot(thrs, Pi_av_y, 'o')
+plt.xlabel('Threshold [in voxel lengths]')
+plt.ylabel(r'Percolation probability, $\Pi$')
+plt.title('Percolation probability vs threshold value, y-direction')
+plt.tight_layout()
+plt.savefig(plotname_percolation_ydir)
 
-size = 21
-m = np.zeros(shape = (size, size, size))
-random_location_1 = (1,1,2)
-random_location_2 = (3,5,8)
-m[random_location_1] = 1
-m[random_location_2] = 1
 
-pos = np.where(m==1)
-ax.scatter(pos[0], pos[1], pos[2], c='black')
-plt.show()
-'''    
-    
+plt.figure(figsize=(6,5))
+plt.errorbar(thrs, Pi_av_z, yerr=Pi_rms_z, capsize=2) #fmt="none", capsize=2)#, label='Values')
+plt.plot(thrs, Pi_av_z, 'o')
+plt.xlabel('Threshold [in voxel lengths]')
+plt.ylabel(r'Percolation probability, $\Pi$')
+plt.title('Percolation probability vs threshold value, z-direction')
+plt.tight_layout()
+plt.savefig(plotname_percolation_zdir)
+
     
 # No need for BoundingBox or stuff like that. Should I label clusters, or just let the morhpology functions do their work?
 # Should use a sphere for structuring element, I guess. Can see if ndimage provides that or if I should come up with it myself.
