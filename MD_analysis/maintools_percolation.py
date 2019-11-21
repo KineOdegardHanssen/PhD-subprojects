@@ -357,21 +357,19 @@ def logarithmic_binning_setbins(largestexp, base, data, plot):
 ### For MD data handling: ###
 
 def is_the_given_matrix_percolating(vmat):
-    isitpercolating = 0 # 0 if it isn't, 1 if it is
-    isitpercolating_x = 0
-    isitpercolating_y = 0
-    isitpercolating_z = 0
+    isitpercolating_all    = 0 # 0 if it isn't, 1 if it is
+    isitpercolating_onedir = 0 # 0 if it isn't, 1 if it is
+    isitpercolating_x      = 0
+    isitpercolating_y      = 0
+    isitpercolating_z      = 0
     
     # Get dimensions
     dims      = np.shape(vmat) 
     Lx        = dims[0]
     Ly        = dims[1]
     Lz        = dims[2]
-    print('Lx:', Lx, 'Ly:', Ly, 'Lz:', Lz)
     
     lw, num = measurements.label(vmat)
-    
-    print('num:', num)
     
     b = arange(lw.max() + 1) # create an array of values from 0 to lw.max() + 1
     shuffle(b) # shuffle this array
@@ -381,7 +379,6 @@ def is_the_given_matrix_percolating(vmat):
     area = measurements.sum(vmat, lw, index=arange(lw.max() + 1))
     areaImg = area[lw]
     
-    #print('Number of clusters:', len(area))
     # Bounding box
     # The cluster with the largest area is not always the one with the largest bounding box
     maxarea = areaImg.max()
@@ -389,30 +386,117 @@ def is_the_given_matrix_percolating(vmat):
     indices_maxarea, value_maxarea = indices_Nlargest(area,10)   # Finds the index of the clusters that have areas corresponding to the N largest occurances
     
     # Just assuming that the largest cluster is the spanning cluster: (Seems fair from comparing with the other method)
-    #print('NEW MATRIX!!')
     if(len(indices_maxarea)>0 and num!=0):
         for j in range(len(indices_maxarea)):
             sliced = measurements.find_objects(lw == indices_maxarea[j])
-            #print("len, sliced:", len(sliced))
             if(len(sliced)>0):
-                if num==1:
-                    print('num =', num ,'; sliced:',sliced)
                 sliceX = sliced[0][0]  # I have no idea if this works in 3d...
                 sliceY = sliced[0][1]
                 sliceZ = sliced[0][2]
-                #print("sliceX.start:", sliceX.start, ", sliceX.stop:", sliceX.stop)
-                #print("sliceY.start:", sliceY.start, ", sliceY.stop:", sliceY.stop)
                 # Checking if the cluster spans the system:
                 if (sliceX.stop-sliceX.start)==Lx:
                     isitpercolating_x = 1.0
+                    isitpercolating_onedir = 1.0
                 if (sliceY.stop-sliceY.start)==Ly:
                     isitpercolating_y = 1.0
+                    isitpercolating_onedir = 1.0
                 if (sliceZ.stop-sliceZ.start)==Lz:
                     isitpercolating_z = 1.0
+                    isitpercolating_onedir = 1.0
                 if isitpercolating_x==1.0 and isitpercolating_y==1.0 and isitpercolating_z==1.0:
-                    isitpercolating = 1.0
+                    isitpercolating_all = 1.0
                     break
-    return isitpercolating, isitpercolating_x, isitpercolating_y, isitpercolating_z
+    return isitpercolating_all, isitpercolating_onedir, isitpercolating_x, isitpercolating_y, isitpercolating_z
+
+def size_of_percolating_cluster_given_matrix(vmat):
+    P_all    = 0
+    P_onedir = 0
+    P_x      = 0
+    P_y      = 0
+    P_z      = 0
+    
+    hitx      = 0
+    hity      = 0
+    hitz      = 0
+    hitall    = 0
+    hitonedir = 0
+    
+    percx = 0
+    percy = 0
+    percz = 0
+    
+    # Get dimensions
+    dims      = np.shape(vmat) 
+    Lx        = dims[0]
+    Ly        = dims[1]
+    Lz        = dims[2]
+    
+    lw, num = measurements.label(vmat)
+    
+    b = arange(lw.max() + 1) # create an array of values from 0 to lw.max() + 1
+    shuffle(b) # shuffle this array
+    shuffledLw = b[lw] # replace all values with values from b
+    
+    # Calculate areas
+    area = measurements.sum(vmat, lw, index=arange(lw.max() + 1))
+    areaImg = area[lw]
+    
+    # Bounding box
+    # The cluster with the largest area is not always the one with the largest bounding box
+    maxarea = areaImg.max()
+    #indices_maxarea = indices_max_all(area)      # Finds the index of the cluster(s) that have the largest area
+    indices_maxarea, values_maxarea = indices_Nlargest(area,10)   # Finds the index of the clusters that have areas corresponding to the N largest occurances
+    
+    if(len(indices_maxarea)>0):
+        for j in range(len(indices_maxarea)):
+            sliced = measurements.find_objects(lw == indices_maxarea[j])
+            #sliced = measurements.find_objects(areaImg==maxarea)
+            sliceX = sliced[0][0]  # I have no idea if this works in 3d...
+            sliceY = sliced[0][1]
+            sliceZ = sliced[0][2]
+            #print("len, sliced:", len(sliced))
+            # Checking if the clusters span:
+            if (sliceY.stop-sliceY.start)==Lx:
+                P_x  += values_maxarea[j]
+                hitx += 1
+                percx = 1
+            if (sliceX.stop-sliceX.start)==Ly:
+                P_y  += values_maxarea[j]
+                hity += 1
+                percy = 1
+            if (sliceZ.stop-sliceZ.start)==Lz:
+                P_z  += values_maxarea[j]
+                hitz += 1
+                percz = 1
+            if percx==1 or percy==1 or percz==1:
+                P_all  += values_maxarea[j]
+                hitall += 1
+            if percx==1 and percy==1 and percz==1:
+                P_onedir += values_maxarea[j]
+                hitonedir +=1
+            percx = 0
+            percy = 0
+            percz = 0
+    # If this is cleft as a comment: If there are more spanning clusters, we take P to be the sum of their areas and then divide by the number of voxels (opposite to, say, finding the density of ONE of the spanning clusters)
+    '''       
+    if hitx!=0:
+        P_x      /= hitx
+    if hity!=0:
+        P_y      /= hity
+    if hitz!=0:
+        P_z      /= hitz
+    if hitall!=0:
+        P_all    /= hitall
+    if hitonedir!=0:
+        P_onedir /= hitonedir
+     '''
+    P_all    /= (Lx*Ly*Lz)
+    P_onedir /= (Lx*Ly*Lz)
+    P_x      /= (Lx*Ly*Lz)
+    P_y      /= (Lx*Ly*Lz)
+    P_z      /= (Lx*Ly*Lz)
+    return P_all, P_onedir, P_x, P_y, P_z      
+
 
 
 if __name__=="__main__":
