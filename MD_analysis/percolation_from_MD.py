@@ -20,13 +20,23 @@ def costheta_exponential(s,P):
 '''
 
 # Checking when a (decreasing) quantity dips below a given value
-def crude_pcapproach_readoffgraph(p, Pi, threshold):
+def crude_pcapproach_readoffgraph(p, Pi, threshold, confidence_range):
     Np = len(p)
+    passed_start = 0
+    passed_thr   = 0
+    deltaPi      = 0.5*confidence_range
     for i in range(Np):
-        if Pi[i]<=threshold:   # The moment Pi dips below the threshold, take the corresponding p to be pc
+        if Pi[i]<=(threshold+deltaPi) and passed_start==0: # Should maybe use 0.5*1/e or something instead of 0.2 for confidence_range?
+            startrange = p[i]
+            passed_start = 1
+        if Pi[i]<=threshold and passed_thr==0:   # The moment Pi dips below the threshold, take the corresponding p to be pc
             pc = p[i]
+            slope = (Pi[i+1]-Pi[i-1])/(p[i+1]-p[i-1])
+        if Pi[i]<=(threshold-deltaPi):
+            endrange = p[i]
             break
-    return pc
+    rangewidth = endrange-startrange
+    return pc, slope, startrange, endrange, rangewidth # I don't need to print this much...
 
 
 # Differentiation
@@ -433,10 +443,12 @@ outfile_P.close()
 
 # Finding pc (crude approach):
 threshold_for_pc = 0.5
-pc = crude_pcapproach_readoffgraph(thrs, Pi_av_z, threshold_for_pc)
+confidence_range = np.exp(-1) # 0.1
+pc, slope, startrange, endrange, rangewidth = crude_pcapproach_readoffgraph(thrs, Pi_av_z, threshold_for_pc, confidence_range) # Should this give more information? Should perhaps give the span of p for which Pi is +/-0.1 off this value # Or slope in this point? # Yeah, slope would be good. # Should have both, just in case. I do not write much to this file anyways, and will not have many files of this kind.
 
 outfile_pc = open(outfilename_percdata_pc,'w')
-outfile_pc.write('%.16f' % pc)
+outfile_pc.write('%.16f %.2e %.5f %.5f %.5f' % (pc, slope, startrange, endrange, rangewidth))
+outfile_pc.close()
 
 # Plotting:
 # Pi
