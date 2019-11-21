@@ -18,6 +18,17 @@ import glob
 def costheta_exponential(s,P):
     return np.exp(-s/P)
 '''
+
+# Checking when a (decreasing) quantity dips below a given value
+def crude_pcapproach_readoffgraph(p, Pi, threshold):
+    Np = len(p)
+    for i in range(Np):
+        if Pi[i]<=threshold:   # The moment Pi dips below the threshold, take the corresponding p to be pc
+            pc = p[i]
+            break
+    return pc
+
+
 # Differentiation
 def diff_by_middlepoint(h,f):
     # Differentiating using the
@@ -223,6 +234,7 @@ plotname_totalbase      = plotfoldername + infilename_base
 distfilename_totalbase  = distfoldername + infilename_base
 outfilename_percdata_Pi = percfoldername + '_percolation_data'+name_end+'_Pi.txt'
 outfilename_percdata_P  = percfoldername + '_percolation_data'+name_end+'_P.txt'
+outfilename_percdata_pc = percfoldername + '_percolation_data'+name_end+'_pc.txt'
 plotname_percolation_alldirs = percfoldername + infilename_base + '_percolation_total'+name_end
 plotname_percolation_xdir    = percfoldername + infilename_base + '_percolation_xdir'+name_end
 plotname_percolation_ydir    = percfoldername + infilename_base + '_percolation_ydir'+name_end
@@ -418,7 +430,14 @@ for thrind in range(Nthr):
 
 outfile_Pi.close()
 outfile_P.close()
- 
+
+# Finding pc (crude approach):
+threshold_for_pc = 0.5
+pc = crude_pcapproach_readoffgraph(thrs, Pi_av_z, threshold_for_pc)
+
+outfile_pc = open(outfilename_percdata_pc,'w')
+outfile_pc.write('%.16f' % pc)
+
 # Plotting:
 # Pi
 plt.figure(figsize=(6,5))
