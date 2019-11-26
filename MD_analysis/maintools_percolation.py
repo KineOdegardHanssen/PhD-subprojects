@@ -1,6 +1,7 @@
 from pylab import *
 from scipy.ndimage import measurements
 import numpy
+import random
 
 def indices_max_all(a):
     # Only for 1D array (prob easy to extend)
@@ -497,8 +498,62 @@ def size_of_percolating_cluster_given_matrix(vmat):
     P_z      /= (Lx*Ly*Lz)
     return P_all, P_onedir, P_x, P_y, P_z      
 
-
-
+def randomwalk_on_3D_clusters(N,vmat): # Should I do this only on the percolating cluster?
+    # Takes a binary matrix as input
+    vmat = vmat.astype(int) # Just a safequard
+    
+    # Get dimensions
+    dims      = np.shape(vmat) 
+    Lx        = dims[0]
+    Ly        = dims[1]
+    Lz        = dims[2]
+    
+    #Neighbours:
+    neighbours = []
+    neighbours.append([0,0,1])
+    neighbours.append([0,0,-1])
+    neighbours.append([1,0,0])
+    neighbours.append([-1,0,0])
+    neighbours.append([0,1,0])
+    neighbours.append([0,-1,0])
+    neighbours = np.array(neighbours)
+    
+    # Array for storing squared distance:
+    squared_distance = np.zeros(N)
+    
+    # Setting up the starting point
+    notoncluster = 0
+    while notoncluster==0:
+        xindex = random.randint(0,Lx-1)
+        yindex = random.randint(0,Ly-1)
+        zindex = random.randint(0,Lz-1)
+        # Standard: 'solid' 1 and 'pore' 0
+        if vmat[xindex,yindex,zindex]==0: # Should I do this only on the percolating cluster?
+            notoncluster=1
+    indices = np.array([xindex,yindex,zindex])
+    positions = [indices]
+    
+    # Performing the random walk
+    for i in range(N):
+        searching = True
+        while searching:
+            nextstep = random.randint(0,5) # Should have some way to break if there is no way out...
+            newindices = indices+neighbours[nextstep]
+            nextx      = newindices[0]
+            nexty      = newindices[1]
+            nextz      = newindices[2]
+            if nextx>=0 and nextx<Lx and nexty>=0 and nexty<Ly and nextz>=0 and nextz<Lz:
+                nextpoint = vmat[nextx,nexty,nextz]
+                if nextpoint==0:
+                    indices[0] = nextx
+                    indices[1] = nexty
+                    indices[2] = nextz
+                    searching = False
+        positions.append(indices)
+        distancevec = indices-positions[0]
+        squared_distance[i] = np.dot(distancevec,distancevec)
+    return positions, squared_distance  # Do I need positions?...
+        
 if __name__=="__main__":
     Lx = 100
     Ly = 5#Lx
