@@ -13,6 +13,7 @@ import glob
 def costheta_exponential(s,P):
     return np.exp(-s/P)
 
+@jit(nopython=True, parallel=True)
 def voxellate(voxN, Nx, Ny, Nz, x_centres, y_centres, z_centres, posvecs):
     outarray = np.zeros((voxN,4))
     voxmat   = np.zeros((Nx,Ny,Nz))
@@ -57,9 +58,9 @@ start_time = time.process_time()
 ### There is a possible issue here if I want to go from NVT to NPT. That will determine how much I will put in the loop... 
 
 ### Number of time frames
-Nframes     = 3                                 # Number of time steps we want to include here
+Nframes     = 2                                 # Number of time steps we want to include here
 totframes   = 10000000/10000                    # Total number of time steps in the file # This should be 1000
-Nframes     = totframes # Want to find for every frame (that is going to take some time...)
+#Nframes     = totframes # Want to find for every frame (that is going to take some time...)
 startframe  = 0#300#0#100#250
 endframe    = totframes-1#450#totframes-1#200#750# 
 indices     = np.linspace(startframe,endframe,Nframes) #np.array([startframe])#np.linspace(startframe,endframe,Nframes)#np.linspace(0,totframes-1,Nframes)  # Might need to take floor() of the values here, just in case
@@ -324,97 +325,92 @@ for lindex in lineindices:
     
     ### Make voxel grid ###
     ####  It's enough to make this grid once for NVT, but not for NPT ####
-    print('Make voxel grid')
+    if lindex==lineindices[0]: # Only make grid ONCE
+        print('Make voxel grid')
+        
+        print('time step:', timestep)
+        
+        ## I want to cut the box a bit: I want to reduce the amount of empty space above my chains
+        zmaxes = []
+        for i in range(M):
+            zmax_temp = max(zs[i])
+            zmaxes.append(zmax_temp)
+        zmax_makegrid = max(zmaxes)
+        
+        # Set edges of grid # I should probably print these, along with information about the number of voxels
+        minx_grid          = xmin
+        maxx_grid          = xmax
+        miny_grid          = ymin
+        maxy_grid          = ymax
+        minz_grid          = zmin
+        maxz_grid          = zmax_makegrid+zbuffer # Don't know if the 'buffer' is big enough
+        if abs(maxz_grid-Lx)<zbuffer:              # I don't want to make the voxel map bigger than the simulation box
+            maxz_grid          = zmax_makegrid
     
-    print('time step:', timestep)
-    
-    '''
-    print('zs_makegrid:',zs_makegrid)
-    print('len(zs):',len(zs))
-    print('size(zs):',np.size(zs))#.size())
-    '''
-    ## I want to cut the box a bit: I want to reduce the amount of empty space above my chains
-    # Find max value of zs_makegrid:
-    zmaxes = []
-    for i in range(M):
-        zmax_temp = max(zs[i])
-        zmaxes.append(zmax_temp)
-    zmax_makegrid = max(zmaxes)
-    
-    # Set edges of grid # I should probably print these, along with information about the number of voxels
-    minx_grid          = xmin
-    maxx_grid          = xmax
-    miny_grid          = ymin
-    maxy_grid          = ymax
-    minz_grid          = zmin
-    maxz_grid          = zmax_makegrid+zbuffer # Don't know if the 'buffer' is big enough
-    if abs(maxz_grid-Lx)<zbuffer:              # I don't want to make the voxel map bigger than the simulation box
-        maxz_grid          = zmax_makegrid
-    
-    # Make voxel grid, store information about positions
-    # Is the information about the positions stored as the corners or the centres?
-    # It is probably easiest to work with the centres when finding the distance to the closest atom.
-    # But what if the atom is WITHIN the voxel? Should I just set the value to 0?
-    # Should be quite easy to check this? But the shape of the voxel causes some trouble. It is not a sphere, so the distance from the centre of the voxel to a point on one of its edges is not the same for all points. So I can't just compare lengths.
-    # Maybe it is easier to just store the distance to the centre even if the atom is inside the voxel.
-    # Should I just give a voxel size in the beginning? But that might not fit with the simulation box, and I want to set the number of voxels.
-    # But it is difficult to fit a set number of voxels... The simulation box does not have the same length in all direction.
-    # OR should I set number of voxels in x-direction and then add voxels (cubes) of that size until I've covered all the simulation box (up until maxz_grid)?
-    
-    len_voxel = Lx/float(Nvoxels) # This is the length of all sides. # The voxel length should be the same for all time frames
-    ns        = np.arange(Nvoxels)
-    x_centres = 0.5*(2*ns+1)*len_voxel+minx_grid # Do I really need this one, though?...
-    
-    #'''
-    #print('x_centres:',x_centres) 
-    print('Lx:', Lx)
-    print('Ly:', Ly)
-    print('Lz:', Lz)
-    #'''
-    # Figure out how many voxels in the other directions
-    # In y-direction (guess I could just set this automatically, at least as long as I have constant volume) -- (But if I don't have constant volume, then I'm gonna be in trouble anyways)
-    edgehit   = 0
-    y_centres = []
-    i         = 0
-    while edgehit==0:
-        centrevalue = 0.5*(2*i+1)*len_voxel+miny_grid # Possibly add starting y-value
-        edgevalue   = len_voxel*(i+1)+miny_grid
-        y_centres.append(centrevalue)
-        i += 1.0
-        #print('edgevalue:', edgevalue, 'maxy_grid:', maxy_grid)
-        if (maxy_grid-centrevalue)<0.5*len_voxel or abs(maxy_grid-edgevalue)<0.1*len_voxel: # Could have abs() as well, but this works fine since we break it here
-            edgehit = 1
-    
-    y_centres = np.array(y_centres)
-    #print('y_centres:', y_centres)
-    
-    # In z-direction
-    edgehit   = 0
-    z_centres = []
-    i         = 0
-    while edgehit==0:
-        centrevalue = 0.5*(2*i+1)*len_voxel+minz_grid
-        edgevalue   = len_voxel*(i+1)+minz_grid
-        z_centres.append(centrevalue)
-        i += 1.0
-        # Test this:
-        if (maxz_grid-centrevalue)<0.5*len_voxel or abs(maxz_grid-edgevalue)<1e-15: # Could have abs() as well, but this works fine since we break it here
-            edgehit = 1
-    
-    z_centres = np.array(z_centres)
-    #print('z_centres:', z_centres)
-    
-    Nx = len(x_centres)
-    Ny = len(y_centres)
-    Nz = len(z_centres)
-    voxN = Nx*Ny*Nz
-    
-    #'''
-    print('xmin:',xmin)
-    print('ymin:',ymin)
-    print('zmin:',zmin)
-    print('len_voxel:',len_voxel)
-    #'''
+        # Make voxel grid, store information about positions
+        # Is the information about the positions stored as the corners or the centres?
+        # It is probably easiest to work with the centres when finding the distance to the closest atom.
+        # But what if the atom is WITHIN the voxel? Should I just set the value to 0?
+        # Should be quite easy to check this? But the shape of the voxel causes some trouble. It is not a sphere, so the distance from the centre of the voxel to a point on one of its edges is not the same for all points. So I can't just compare lengths.
+        # Maybe it is easier to just store the distance to the centre even if the atom is inside the voxel.
+        # Should I just give a voxel size in the beginning? But that might not fit with the simulation box, and I want to set the number of voxels.
+        # But it is difficult to fit a set number of voxels... The simulation box does not have the same length in all direction.
+        # OR should I set number of voxels in x-direction and then add voxels (cubes) of that size until I've covered all the simulation box (up until maxz_grid)?
+        
+        len_voxel = Lx/float(Nvoxels) # This is the length of all sides. # The voxel length should be the same for all time frames
+        ns        = np.arange(Nvoxels)
+        x_centres = 0.5*(2*ns+1)*len_voxel+minx_grid # Do I really need this one, though?...
+        
+        #'''
+        #print('x_centres:',x_centres) 
+        print('Lx:', Lx)
+        print('Ly:', Ly)
+        print('Lz:', Lz)
+        #'''
+        # Figure out how many voxels in the other directions
+        # In y-direction (guess I could just set this automatically, at least as long as I have constant volume) -- (But if I don't have constant volume, then I'm gonna be in trouble anyways)
+        edgehit   = 0
+        y_centres = []
+        i         = 0
+        while edgehit==0:
+            centrevalue = 0.5*(2*i+1)*len_voxel+miny_grid # Possibly add starting y-value
+            edgevalue   = len_voxel*(i+1)+miny_grid
+            y_centres.append(centrevalue)
+            i += 1.0
+            #print('edgevalue:', edgevalue, 'maxy_grid:', maxy_grid)
+            if (maxy_grid-centrevalue)<0.5*len_voxel or abs(maxy_grid-edgevalue)<0.1*len_voxel: # Could have abs() as well, but this works fine since we break it here
+                edgehit = 1
+        
+        y_centres = np.array(y_centres)
+        #print('y_centres:', y_centres)
+        
+        # In z-direction
+        edgehit   = 0
+        z_centres = []
+        i         = 0
+        while edgehit==0:
+            centrevalue = 0.5*(2*i+1)*len_voxel+minz_grid
+            edgevalue   = len_voxel*(i+1)+minz_grid
+            z_centres.append(centrevalue)
+            i += 1.0
+            # Test this:
+            if (maxz_grid-centrevalue)<0.5*len_voxel or abs(maxz_grid-edgevalue)<1e-15: # Could have abs() as well, but this works fine since we break it here
+                edgehit = 1
+        
+        z_centres = np.array(z_centres)
+        #print('z_centres:', z_centres)
+        
+        Nx = len(x_centres)
+        Ny = len(y_centres)
+        Nz = len(z_centres)
+        voxN = Nx*Ny*Nz
+        
+        #'''
+        print('xmin:',xmin)
+        print('ymin:',ymin)
+        print('zmin:',zmin)
+        print('len_voxel:',len_voxel)
+        #'''
     
     # Regarding indices: Should I have one running index, or one index for each coordinate?
     # Need to work at the coordinate level at some point. I can start with that and tweak the indices later
