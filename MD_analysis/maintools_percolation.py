@@ -502,6 +502,8 @@ def randomwalk_on_3D_clusters(N,vmat): # Should I do this only on the percolatin
     # Takes a binary matrix as input
     vmat = vmat.astype(int) # Just a safequard
     
+    print('In randomwalk_on_3D_clusters')
+    
     # Get dimensions
     dims      = np.shape(vmat) 
     Lx        = dims[0]
@@ -522,29 +524,49 @@ def randomwalk_on_3D_clusters(N,vmat): # Should I do this only on the percolatin
     squared_distance = np.zeros(N)
     
     # Setting up the starting point
-    notoncluster = 0
-    while notoncluster==0:
+    freetomove   = 0
+    while freetomove==0:
         xindex = random.randint(0,Lx-1)
         yindex = random.randint(0,Ly-1)
         zindex = random.randint(0,Lz-1)
         # Standard: 'solid' 1 and 'pore' 0
         if vmat[xindex,yindex,zindex]==0: # Should I do this only on the percolating cluster?
-            notoncluster=1
-    indices = np.array([xindex,yindex,zindex])
+            indices      = np.array([xindex,yindex,zindex])
+            # I need to test that there is a way out
+            for i in range(len(neighbours)):
+                ni = indices +neighbours[i]
+                nix = ni[0]
+                niy = ni[1]
+                niz = ni[2]
+                if nix>=0 and nix<Lx and niy>=0 and niy<Ly and niz>=0 and niz<Lz:
+                    nbpoint = vmat[nix,niy,niz]
+                    if nbpoint==0: # Success! We can move!
+                        print('nbpoint =', nbpoint)
+                        freetomove = 1
+                        break
     positions = [indices]
+    print('Going into loop')
+    
+    # Should I only do this for the percolating cluster? ... Now I can get trapped in a small cluster, or in ONE pore
+    
     
     # Performing the random walk
     for i in range(N):
         searching = True
+        print('i:',i)
         while searching:
             nextstep = random.randint(0,5) # Should have some way to break if there is no way out...
             newindices = indices+neighbours[nextstep]
             nextx      = newindices[0]
             nexty      = newindices[1]
             nextz      = newindices[2]
+            #print('nextstep:', nextstep)
             if nextx>=0 and nextx<Lx and nexty>=0 and nexty<Ly and nextz>=0 and nextz<Lz:
+                #print('Next step is not outside of matrix')
                 nextpoint = vmat[nextx,nexty,nextz]
                 if nextpoint==0:
+                    #print('nextpoint value:', nextpoint, ' using nexstep', nextstep)
+                    #print('Found next point to go to')
                     indices[0] = nextx
                     indices[1] = nexty
                     indices[2] = nextz
