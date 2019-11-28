@@ -1,3 +1,4 @@
+from skimage import morphology, measure, io, util   # For performing morphology operations (should maybe import more from skimage...)
 from pylab import *
 from scipy.ndimage import measurements
 import numpy
@@ -502,7 +503,7 @@ def randomwalk_on_3D_clusters(N,vmat): # Should I do this only on the percolatin
     # Takes a binary matrix as input
     vmat = vmat.astype(int) # Just a safequard
     
-    print('In randomwalk_on_3D_clusters')
+    #print('In randomwalk_on_3D_clusters')
     
     # Get dimensions
     dims      = np.shape(vmat) 
@@ -523,6 +524,21 @@ def randomwalk_on_3D_clusters(N,vmat): # Should I do this only on the percolatin
     # Array for storing squared distance:
     squared_distance = np.zeros(N)
     
+    
+    ############# Alternative to choosing cluster: Just looking at the largest cluster?
+    negative = util.invert(vmat)
+    negative = negative.astype(int)
+    
+    lw, num = measurements.label(negative) # Labels cl
+    b = arange(lw.max() + 1) # create an array of values from 0 to lw.max() + 1   
+    # Calculate areas
+    area = measurements.sum(negative, lw, index=arange(lw.max() + 1)) # Returns an array with the sum of all elements of label 1, 2, 3, etc., i.e. the areas, in the order specified by index
+    areaImg = area[lw]
+    
+    maxarea = areaImg.max()
+    
+    vmat = areaImg == maxarea # This should work?
+    
     # Setting up the starting point
     freetomove   = 0
     while freetomove==0:
@@ -531,7 +547,7 @@ def randomwalk_on_3D_clusters(N,vmat): # Should I do this only on the percolatin
         zindex = random.randint(0,Lz-1)
         # Standard: 'solid' 1 and 'pore' 0
         if vmat[xindex,yindex,zindex]==0: # Should I do this only on the percolating cluster?
-            indices      = np.array([xindex,yindex,zindex])
+            indices      = np.array([xindex,yindex,zindex]) # I use this notation because I need to store elements as integers. It's simpler that way
             # I need to test that there is a way out
             for i in range(len(neighbours)):
                 ni = indices +neighbours[i]
@@ -541,11 +557,10 @@ def randomwalk_on_3D_clusters(N,vmat): # Should I do this only on the percolatin
                 if nix>=0 and nix<Lx and niy>=0 and niy<Ly and niz>=0 and niz<Lz:
                     nbpoint = vmat[nix,niy,niz]
                     if nbpoint==0: # Success! We can move!
-                        print('nbpoint =', nbpoint)
+                        #print('nbpoint =', nbpoint)
                         freetomove = 1
                         break
     positions = [indices]
-    print('Going into loop')
     
     # Should I only do this for the percolating cluster? ... Now I can get trapped in a small cluster, or in ONE pore
     
@@ -553,7 +568,7 @@ def randomwalk_on_3D_clusters(N,vmat): # Should I do this only on the percolatin
     # Performing the random walk
     for i in range(N):
         searching = True
-        print('i:',i)
+        #print('i:',i)
         while searching:
             nextstep = random.randint(0,5) # Should have some way to break if there is no way out...
             newindices = indices+neighbours[nextstep]
@@ -567,13 +582,16 @@ def randomwalk_on_3D_clusters(N,vmat): # Should I do this only on the percolatin
                 if nextpoint==0:
                     #print('nextpoint value:', nextpoint, ' using nexstep', nextstep)
                     #print('Found next point to go to')
-                    indices[0] = nextx
-                    indices[1] = nexty
-                    indices[2] = nextz
+                    indices = np.array([nextx,nexty,nextz])  # I use this notation because I need to store elements as integers. It's simpler that way
                     searching = False
-        positions.append(indices)
+        positions.append(np.copy(indices))
+        #if i==1:
+        #    print('indices:', indices, '; positions[0]:', positions[0])
         distancevec = indices-positions[0]
+        #print('distancevec:', distancevec)
         squared_distance[i] = np.dot(distancevec,distancevec)
+    #print('type(indices):', type(indices))
+    #print('Positions:', positions)
     return positions, squared_distance  # Do I need positions?...
         
 if __name__=="__main__":
