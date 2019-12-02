@@ -25,20 +25,64 @@ def crude_pcapproach_readoffgraph(p, Pi, threshold, confidence_range):
     passed_start = 0
     passed_thr   = 0
     deltaPi      = 0.5*confidence_range
-    for i in range(Np):
+    endrangeset  = False
+    startrangeset = False
+    for i in range(Np-1):
         if Pi[i]<=(threshold+deltaPi) and passed_start==0: # Should maybe use 0.5*1/e or something instead of 0.2 for confidence_range?
-            startrange = p[i]
-            passed_start = 1
+            startrange    = p[i]
+            passed_start  = 1
+            startrangeset = True
         if Pi[i]<=threshold and passed_thr==0:   # The moment Pi dips below the threshold, take the corresponding p to be pc
             pc = p[i]
             slope = (Pi[i+1]-Pi[i-1])/(p[i+1]-p[i-1])
         if Pi[i]<=(threshold-deltaPi):
             endrange = p[i]
+            endrangeset = True
             break
+    # These are here because we might not have chosen an appropriate range
+    if endrangeset==False:
+        endrange = p[-1]
+    if startrangeset==False:
+        startrange = p[0]
     rangewidth = endrange-startrange
-    return pc, slope, startrange, endrange, rangewidth # I don't need to print this much...
+    return pc, slope, startrange, endrange, rangewidth, startrangeset, endrangeset # I don't need to print this much...
 
+def partition_holders(Nthr,Nstepsrandom,minlength):
+    interval     = minlength                           # Spacing between start points
+    end_interval = Nstepsrandom-interval+1             # +1 because of the indexing and how arange works (but will check and see later)
+    startpoints  = np.arange(0,end_interval, interval) # Points to start the calculation of the rmsd.
+    numberofsamples = len(startpoints)                 # Number of such walks. Will be the number of lists
+    partitioned_walks_holder = []
+    steps_holder             = []
+    for i in range(numberofsamples):
+        partitioned_walks_holder.append(np.zeros((Nthr,Nstepsrandom-i*interval))) # Should hold in general
+    return partitioned_walks_holder
 
+def partition_rw(thesepositions, Nstepsrandom, minlength): # Or should I use something like Nsections instead?
+    interval     = minlength                           # Spacing between start points
+    end_interval = Nstepsrandom-interval+1             # +1 because of the indexing and how arange works (but will check and see later)
+    startpoints  = np.arange(0,end_interval, interval) # Points to start the calculation of the rmsd.
+    numberofsamples = len(startpoints)                 # Number of such walks. Will be the number of lists
+    partitioned_walks = []
+    steps             = []
+    for i in range(numberofsamples): # Looping over the number of partitioned walks
+        startpoint = startpoints[i]
+        counter    = 1
+        thesesteps = [0]
+        these_rmsd = [0]
+        this_point = startpoint+counter
+        while this_point<Nstepsrandom:
+            distvec = this_point-startpoint
+            rmsd    = np.dot(distvec,distvec)
+            thesesteps.append(counter)
+            these_rmsd.append(rmsd)
+            counter+=1
+        thesesteps = np.array(thesesteps)
+        these_rmsd = np.array(these_rmsd)
+        steps.append(thesesteps)
+        partitioned_walks.append(these_rmsd)
+    return steps, partitioned_walks
+    
 # Differentiation
 def diff_by_middlepoint(h,f):
     # Differentiating using the
@@ -98,9 +142,12 @@ start_time = time.process_time()
 # Threshold:
 thr   = 0.4 # Set any number here
 Nthr  = 101
-thrs  = np.linspace(0,60,Nthr) # Or something
+thrs  = np.linspace(20,40,Nthr) # Or something
 #thrs  = np.array([2.1, 15.0])
 Nthr  = len(thrs)                  # Safeguard
+
+# 
+minlength = 200  # Determines how small walks we should section the walk into
 
 # Pi
 # Pi_av, percolation probability vs threshold:
@@ -131,6 +178,8 @@ P_rms_x = np.zeros(Nthr) # Needs to be of the same length as the number of thres
 P_rms_y = np.zeros(Nthr) # Needs to be of the same length as the number of thresholds
 P_rms_z = np.zeros(Nthr) # Needs to be of the same length as the number of thresholds
 P_rms_one = np.zeros(Nthr) # Needs to be of the same length as the number of thresholds
+
+counter = np.zeros(Nthr)
 
 # Bools for plotting
 issphere        = False # For plotting if we have a spherical pore
@@ -234,17 +283,20 @@ infilename   = 'chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_K
 outfilename  = 'voxelmap_chaingrid_quadratic_M%iN%i_ljdebye%.3f_angle_Langevin_wall%.3f_Kangle%i_Kbond%i_T%i_theta0is180.txt' % (M,N,ljdebye,ljdebye,Kangle,Kbond,T)
 '''
 ### More on names:
-name_end                = '_thr%ito%i' % (thrs[0],thrs[-1])
-foldername              = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/'
-plotfoldername          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/Plots/'
-distfoldername          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/Distmatrices/'
-percfoldername          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/Percolation/'
-infilename_totalbase    = foldername + infilename_base
-plotname_totalbase      = plotfoldername + infilename_base
-distfilename_totalbase  = distfoldername + infilename_base
-outfilename_percdata_Pi = percfoldername + '_percolation_data'+name_end+'_Pi.txt'
-outfilename_percdata_P  = percfoldername + '_percolation_data'+name_end+'_P.txt'
-outfilename_percdata_pc = percfoldername + '_percolation_data'+name_end+'_pc.txt'
+name_end                 = '_thr%ito%i' % (thrs[0],thrs[-1])
+foldername               = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/'
+plotfoldername           = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/Plots/'
+distfoldername           = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/Distmatrices/'
+percfoldername           = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Voxelmatrices/Frames_'+infilename_base+'/Percolation/'
+percfoldername_totalbase = percfoldername + infilename_base # Do I actually need this?
+infilename_totalbase     = foldername + infilename_base
+plotname_totalbase       = plotfoldername + infilename_base
+distfilename_totalbase   = distfoldername + infilename_base
+name_end                 = name_end+'_TESTING_RANDOM_WALK'
+outfilename_percdata_Pi  = percfoldername_totalbase + '_percolation_data'+name_end+'_Pi.txt'
+outfilename_percdata_P   = percfoldername_totalbase + '_percolation_data'+name_end+'_P.txt'
+outfilename_percdata_pc  = percfoldername_totalbase + '_percolation_data'+name_end+'_pc.txt'
+outfilename_randomwalk   = percfoldername_totalbase + '_voxellated'+name_end+'_random_walk.txt'
 plotname_percolation_alldirs = percfoldername + infilename_base + '_percolation_total'+name_end
 plotname_percolation_xdir    = percfoldername + infilename_base + '_percolation_xdir'+name_end
 plotname_percolation_ydir    = percfoldername + infilename_base + '_percolation_ydir'+name_end
@@ -293,6 +345,16 @@ P_av_z_store = np.zeros((Nsteps,Nthr)) # Needs to be of the same length as the n
 P_av_one_store = np.zeros((Nsteps,Nthr)) # Needs to be of the same length as the number of thresholds
 
 
+## Adding random walk on the binary matrix:
+Nstepsrandom = 1000#10001 # Don't know how many steps are appropriate
+Nstarray     = np.arange(0,Nstepsrandom+1)
+Rrandom      = np.zeros((Nstepsrandom+1,Nthr))
+partition_walks = partition_holders(Nstepsrandom,minlength)
+
+# Testing part:
+Nsteps = 6
+
+
 
 #print('!!! timestepnumbers:',timestepnumbers)
 # Can loop from here:
@@ -336,14 +398,20 @@ for timeind in range(Nsteps):
     # Should I just make a bunch of binary matrices?
     for thrind in range(Nthr):
         thr = thrs[thrind]
+        #print('thrind:', thrind, '; thr:', thr)
         #print('infilename_vmat:', infilename_vmat)
         
         #print('vmat:',vmat)
         #print('min(vmat):', np.amin(vmat))
         
         vmat_binary      = vmat > thr # This yields 'solid' 0 and 'pore' 1. perctools finds clusters of value 1 (True) and checks if these are connected
-        #vmat_binary      = vmat > thr # Testing.
+        #vmat_binary      = vmat > thr \subsubsection*{make\_voxelmap\_severalframes\_jit_lean.py}# Testing.
         #print(vmat_binary)
+        thesepositions, thiswalk, doesitcount = perctools.randomwalk_on_3D_clusters(Nstepsrandom,vmat_binary)
+        steps, partition_walks = partition_rw(thesepositions, partition_walks, Nstepsrandom, minlength)
+        counter[thrind] += doesitcount
+        #print('thiswalk:', thiswalk)
+        Rrandom[:,thrind] = Rrandom[:,thrind] + thiswalk # Casting problem here, that is why this is 'ugly'
         
         if plotbool==True and timeind==(Nsteps-1): # Save the last time step for testing
             thrindstring     = '_binary_thr' + str(thr) + '_timestep'+str(timestep)
@@ -382,6 +450,11 @@ for timeind in range(Nsteps):
         P_av_y[thrind]                 += P_y
         P_av_z[thrind]                 += P_z
     # Loop over thresholds finished
+    
+    new_time = time.process_time()
+    if timeind/Nsteps*100==0 or timeind/Nsteps*100==10  or timeind/Nsteps*100==25 or timeind/Nsteps*100==50 or timeind/Nsteps*100==75 or timeind/Nsteps*100==90:
+        print('Time step no.', timeind, ' of', Nsteps, ' done. Time:', new_time-start_time, " s")
+    
 # Loop over time steps finished
 # We use that to get the averages, so I don't think I will do much analysis before this point.
 
@@ -400,12 +473,26 @@ P_av_x   /= float(Nsteps)
 P_av_y   /= float(Nsteps)
 P_av_z   /= float(Nsteps)
 
+#Rrandom  /= Nsteps # Do this?
+print('Rrandom[:,-1]:',Rrandom[:,-1])
+
+for i in range(Nthr):
+    if counter[i]>0:
+        Rrandom[:,i] /= counter[i] # Or this?
+
+print('Rrandom[:,-1]:',Rrandom[:,-1])
+
+new_time = time.process_time()
+print('Time:', new_time-start_time, " s")
+
 outfile_Pi = open(outfilename_percdata_Pi,'w') # Need to print P too. Do that in a separate file?
 outfile_P  = open(outfilename_percdata_P, 'w')
+outfile_randomwalk = open(outfilename_randomwalk,'w')
 
 # Making a header
 outfile_Pi.write('Threshold; Pi_av, Pi_rms, Pi_av, Pi_one_rms, Pi_av_x, Pi_rms_x, Pi_av_y, Pi_rms_y, Pi_av_z, Pi_rms_z\n')
 outfile_P.write('Threshold; P_av, P_rms, P_av, P_one_rms, P_av_x, P_rms_x, P_av_y, P_rms_y, P_av_z, P_rms_z\n')
+outfile_randomwalk.write('Number of time steps (for averaging); Number of steps in random walk:\n%i %i\n' % (Nsteps,Nstepsrandom))
 
 for thrind in range(Nthr):
     for timeind in range(Nsteps):
@@ -435,22 +522,31 @@ for thrind in range(Nthr):
     P_rms_x[thrind]   = np.sqrt(P_rms_x[thrind]/(Nsteps-1))
     P_rms_y[thrind]   = np.sqrt(P_rms_y[thrind]/(Nsteps-1))
     P_rms_z[thrind]   = np.sqrt(P_rms_z[thrind]/(Nsteps-1))
+    # Writing Pi
     outfile_Pi.write('%.5f %.16f %.16f %.16f %.16f %.16f %.16f %.16f %.16f %.16f %.16f\n' % (thrs[thrind], Pi_av[thrind], Pi_rms[thrind], Pi_av_one[thrind], Pi_rms_one[thrind], Pi_av_x[thrind], Pi_rms_x[thrind], Pi_av_y[thrind], Pi_rms_y[thrind], Pi_av_z[thrind], Pi_rms_z[thrind]))
+    # Writing P
     outfile_P.write('%.5f %.16f %.16f %.16f %.16f %.16f %.16f %.16f %.16f %.16f %.16f\n' % (thrs[thrind], P_av[thrind], P_rms[thrind], P_av_one[thrind], P_rms_one[thrind], P_av_x[thrind], P_rms_x[thrind], P_av_y[thrind], P_rms_y[thrind], P_av_z[thrind], P_rms_z[thrind]))
+    # Writing random walk
+    outfile_randomwalk.write('%.5f' % thrs[thrind])
+    for i in range(N):
+        outfile_randomwalk.write(' %.16f' % Rrandom[i,thrind])
+    outfile_randomwalk.write('\n')
 
 outfile_Pi.close()
 outfile_P.close()
+outfile_randomwalk.close()
 
 # Finding pc (crude approach):
 threshold_for_pc = 0.5
 confidence_range = np.exp(-1) # 0.1
-pc, slope, startrange, endrange, rangewidth = crude_pcapproach_readoffgraph(thrs, Pi_av_z, threshold_for_pc, confidence_range) # Should this give more information? Should perhaps give the span of p for which Pi is +/-0.1 off this value # Or slope in this point? # Yeah, slope would be good. # Should have both, just in case. I do not write much to this file anyways, and will not have many files of this kind.
+pc, slope, startrange, endrange, rangewidth, isthestartrangereal, istheendrangereal = crude_pcapproach_readoffgraph(thrs, Pi_av_z, threshold_for_pc, confidence_range) # Should this give more information? Should perhaps give the span of p for which Pi is +/-0.1 off this value # Or slope in this point? # Yeah, slope would be good. # Should have both, just in case. I do not write much to this file anyways, and will not have many files of this kind.
 
 outfile_pc = open(outfilename_percdata_pc,'w')
 outfile_pc.write('%.16f %.2e %.5f %.5f %.5f' % (pc, slope, startrange, endrange, rangewidth))
 outfile_pc.close()
 
 # Plotting:
+'''
 # Pi
 plt.figure(figsize=(6,5))
 plt.errorbar(thrs, Pi_av, yerr=Pi_rms, capsize=2) #fmt="none", capsize=2)#, label='Values')
@@ -556,7 +652,21 @@ plt.title('$P$ vs threshold value')
 plt.legend(loc='upper right')
 plt.tight_layout()
 plt.savefig(plotname_percolation_P_everyonetogether)
+'''
 
+plt.figure(figsize=(6,5))
+plt.plot(Nstarray, Rrandom[:,0], label='thr=%i' % thrs[0])
+plt.plot(Nstarray, Rrandom[:,10], label='thr=%i' % thrs[10])
+plt.plot(Nstarray, Rrandom[:,-1], label='thr=%i' % thrs[-1])
+#plt.plot(Nstarray, Rrandom[:,1000], label='Step 1000')
+#plt.plot(Nstarray, Rrandom[:,10000], label='Step 10000')
+plt.xlabel(r'Step number')
+plt.ylabel(r'Distance$^2$ [in voxel lengths]')
+plt.title('Random walk in pore space')
+plt.legend(loc='upper left')
+plt.tight_layout()
+plt.show()
+#plt.savefig(plotname_percolation_P_everyonetogether)
 
  
 # No need for BoundingBox or stuff like that. Should I label clusters, or just let the morhpology functions do their work?
