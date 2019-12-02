@@ -55,33 +55,34 @@ def partition_holders(Nthr,Nstepsrandom,minlength):
     partitioned_walks_holder = []
     steps_holder             = []
     for i in range(numberofsamples):
-        partitioned_walks_holder.append(np.zeros((Nthr,Nstepsrandom-i*interval))) # Should hold in general
-    return partitioned_walks_holder
+        length = Nstepsrandom-i*interval
+        partitioned_walks_holder.append(np.zeros((Nthr,length))) # Should hold in general
+        steps_holder.append(np.arange(0,length)) # Rewrite this slightly... Use arange
+    return steps_holder, partitioned_walks_holder
 
-def partition_rw(thesepositions, Nstepsrandom, minlength): # Or should I use something like Nsections instead?
+def partition_rw(thesepositions,partition_walks, Nstepsrandom, minlength, thisthr, Nthr): # Or should I use something like Nsections instead?
     interval     = minlength                           # Spacing between start points
     end_interval = Nstepsrandom-interval+1             # +1 because of the indexing and how arange works (but will check and see later)
     startpoints  = np.arange(0,end_interval, interval) # Points to start the calculation of the rmsd.
     numberofsamples = len(startpoints)                 # Number of such walks. Will be the number of lists
-    partitioned_walks = []
-    steps             = []
     for i in range(numberofsamples): # Looping over the number of partitioned walks
         startpoint = startpoints[i]
         counter    = 1
-        thesesteps = [0]
-        these_rmsd = [0]
-        this_point = startpoint+counter
-        while this_point<Nstepsrandom:
-            distvec = this_point-startpoint
-            rmsd    = np.dot(distvec,distvec)
-            thesesteps.append(counter)
-            these_rmsd.append(rmsd)
-            counter+=1
-        thesesteps = np.array(thesesteps)
-        these_rmsd = np.array(these_rmsd)
-        steps.append(thesesteps)
-        partitioned_walks.append(these_rmsd)
-    return steps, partitioned_walks
+        length     = Nstepsrandom-i*interval
+        these_rmsd = np.zeros((Nthr,length))
+        this_index = startpoint+counter
+        while this_index<Nstepsrandom:
+            this_point = thesepositions[this_index]
+            distvec    = this_point-startpoint
+            rmsd       = np.dot(distvec,distvec)
+            #print('thisthr:', thisthr, '; counter:', counter)
+            these_rmsd[thisthr,counter] += rmsd 
+            this_index+=1
+            counter   +=1 
+        partition_walks[i] += these_rmsd
+        #steps.append(thesesteps)
+        #partitioned_walks.append(these_rmsd)
+    return partition_walks
     
 # Differentiation
 def diff_by_middlepoint(h,f):
@@ -349,7 +350,7 @@ P_av_one_store = np.zeros((Nsteps,Nthr)) # Needs to be of the same length as the
 Nstepsrandom = 1000#10001 # Don't know how many steps are appropriate
 Nstarray     = np.arange(0,Nstepsrandom+1)
 Rrandom      = np.zeros((Nstepsrandom+1,Nthr))
-partition_walks = partition_holders(Nstepsrandom,minlength)
+steps, partition_walks = partition_holders(Nthr,Nstepsrandom,minlength)
 
 # Testing part:
 Nsteps = 6
@@ -408,7 +409,7 @@ for timeind in range(Nsteps):
         #vmat_binary      = vmat > thr \subsubsection*{make\_voxelmap\_severalframes\_jit_lean.py}# Testing.
         #print(vmat_binary)
         thesepositions, thiswalk, doesitcount = perctools.randomwalk_on_3D_clusters(Nstepsrandom,vmat_binary)
-        steps, partition_walks = partition_rw(thesepositions, partition_walks, Nstepsrandom, minlength)
+        partition_walks = partition_rw(thesepositions, partition_walks, Nstepsrandom, minlength, thrind, Nthr)
         counter[thrind] += doesitcount
         #print('thiswalk:', thiswalk)
         Rrandom[:,thrind] = Rrandom[:,thrind] + thiswalk # Casting problem here, that is why this is 'ugly'
@@ -529,7 +530,7 @@ for thrind in range(Nthr):
     # Writing random walk
     outfile_randomwalk.write('%.5f' % thrs[thrind])
     for i in range(N):
-        outfile_randomwalk.write(' %.16f' % Rrandom[i,thrind])
+        outfile_randomwalk.write(' %.16f' % Rrandom[i,thrind]) # Could use some rms value
     outfile_randomwalk.write('\n')
 
 outfile_Pi.close()
