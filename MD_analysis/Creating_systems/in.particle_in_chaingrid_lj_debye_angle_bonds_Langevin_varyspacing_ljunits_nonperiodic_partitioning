@@ -54,7 +54,7 @@ angle_style harmonic
 
 # Making the atoms:
 read_data data.chaingrids_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge}_extraatomtype#_mass1 # Uncomment end of this filename sometimes #_straight
-log log.particle_in_chaingrid_quadratic_M9N101_ljunits_gridspacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_chargeelementary${charge}_effectivedielectric${conversionfactor}_T$T_theta0is180_pmass${pmass}_ppf #_correctconversions_twofirst_are_fixed #The file name gets too long
+log log.particle_in_chaingrid_quadratic_M9N101_ljunits_gridspacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_chargeelementary${charge}_effectivedielectric${conversionfactor}_T$T_theta0is180_pmass${pmass}_ppf_sect #_correctconversions_twofirst_are_fixed #The file name gets too long
 
 velocity all create $T 87287 # I can reset the velocities.
 
@@ -120,20 +120,40 @@ run 1
 change_box movingatoms boundary p p f
 fix wallmembrane movingatoms wall/lj126 zlo 0.0 ${ljepsilon} 1.0 1.122 units box # Cutoff changed from before 
 
-dump walltest all xyz 10 walltest.xyz
-
 run 1333400
+
 ####################### Run and write to file #########################################
 
 compute meansquaredistance all msd # For ALL or just for the atom?
-compute meansquaredistance_freeatom freeatom msd
+compute meansquaredistance_freeatom_all freeatom msd
 
 #dump 1 all custom 10000 chaingrid_quadratic_M9N101_ljunits_gridspacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_chargeelementary${charge}_effectivedielectric${conversionfactor}_T$T_theta0is180_correctconversions_twofirst_are_fixed.lammpstrj id type mol x y z vx vy vz # For visualization # THE FILE NAME GETS TOO LONG
-dump 1 all custom 10000 particle_in_chaingrid_quadratic_M9N101_ljunits_gridspacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_chargeelementary${charge}_effectivedielectric${conversionfactor}_T$T_theta0is180_pmass${pmass}_ppf.lammpstrj id type mol x y z vx vy vz # For visualization
-dump 2 freeatom custom 10000 particleonly_particle_in_chaingrid_quadratic_M9N101_ljunits_gridspacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_chargeelementary${charge}_effectivedielectric${conversionfactor}_T$T_theta0is180_pmass${pmass}_ppf.lammpstrj id type mol x y z vx vy vz # For visualization
-thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy c_coulombenergy c_meansquaredistance[4] c_meansquaredistance_freeatom[4]
+dump 1 all custom 10000 particle_in_chaingrid_quadratic_M9N101_ljunits_gridspacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_chargeelementary${charge}_effectivedielectric${conversionfactor}_T$T_theta0is180_pmass${pmass}_ppf_sect.lammpstrj id type mol x y z vx vy vz # For visualization
+dump 2 freeatom custom 10000 particleonly_particle_in_chaingrid_quadratic_M9N101_ljunits_gridspacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debyecutoff${debyecutoff}_chargeelementary${charge}_effectivedielectric${conversionfactor}_T$T_theta0is180_pmass${pmass}_ppf_sect.lammpstrj id type mol x y z vx vy vz # For visualization
+thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy c_coulombenergy c_meansquaredistance[4] c_meansquaredistance_freeatom_all[4]
+thermo 1#000
+run 10#2000000#10000000
+
+compute meansquaredistance_freeatom_1 freeatom msd
+thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy c_coulombenergy c_meansquaredistance[4] c_meansquaredistance_freeatom_all[4] c_meansquaredistance_freeatom_1[4]
 thermo 1000
-run 10000000
+run 2000000#10000000
+
+compute meansquaredistance_freeatom_2 freeatom msd
+thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy c_coulombenergy c_meansquaredistance[4] c_meansquaredistance_freeatom_all[4] c_meansquaredistance_freeatom_1[4] c_meansquaredistance_freeatom_2[4]
+thermo 1000
+run 2000000#10000000
+
+compute meansquaredistance_freeatom_3 freeatom msd
+thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy c_coulombenergy c_meansquaredistance[4] c_meansquaredistance_freeatom_all[4] c_meansquaredistance_freeatom_1[4] c_meansquaredistance_freeatom_2[4] c_meansquaredistance_freeatom_3[4]
+thermo 1000
+run 2000000#10000000
+
+compute meansquaredistance_freeatom_4 freeatom msd
+thermo_style custom step time temp pe ke etotal c_bendingenergy c_stretchingenergy c_coulombenergy c_meansquaredistance[4] c_meansquaredistance_freeatom_all[4] c_meansquaredistance_freeatom_1[4] c_meansquaredistance_freeatom_2[4] c_meansquaredistance_freeatom_3[4] c_meansquaredistance_freeatom_4[4]
+thermo 1000
+run 2000000#10000000
+
 clear
 next spacing
 jump SELF nloop
