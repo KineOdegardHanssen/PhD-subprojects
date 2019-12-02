@@ -66,11 +66,12 @@ def partition_rw(thesepositions,partition_walks, Nstepsrandom, minlength, thisth
     startpoints  = np.arange(0,end_interval, interval) # Points to start the calculation of the rmsd.
     numberofsamples = len(startpoints)                 # Number of such walks. Will be the number of lists
     for i in range(numberofsamples): # Looping over the number of partitioned walks
-        startpoint = startpoints[i]
+        startindex = startpoints[i]
+        startpoint = thesepositions[startindex]
         counter    = 1
         length     = Nstepsrandom-i*interval
         these_rmsd = np.zeros((Nthr,length))
-        this_index = startpoint+counter
+        this_index = startindex+counter
         while this_index<Nstepsrandom:
             this_point = thesepositions[this_index]
             distvec    = this_point-startpoint
@@ -298,6 +299,7 @@ outfilename_percdata_Pi  = percfoldername_totalbase + '_percolation_data'+name_e
 outfilename_percdata_P   = percfoldername_totalbase + '_percolation_data'+name_end+'_P.txt'
 outfilename_percdata_pc  = percfoldername_totalbase + '_percolation_data'+name_end+'_pc.txt'
 outfilename_randomwalk   = percfoldername_totalbase + '_voxellated'+name_end+'_random_walk.txt'
+outfilename_randomwalk_partiions = percfoldername_totalbase + '_voxellated'+name_end+'_random_walk_partitions.txt'
 plotname_percolation_alldirs = percfoldername + infilename_base + '_percolation_total'+name_end
 plotname_percolation_xdir    = percfoldername + infilename_base + '_percolation_xdir'+name_end
 plotname_percolation_ydir    = percfoldername + infilename_base + '_percolation_ydir'+name_end
@@ -481,6 +483,34 @@ for i in range(Nthr):
     if counter[i]>0:
         Rrandom[:,i] /= counter[i] # Or this?
 
+Npartitions = math.floor(Nstepsrandom/minlength)
+av_slope    = np.zeros(Nthr)
+rms_slope   = np.zeros(Nthr)
+store_slope = np.zeros((Npartitions,Nthr))
+fitsteps    = np.arange(0,minlength)
+slope_variance_fit = np.zeros(Nthr)
+for i in range(Npartitions):
+    # Averaging
+    partition_walks[i] /= Nsteps
+    this_walk = partition_walks[i] #
+    # Finding slope
+    for j in range(Nthr):
+        fitpart = this_walk[j,0:minlength] # Works #... Should I find for the first 300 steps too? ... Then I can't use the last part, 'cause that only has 200 elements.
+        coeffs, covs = np.polyfit(fitsteps, fitpart, 1, full=False, cov=True)
+        slope_this   = coeffs[0]
+        av_slope[j] += slope_this
+        store_slope[i,j] = slope_this
+        slope_variance_fit[j] += covs[0,0] 
+        
+av_slope /= Npartitions
+slope_variance_fit /= Npartitions
+
+for j in range(Nthr):
+    for i in range(Npartitions):
+        rms_slope[j] += (av_slope[j] - store_slope[i,j])**2 # Performing the sum
+    rms_slope[j] = np.sqrt(rms_slope[j]/(Npartitions-1))    # Finding the rms by dividing and then taking the root
+    slope_variance_fit[j] = np.sqrt(slope_variance_fit[j])  # I'm not sure exactly how correct this is... Doing this assumes the means are the same... But how do you find the mean of a parameter estimate...? Is that the coefficient it returns?
+
 print('Rrandom[:,-1]:',Rrandom[:,-1])
 
 new_time = time.process_time()
@@ -489,11 +519,13 @@ print('Time:', new_time-start_time, " s")
 outfile_Pi = open(outfilename_percdata_Pi,'w') # Need to print P too. Do that in a separate file?
 outfile_P  = open(outfilename_percdata_P, 'w')
 outfile_randomwalk = open(outfilename_randomwalk,'w')
+outfile_randomwalk_partitions = open(outfilename_randomwalk_partiions,'w')
 
 # Making a header
 outfile_Pi.write('Threshold; Pi_av, Pi_rms, Pi_av, Pi_one_rms, Pi_av_x, Pi_rms_x, Pi_av_y, Pi_rms_y, Pi_av_z, Pi_rms_z\n')
 outfile_P.write('Threshold; P_av, P_rms, P_av, P_one_rms, P_av_x, P_rms_x, P_av_y, P_rms_y, P_av_z, P_rms_z\n')
 outfile_randomwalk.write('Number of time steps (for averaging); Number of steps in random walk:\n%i %i\n' % (Nsteps,Nstepsrandom))
+outfile_randomwalk_partitions.write('Time steps: %i ; Number of steps in random walk: %i ; minmum length of section: %i\nThreshold; average slope of fits, rms of slope from fits (uncertainty from time steps), variance of slope from the fit (uncertainty in fitting)\n' % (Nsteps,Nstepsrandom, minlength))
 
 for thrind in range(Nthr):
     for timeind in range(Nsteps):
@@ -532,10 +564,12 @@ for thrind in range(Nthr):
     for i in range(N):
         outfile_randomwalk.write(' %.16f' % Rrandom[i,thrind]) # Could use some rms value
     outfile_randomwalk.write('\n')
+    outfile_randomwalk_partitions.write('%.5f %.16f %.16f %.16f\n' % (thrs[thrind], av_slope[thrind], rms_slope[thrind], slope_variance_fit[thrind]))
 
 outfile_Pi.close()
 outfile_P.close()
 outfile_randomwalk.close()
+outfile_randomwalk_partitions.close()
 
 # Finding pc (crude approach):
 threshold_for_pc = 0.5
@@ -669,6 +703,38 @@ plt.tight_layout()
 plt.show()
 #plt.savefig(plotname_percolation_P_everyonetogether)
 
+
+rw_longest = partition_walks[0]
+rw_3 = partition_walks[1]
+rw_2 = partition_walks[2]
+rw_1 = partition_walks[3]
+rw_shortest = partition_walks[4]
+
+steps_longest = steps[0]
+steps_3 = steps[1]
+steps_2 = steps[2]
+steps_1 = steps[3]
+steps_shortest = steps[4]
+
+plt.figure(figsize=(6,5))
+plt.plot(steps_longest, rw_longest[2,:])
+plt.plot(steps_1, rw_1[2,:])
+plt.plot(steps_2, rw_2[2,:])
+plt.plot(steps_3, rw_3[2,:])
+plt.plot(steps_shortest, rw_shortest[2,:])
+plt.xlabel(r'Step number')
+plt.ylabel(r'Distance$^2$ [in voxel lengths]')
+plt.title('Random walk in pore space, thr=%i' % thrs[2])
+plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(6,5))
+plt.errorbar(thrs, av_slope, yerr=rms_slope, capsize=2)
+plt.xlabel(r'Threshold')
+plt.ylabel(r'Slope, Distance$^2$ [in voxel lengths]')
+plt.title('Random walk in pore space: Slope vs threshold')
+plt.tight_layout()
+plt.show()
  
 # No need for BoundingBox or stuff like that. Should I label clusters, or just let the morhpology functions do their work?
 # Should use a sphere for structuring element, I guess. Can see if ndimage provides that or if I should come up with it myself.
