@@ -18,7 +18,7 @@ import glob
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
 nameend  = '_ppf_sect_minim'
-namebase = 'M9N101_ljunits_gridspacing5_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debyecutoff3_chargeelementary-1_effectivedielectric0.00881819074717447_T3_theta0is180_pmass1.5' + nameend
+namebase = 'M9N101_ljunits_gridspacing5_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debyecutoff3_chargeelementary-1_effectivedielectric0.00881819074717447_T3_theta0is180_pmass0.15' + nameend
 infilename = 'particle_in_chaingrid_all_quadratic_'+namebase+'.lammpstrj'
 outfilename = 'lammpsdiffusion_qdrgr_'+namebase+'.txt'
 
@@ -110,8 +110,8 @@ while i<totlines:
         elif atomtype==3:
             x        = float(words[3])
             y        = float(words[4])
-            freeatom_positions.append([x,y,z])
-            print('i:',i,'; counter:', counter)
+            freeatom_positions.append(np.array([x,y,z]))
+            #print('i:',i,'; counter:', counter)
             counter+=1
             if z<2:
                 print('Breaking now.')
@@ -130,13 +130,19 @@ print('max(extent_polymers):',max(extent_polymers))
 
 #before_in
 
+# I do not take into account that the free bead can enter the polymer grid and then exit again. If that happens, there might be discontinuities or weird kinks in the data (if you look at the graphs...) # I do not have this in my test-dataset. Maybe make the bead lighter and see what happens?
+
+Nbulk = 0
+Nin   = 0
 for i in range(counter):
     thesepos = freeatom_positions[i]
     z        = thesepos[2]
     if z>extent_polymers[i]: # If the polymer is in bulk
         pos_bulk.append(thesepos)      # Need some test to see if it has gone from bulk to polymer or vice versa
+        Nbulk+=1
     else:
         pos_inpolymer.append(thesepos)
+        Nin+=1
     if z<2:
         break # Just in case the test did not work last time
 
@@ -145,3 +151,38 @@ for i in range(counter):
 
 print('len(pos_bulk):',len(pos_bulk))
 print('len(pos_inpolymer):',len(pos_inpolymer))
+
+startpos_bulk = pos_bulk[0]
+startpos_in   = pos_inpolymer[0]
+
+R2bulk = np.zeros(Nbulk)
+timebulk = np.arange(0,Nbulk)
+
+R2in = np.zeros(Nin)
+timein = np.arange(0,Nin)
+
+#######
+# Will divide into several walks with different starting points later on
+# Should store for RMS too? ... Nom then I need to have more starting points or more time frames.
+
+for i in range(1,Nbulk): # Don't need to calculate the first element. That is zero
+    this_bulk = pos_bulk[i]
+    dist = this_bulk-startpos_bulk
+    R2   = np.dot(dist,dist)
+    R2bulk[i] = R2 # /6 and make into diffusion coefficient D?
+
+for i in range(1,Nin):
+    this_in = pos_inpolymer[i]
+    dist = this_in-startpos_in
+    R2   = np.dot(dist,dist)
+    R2in[i] = R2 # /6 and make into diffusion coefficient D?
+
+plt.figure(figsize=(6,5))
+plt.plot(timebulk, R2bulk, label='Bulk')
+plt.plot(timein, R2in, label='In polymer grid')
+plt.xlabel(r'Step number')
+plt.ylabel(r'Distance$^2$ [in unit length]')
+plt.title('Random walk in the vicinity of the polymer chains')
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.show()
