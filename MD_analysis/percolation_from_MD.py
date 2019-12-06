@@ -305,6 +305,8 @@ plotname_percolation_xdir    = percfoldername + infilename_base + '_percolation_
 plotname_percolation_ydir    = percfoldername + infilename_base + '_percolation_ydir'+name_end
 plotname_percolation_zdir    = percfoldername + infilename_base + '_percolation_zdir'+name_end
 plotname_percolation_everyonetogether = percfoldername + infilename_base + '_percolation_everythingtogether'+name_end
+plotname_randomwalk_walks    = percfoldername + infilename_base + '_rws'+name_end
+plotname_randomwalk_slope    = percfoldername + infilename_base + '_rwsslope'+name_end
 #
 plotname_percolation_P_alldirs = percfoldername + infilename_base + '_P_total'+name_end
 plotname_percolation_P_xdir    = percfoldername + infilename_base + '_P_xdir'+name_end
@@ -726,6 +728,7 @@ plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in voxel lengths]')
 plt.title('Random walk in pore space, thr=%i' % thrs[2])
 plt.tight_layout()
+#plt.savefig(plotname_randomwalk_walks)
 plt.show()
 
 plt.figure(figsize=(6,5))
@@ -734,6 +737,7 @@ plt.xlabel(r'Threshold')
 plt.ylabel(r'Slope, Distance$^2$ [in voxel lengths]')
 plt.title('Random walk in pore space: Slope vs threshold')
 plt.tight_layout()
+#plt.savefig(plotname_randomwalk_slope)
 plt.show()
  
 # No need for BoundingBox or stuff like that. Should I label clusters, or just let the morhpology functions do their work?
