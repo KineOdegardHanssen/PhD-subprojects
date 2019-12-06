@@ -19,7 +19,7 @@ if onechain==True:
 else:
     M             = 9   # Number of chains
     L2            = 3   # Determining the shape of the L1xL2 polymer grid on the surface
-    gridspacing   = 300 # The spacing in our grid # Default is 40
+    gridspacing   = 1 # The spacing in our grid # Default is 40
 substratecharge = 0
 charge          = -1
 mass            = 1
@@ -134,8 +134,8 @@ Ny   = int(math.floor(Ly/d))
 Nall = Nelem
 for i in range(Nx):
     for j in range(Ny):
-        x = i*d
-        y = j*d
+        x = i*d+xmin
+        y = j*d+ymin
         atomtypes_all.append(4)    # Reserve 3 for free bead (hope this works...)
         qs.append(substratecharge) # 
         xpos.append(x)
