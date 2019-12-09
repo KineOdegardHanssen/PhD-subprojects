@@ -14,31 +14,44 @@ import os
 import glob
 
 
+# Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
+spacing = 5
 
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
 # Should divide into folders in a more thorough manner?
-# Seeds: 29 31 37 41 43 47 53
+# Extracting the correct names (all of them
+plotseed = 0
+plotdirs = True
 seeds  = ['23', '29', '31', '37', '41', '43', '47', '53', '59', '61', '67', '71', '73', '79', '83', '89', '97', '101', '103', '107', '109', '113']
 Nseeds = len(seeds)
 Nsteps = 80001
-namebase_common  = '_quadr_M9N101_ljunits_spacing5_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122_seed'
+namebase        = '_quadr_M9N101_ljunits_spacing5_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
+folderbase      = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
+endlocation     = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+folderbase+'/Spacing'+str(spacing)+'/'
+outfilename     = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.txt'
+plotname        = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.png'
+plotname_dirs   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_dxdydzR2_seed'+str(seeds[plotseed])+'.png'
 # Setting arrays
-hits_thisstep    = np.zeros(Nsteps)
-R2in             = np.zeros(Nsteps)
-timein           = np.arange(0,Nsteps)
-# Setting known values
-R2in[0]          = 0
-hits_thisstep[0] = Nseeds # Every walk goes through the first step 
+# These are all squared:
+# All together:
+allRs     = []
+alldxs    = []
+alldys    = []
+alldzs    = []
+# Separated by seed:
+Rs_byseed    = []
+dxs_byseed   = []
+dys_byseed   = []
+dzs_byseed   = []
+times_byseed = []
+# This is not squared, obviously:
+alltimes  = []
    
 for seed in seeds:
-    namebase = namebase_common + seed
-    endlocation     = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'
-    infilename_all  = 'part_in_chgr_subst_all'+namebase+'.lammpstrj'
-    infilename_free = 'part_in_chgr_subst_freeatom'+namebase+'.lammpstrj'
-    outfilename     = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.txt'
-    plotname        = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.png'
-    print('infilename_all:',infilename_all)
+    print('On seed', seed)
+    infilename_all  = 'part_in_chgr_subst_all'+namebase+'_seed'+seed+'.lammpstrj'
+    infilename_free = 'part_in_chgr_subst_freeatom'+namebase+'_seed'+seed+'.lammpstrj'
     
     # Read in:
     #### Automatic part
@@ -66,7 +79,6 @@ for seed in seeds:
     time_start = time.process_time()
     counter = 0
     while i<totlines:
-        #print('i:',i)
         words = lines[i].split()
         if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
             if words[1]=='TIMESTEP':
@@ -122,14 +134,12 @@ for seed in seeds:
     time_start = time.process_time()
     counter = 0
     while i<totlines:
-        #print('i:',i)
         words = lines[i].split()
         if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
             if words[1]=='TIMESTEP':
                 words2 = lines[i+1].split() # The time step is on the next line
                 t = float(words2[0])
                 times.append(t)
-                #print("New time step")
                 i+=skiplines
             elif words[1]=='NUMBER': # These will never kick in. 
                 i+=7
@@ -156,12 +166,8 @@ for seed in seeds:
     dt = times[1]-times[0] # This might be handy
     
     time_end = time.process_time()
-    print('Time to read through atoms:', time_end-time_start,'s')
     
     pos_inpolymer = []
-    
-    print('len(freeatom_positions):',len(freeatom_positions))
-    print('extent_polymers:',extent_polymers)
     
     #before_in
     
@@ -173,7 +179,6 @@ for seed in seeds:
         thesepos = freeatom_positions[i]
         z        = thesepos[2]
         if z>extent_polymers: # If the polymer is in bulk # We don't want it to go back and forth between brush and bulk # That will cause discontinuities in our data
-            print('We are in bulk')
             break
         else:
             pos_inpolymer.append(thesepos)
@@ -181,51 +186,91 @@ for seed in seeds:
                 maxzpol = z
             Nin+=1
     
-    print('len(pos_inpolymer):',len(pos_inpolymer))
-    
     startpos_in   = pos_inpolymer[0]
         
     #######
     # Will divide into several walks with different starting points later on
     # Should store for RMS too? ... Then I need to have more starting points or more time frames.
     
-    for i in range(1,Nin):
-        hits_thisstep[i] += 1        
+    # Finding R2s and corresponding times
+    # Maybe... Not plot the first ones since it takes some time to equilibrate.
+    # But how much do I need to cut? Varies from plot to plot how much makes sense to cut (if it is even possible to say...)
+    # Go for some percentage of all points?
+    R_temp  = []
+    dx_temp = []
+    dy_temp = []
+    dz_temp = []
+    step_temp = []
+    
+    R_temp.append(0)
+    dx_temp.append(0)
+    dy_temp.append(0)
+    dz_temp.append(0)
+    step_temp.append(0)
+    allRs.append(0)        # We will set this here since we know the value
+    alltimes.append(0)
+    for i in range(1,Nin):       
         this_in = pos_inpolymer[i]
         dist = this_in-startpos_in
         R2   = np.dot(dist,dist)
-        R2in[i] += R2 # /6 and make into diffusion coefficient D?
+        dx2  = dist[0]*dist[0]
+        dy2  = dist[1]*dist[1]
+        dz2  = dist[2]*dist[2]
+        # All together:
+        allRs.append(R2)
+        alldxs.append(dx2)
+        alldys.append(dy2)
+        alldzs.append(dz2)
+        alltimes.append(i)
+        # Separated by seed:
+        R_temp.append(R2)
+        dx_temp.append(dx2)
+        dy_temp.append(dy2)
+        dz_temp.append(dz2)
+        step_temp.append(i)
+    Rs_byseed.append(R_temp)
+    dxs_byseed.append(dx_temp)
+    dys_byseed.append(dy_temp)
+    dzs_byseed.append(dz_temp)
+    times_byseed.append(step_temp)
 
-for i in range(Nsteps): # ... Should I find some sort of RMS value too? # Or just use every point to find the fit? Maybe that is simpler.
-    if hits_thissteps[i]!=0:
-        R2in[i] /=hits_thisstep[i] 
+allRs     = np.array(allRs)
+alltimes  = np.array(alltimes)
 
 ## Finding the diffusion coefficient (in polymer)
-# Finding the last 25% of the data:               # Redo this part!
-nfit = int(Nin/4)
-laststart_poly = Nin-nfit
-laststeps_poly = np.arange(laststart_poly,Nin)
+# Finding the last 25% of the data:               # Do this later! In loop! # But do now just for testing purposes.
 # Performing the line fit:
-coeffs_poly = polyfit(laststeps_poly, R2in[laststart_poly:], 1)
+coeffs_poly = polyfit(alltimes, allRs, 1)
 a_poly = coeffs_poly[0]
 b_poly = coeffs_poly[1]
 D_poly = a_poly/6.
     
-fit_poly = a_poly*laststeps_poly+b_poly
+fit_poly = a_poly*alltimes+b_poly
 
 print('D_poly:', D_poly)
-    
 
 outfile = open(outfilename, 'w')
 outfile.write('D_poly: %.16f\n' % D_poly)
     
-    
 plt.figure(figsize=(6,5))
-plt.plot(timein, R2in, label='In polymer brush')
-plt.plot(laststeps_poly, fit_poly, '--', label='Fit brush')
+plt.plot(alltimes, allRs, ',', label='Data, brush')
+plt.plot(alltimes, fit_poly, '--', label='Fit, brush')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
 plt.title('Random walk in the vicinity of the polymer chains')
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname)
+
+plt.figure(figsize=(6,5))
+plt.plot(times_byseed[plotseed], Rs_byseed[plotseed], label=r'$<R^2>$')
+plt.plot(times_byseed[plotseed], dxs_byseed[plotseed], label=r'$<dx^2>$')
+plt.plot(times_byseed[plotseed], dys_byseed[plotseed], label=r'$<dy^2>$')
+plt.plot(times_byseed[plotseed], dzs_byseed[plotseed], label=r'$<dz^2>$')
+plt.xlabel(r'Step number')
+plt.ylabel(r'Distance$^2$ [in unit length]')
+plt.title('Random walk in the vicinity of the polymer chains, seed %s' % seeds[plotseed])
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.savefig(plotname_dirs)
+
