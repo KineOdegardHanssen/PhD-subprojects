@@ -13,6 +13,17 @@ import time
 import os
 import glob
 
+def rmsd(x,y):
+    Nx = len(x)
+    Ny = len(y)
+    if Nx!=Ny:
+        print('WARNING! Nx!=Ny. Could not calculate rmsd value')
+        return 'WARNING! Nx!=Ny. Could not calculate rmsd value'
+    delta = 0
+    for i in range(Nx):
+        delta += (x[i]-y[i])*(x[i]-y[i])
+    delta = np.sqrt(delta/(Nx-1))
+    return delta
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 spacing = 5
@@ -22,16 +33,17 @@ spacing = 5
 # Should divide into folders in a more thorough manner?
 # Extracting the correct names (all of them
 plotseed = 0
-plotdirs = True
-seeds  = ['23', '29', '31', '37', '41', '43', '47', '53', '59', '61', '67', '71', '73', '79', '83', '89', '97', '101', '103', '107', '109', '113']
+plotdirs = False
+seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 Nseeds = len(seeds)
 Nsteps = 80001
-namebase        = '_quadr_M9N101_ljunits_spacing5_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
-folderbase      = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
-endlocation     = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+folderbase+'/Spacing'+str(spacing)+'/'
-outfilename     = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.txt'
-plotname        = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.png'
-plotname_dirs   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_dxdydzR2_seed'+str(seeds[plotseed])+'.png'
+namebase    = '_quadr_M9N101_ljunits_spacing5_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
+folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
+endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+folderbase+'/Spacing'+str(spacing)+'/'
+outfilename       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.txt'
+outfilename_gamma = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.txt'
+plotname          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.png'
+plotname_gamma    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.png'
 # Setting arrays
 # These are all squared:
 # All together:
@@ -44,14 +56,21 @@ Rs_byseed    = []
 dxs_byseed   = []
 dys_byseed   = []
 dzs_byseed   = []
+gamma_byseed = []
 times_byseed = []
+gamma_avgs   = []
+single_slopes = []
+rmsds         = []
+Nins          = []
 # This is not squared, obviously:
 alltimes  = []
-   
+
 for seed in seeds:
     print('On seed', seed)
-    infilename_all  = 'part_in_chgr_subst_all'+namebase+'_seed'+seed+'.lammpstrj'
-    infilename_free = 'part_in_chgr_subst_freeatom'+namebase+'_seed'+seed+'.lammpstrj'
+    seedstr = str(seed)
+    infilename_all  = 'part_in_chgr_subst_all'+namebase+'_seed'+seedstr+'.lammpstrj'
+    infilename_free = 'part_in_chgr_subst_freeatom'+namebase+'_seed'+seedstr+'.lammpstrj'
+    plotname_dirs   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_dxdydzR2_seed'+seedstr+'.png'
     
     # Read in:
     #### Automatic part
@@ -201,6 +220,7 @@ for seed in seeds:
     dy_temp = []
     dz_temp = []
     step_temp = []
+    gamma_temp = []
     
     R_temp.append(0)
     dx_temp.append(0)
@@ -216,6 +236,7 @@ for seed in seeds:
         dx2  = dist[0]*dist[0]
         dy2  = dist[1]*dist[1]
         dz2  = dist[2]*dist[2]
+        gamma = (R2-dz2)/R2
         # All together:
         allRs.append(R2)
         alldxs.append(dx2)
@@ -227,15 +248,73 @@ for seed in seeds:
         dx_temp.append(dx2)
         dy_temp.append(dy2)
         dz_temp.append(dz2)
+        gamma_temp.append(gamma)
         step_temp.append(i)
-    Rs_byseed.append(R_temp)
+    Rs_byseed.append(R_temp)   # Don't need these as of yet. Might use them later.
     dxs_byseed.append(dx_temp)
     dys_byseed.append(dy_temp)
     dzs_byseed.append(dz_temp)
+    gamma_byseed.append(gamma_temp)
     times_byseed.append(step_temp)
+    gamma_avg = np.mean(gamma_temp)
+    gamma_avgs.append(gamma_avg)
+    
+    
+    coeffs = np.polyfit(step_temp,R_temp,1)
+    a = coeffs[0]
+    b = coeffs[1]
+    
+    linefit = a*np.array(step_temp)+b
+    
+    rmsd_with_linefit = rmsd(R_temp,linefit)
+    
+    single_slopes.append(a)
+    rmsds.append(rmsd_with_linefit)
+    Nins.append(Nin)
+    
+    if plotdirs==True:
+        plt.figure(figsize=(6,5))
+        plt.plot(step_temp, R_temp, label=r'$<R^2>$')
+        plt.plot(step_temp, dx_temp, label=r'$<dx^2>$')
+        plt.plot(step_temp, dy_temp, label=r'$<dy^2>$')
+        plt.plot(step_temp, dz_temp, label=r'$<dz^2>$')
+        plt.xlabel(r'Step number')
+        plt.ylabel(r'Distance$^2$ [in unit length]')
+        plt.title('Random walk in polymer brush, seed %s, d = %i nm' % (seedstr,spacing))
+        plt.tight_layout()
+        plt.legend(loc='upper left')
+        plt.savefig(plotname_dirs)
 
-allRs     = np.array(allRs)
-alltimes  = np.array(alltimes)
+allRs      = np.array(allRs)
+alltimes   = np.array(alltimes)
+gamma_avgs = np.array(gamma_avgs)
+single_slopes = np.array(single_slopes)
+rmsds         = np.array(rmsds)
+Nins          = np.array(Nins)
+
+# Sorted arrays:
+sorted_gamma_avgs = np.sort(gamma_avgs)
+plotgammaagainst  = np.arange(Nseeds)
+index_sorted      = np.argsort(gamma_avgs)
+
+# Making arrays
+rmsds_sorted         = np.zeros(Nseeds)
+seeds_sorted         = np.zeros(Nseeds)
+Nins_sorted          = np.zeros(Nseeds)
+single_slopes_sorted = np.zeros(Nseeds)
+
+# Opening file
+outfile_gamma = open(outfilename_gamma, 'w')
+outfile_gamma.write('This is an attempt to find the relative contribution of dz to R. The smaller the value in the second column, the more important dz is.\nOrder: <(R^2(n)-dz^2(n))/R^2(n)>_n, slope a of line fit, rmsd R^2(n) line fit, Nin, seed\n')
+for i in range(Nseeds):
+    index = index_sorted[i]
+    rmsds_sorted[i] = rmsds[index]
+    seeds_sorted[i] = seeds[index]
+    Nins_sorted[i]  = Nins[index]
+    single_slopes_sorted[i] = single_slopes[index]
+    outfile_gamma.write('%.16f %.16f %.16f %i %i\n' % (sorted_gamma_avgs[i], single_slopes_sorted[i], rmsds_sorted[i], Nins_sorted[i], seeds_sorted[i]))
+outfile_gamma.close()
+
 
 ## Finding the diffusion coefficient (in polymer)
 # Finding the last 25% of the data:               # Do this later! In loop! # But do now just for testing purposes.
@@ -251,26 +330,22 @@ print('D_poly:', D_poly)
 
 outfile = open(outfilename, 'w')
 outfile.write('D_poly: %.16f\n' % D_poly)
+outfile.close()
     
 plt.figure(figsize=(6,5))
 plt.plot(alltimes, allRs, ',', label='Data, brush')
 plt.plot(alltimes, fit_poly, '--', label='Fit, brush')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title('Random walk in the vicinity of the polymer chains')
+plt.title('Random walk in polymer brush, d = %i nm' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname)
 
 plt.figure(figsize=(6,5))
-plt.plot(times_byseed[plotseed], Rs_byseed[plotseed], label=r'$<R^2>$')
-plt.plot(times_byseed[plotseed], dxs_byseed[plotseed], label=r'$<dx^2>$')
-plt.plot(times_byseed[plotseed], dys_byseed[plotseed], label=r'$<dy^2>$')
-plt.plot(times_byseed[plotseed], dzs_byseed[plotseed], label=r'$<dz^2>$')
-plt.xlabel(r'Step number')
-plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title('Random walk in the vicinity of the polymer chains, seed %s' % seeds[plotseed])
+plt.plot(plotgammaagainst, sorted_gamma_avgs)
+plt.xlabel(r'Different runs')
+plt.ylabel(r'$\gamma = <\frac{R^2-dz^2}{R^2}>$')
+plt.title(r'Random walk in polymer brush, $\gamma$; d = %i nm' % spacing)
 plt.tight_layout()
-plt.legend(loc='upper left')
-plt.savefig(plotname_dirs)
-
+plt.savefig(plotname_gamma)
