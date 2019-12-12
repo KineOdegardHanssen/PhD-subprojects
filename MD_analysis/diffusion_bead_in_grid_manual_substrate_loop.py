@@ -34,9 +34,11 @@ spacing = 5
 # Extracting the correct names (all of them
 plotseed = 0
 plotdirs = False
+test_sectioned = True
 seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 Nseeds = len(seeds)
 Nsteps = 80001
+Npartitions = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 namebase    = '_quadr_M9N101_ljunits_spacing5_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
 folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
 endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+folderbase+'/Spacing'+str(spacing)+'/'
@@ -71,6 +73,7 @@ for seed in seeds:
     infilename_all  = 'part_in_chgr_subst_all'+namebase+'_seed'+seedstr+'.lammpstrj'
     infilename_free = 'part_in_chgr_subst_freeatom'+namebase+'_seed'+seedstr+'.lammpstrj'
     plotname_dirs   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_dxdydzR2_seed'+seedstr+'.png'
+    plotname_testsect = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_testsectioned_seed'+seedstr+'.png'
     
     # Read in:
     #### Automatic part
@@ -259,7 +262,6 @@ for seed in seeds:
     gamma_avg = np.mean(gamma_temp)
     gamma_avgs.append(gamma_avg)
     
-    
     coeffs = np.polyfit(step_temp,R_temp,1)
     a = coeffs[0]
     b = coeffs[1]
@@ -284,7 +286,41 @@ for seed in seeds:
         plt.tight_layout()
         plt.legend(loc='upper left')
         plt.savefig(plotname_dirs)
-
+    
+    # Partitioned:
+    # Npartitions
+    part_walks    = []
+    part_steps    = []
+    part_start    = 0
+    smallest_part_walk = int(math.floor(Nin/Npartitions))
+    for i in range(Npartitions):
+        this_part    = []
+        these_steps  = []
+        part_start   = i*smallest_part_walk
+        len_thiswalk = Nin-part_start       # Do I need this?
+        #print('part_start:', part_start)
+        #print('len(pos_inpolymer):', len(pos_inpolymer))
+        rstart = pos_inpolymer[part_start]
+        for j in range(len_thiswalk):
+            rthis =  pos_inpolymer[part_start+j]
+            drvec = rthis - rstart
+            dr2   = np.dot(drvec,drvec)
+            this_part.append(dr2)
+            these_steps.append(j)
+        part_walks.append(this_part)
+        part_steps.append(these_steps)
+    
+    if test_sectioned==True and (seed==29 or seed==47 or seed==53 or seed==59 or seed==83 or seed==103):
+        plt.figure(figsize=(6,5))
+        for i in range(Npartitions):
+            plt.plot(part_steps[i], part_walks[i], label='Section %i' % i)
+        plt.xlabel(r'Step number')
+        plt.ylabel(r'Distance$^2$ [in unit length]')
+        plt.title('Random walk in polymer brush, seed %s, d = %i nm' % (seedstr,spacing))
+        plt.tight_layout()
+        plt.legend(loc='upper left')
+        plt.savefig(plotname_testsect)
+        
 allRs      = np.array(allRs)
 alltimes   = np.array(alltimes)
 gamma_avgs = np.array(gamma_avgs)
