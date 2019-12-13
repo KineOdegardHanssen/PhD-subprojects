@@ -1,0 +1,106 @@
+# Prime numbers over 19: 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109 og 113
+label nloop
+variable seed index 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97 101 103 107 109 113 #### DANGER OF CRASHING! MAY ONLY GET THE FIRST OF THESE!
+variable spacing equal 5#100
+variable sigma_atom equal 2.0 # Vary this?
+variable pmass equal 1.5#1.5  # Mass of the particle # Is this reasonable?
+
+######################### Setting the sytem ####################################
+## Getting conversion factors and constructing the dielectric
+# Neccessary quantities in lj units:
+variable T equal 3      # The temperature in LJ units
+# Our length unit (set):
+variable lengthunit equal 1e-9   # In SI
+variable convert_energy_nanounits_to_ljunits equal 1e21
+# Physical constants in SI:
+variable kb equal 1.38064852e-23
+variable T0 equal 310.0 # The temperature we want in K  # We will use this to find the energy unit, which we in turn will use to find the dielectric correction
+# Converting
+variable energyunit equal ${T0}/T*${kb}
+variable energyunit_ljinnano equal 1.426670137333333  #### TRIED TO CALCULATE IN LAMMPS, BUT IT DIDN'T WORK ## For T = 3, T0 = 310
+variable conversionfactor equal 0.008818190747174473 #0.006180959786301432 (forgot to divide by E)
+variable ljepsilon_standard equal 1.042
+variable ljepsilon equal ${ljepsilon_standard}/${energyunit_ljinnano}
+variable ljcutoff equal 1.122 # Vary this?
+variable ljsigma equal 1.0 # What should this be?
+
+print 'energyunit_ljinnano: ${energyunit_ljinnano}'
+
+## Set variables
+variable dt equal 0.00045                 # This timestep seems to work well for our simulations (standard ljunits timestep is too big)
+variable M equal 9
+variable N equal 101
+variable vzmin equal 0.00000001
+variable vzmax equal 0.01
+
+# Setting system properties
+units lj
+dimension 3
+boundary p p p
+atom_style atomic
+pair_style lj/cut ${ljcutoff}
+
+# Making the atoms:
+read_data data.bulkdiffusion_withsubstrate_gridspacing${spacing}_mass${pmass}
+log log.bulkdiffusion_withsubstrate_ljunits_spacing${spacing}_Langevin_T$T_pmass${pmass}_sect_placeexact_ljepsilon${ljepsilon}_ljcut1p122_seed${seed}
+# Do I even use the log-file anymore?
+
+#velocity all create $T 87287 # This seemingly does not work when there is only one atom
+
+pair_coeff * * ${ljepsilon} ${ljsigma} ${ljcutoff}
+
+############################ Prepare simulation #####################################
+
+# Minimize really messes up the structure
+#minimize 1.0e-4 1.0e-6 100 1000
+
+neighbor 1.0 bin
+
+group freeatom type 1
+#neigh_modify once no every 1 delay 0 check yes
+
+timestep ${dt}
+
+fix lgvfix freeatom langevin $T $T 100.0 699483
+fix 1 freeatom nve
+
+############################ Equilibrate ##############################################
+############################# Add atom ################################################
+
+# Adding an atom moving around in the matrix
+
+#                              # Change z-coordinate of insertion point of free bead if the grid spacing is sufficiently small (I put 250 for spacing=1)
+#create_atoms 3 single 1.0 1.0 1.0 # So far, I have set this in file
+# Default for create_atoms is charge=0.0
+
+variable atomcutoff equal 2^{1/6.0}*${sigma_atom}
+#variable atom_molID equal ${M}+2
+#set atom 3 mol ${atom_molID}
+#mass 3 ${pmass} # Not sure if this is a sensible mass...
+
+variable zvel equal random(${vzmin},${vzmax},${seed})
+velocity freeatom set 1e-5 1e-5 ${zvel} 
+#print 'T: $T'
+#velocity freeatom set 1e-5 1e-5 -0.001
+#velocity freeatom create $T ${seed}
+
+
+############################ Minimize ##############################################
+# On minimize:
+# For the first criterion, the specified energy tolerance etol is unitless; it is met when the energy change between successive iterations divided by the energy magnitude is less than or equal to the tolerance. For example, a setting of 1.0e-4 for etol means an energy tolerance of one part in 10^4. For the damped dynamics minimizers this check is not performed for a few steps after velocities are reset to 0, otherwise the minimizer would prematurely converge.
+
+## I do not know how risky it is NOT to equilibrate. If everything goes ad undas I might try to equilibrate again, this time with the free atom far away... 
+
+#minimize 1.0e-4 1.0e-6 100 1000 # etol ftol maxiter maxeval
+
+### Maybe I shoud have equilibrated too, but then the atom only disappears ###
+############################ Run ##############################################
+
+dump 1 freeatom custom 10 bulkdiffusion_withsubstrate_ljunits_spacing${spacing}_Langevin_T$T_pmass${pmass}_sect_placeexact_ljepsilon${ljepsilon}_ljcut1p122_seed${seed}.lammpstrj id type xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
+
+
+run 800000
+
+clear
+next seed
+jump SELF nloop
