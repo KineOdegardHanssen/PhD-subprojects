@@ -27,6 +27,7 @@ def rmsd(x,y):
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 spacing = 5
+psigma  = 1
 
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
@@ -34,7 +35,7 @@ spacing = 5
 # Extracting the correct names (all of them
 plotseed = 0
 plotdirs = False
-test_sectioned = True
+test_sectioned = False
 seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 Nseeds = len(seeds)
 Nsteps = 80001
@@ -43,15 +44,22 @@ unittime     = 2.38e-11 # s
 timestepsize = 0.00045*unittime
 print('timestepsize:', timestepsize)
 Npartitions = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
-namebase    = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122' %spacing
-folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
+## Weird cutoff (bead):
+#namebase    = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122' %spacing
+#folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
+# Usual cutoff (bead):
+namebase = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_pstdcutoff_sect_placeexact_ljcut1p122'
+folderbase = 'Part_in_chgr_subst_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma'+str(psigma)+'_pstdcutoff_sect_placeexact_ljcut1p122'
+
 endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+folderbase+'/Spacing'+str(spacing)+'/'
 outfilename       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.txt'
+outfilename_ds    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_av_ds.txt'
 outfilename_gamma = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.txt'
 plotname          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.png'
 plotname_all      = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_all.png'
 plotname_gamma    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.png'
 plotname_SI       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_SI.png'
+plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_par_ort.png' 
 # Setting arrays
 # These are all squared:
 # All together:
@@ -64,7 +72,8 @@ averageRs = np.zeros(Nsteps)
 averagedxs = np.zeros(Nsteps)
 averagedys = np.zeros(Nsteps)
 averagedzs = np.zeros(Nsteps)
-average_counter = np.zeros(Nsteps)
+averagedparallel = np.zeros(Nsteps)
+average_counter   = np.zeros(Nsteps)
 # Separated by seed:
 Rs_byseed    = []
 dxs_byseed   = []
@@ -86,6 +95,8 @@ for seed in seeds:
     infilename_free = 'part_in_chgr_subst_freeatom'+namebase+'_seed'+seedstr+'.lammpstrj'
     plotname_dirs   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_dxdydzR2_seed'+seedstr+'.png'
     plotname_testsect = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_testsectioned_seed'+seedstr+'.png'
+    
+    #print('infilename_all:',infilename_all)
     
     # Read in:
     #### Automatic part
@@ -267,6 +278,7 @@ for seed in seeds:
         averagedxs[i]+=dx2
         averagedys[i]+=dy2
         averagedzs[i]+=dz2
+        averagedparallel[i] += dx2+dy2
         average_counter[i] +=1
         # Separated by seed:
         R_temp.append(R2)
@@ -370,6 +382,7 @@ for i in range(1,Nsteps):
         averagedxs[i]/=counter
         averagedys[i]/=counter
         averagedzs[i]/=counter
+        averagedparallel[i]/= counter
     else:
        Ninbrush = i-1
        break
@@ -380,6 +393,7 @@ averageRs  = averageRs[0:Ninbrush]
 averagedxs = averagedxs[0:Ninbrush]
 averagedys = averagedys[0:Ninbrush]
 averagedzs = averagedzs[0:Ninbrush]
+averagedparallel = averagedparallel[0:Ninbrush]
 
 print('len(averageRs):',len(averageRs))
 print('Ninbrush:',Ninbrush)
@@ -441,6 +455,7 @@ averageRs_SI  = averageRs*unitlength**2
 averagedxs_SI = averagedxs*unitlength**2
 averagedys_SI = averagedys*unitlength**2
 averagedzs_SI = averagedzs*unitlength**2
+averagedparallel_SI = averagedparallel*unitlength**2
 
 coeffs_poly, covs = polyfit(times_single_real, averageRs_SI, 1, full=False, cov=True) # Using all the data in the fit # Should probably cut the first part, but I don't know how much to include
 a_poly_SI = coeffs_poly[0]
@@ -460,6 +475,13 @@ outfile = open(outfilename, 'w')
 outfile.write('D_poly: %.16f %.16f\n' % (D_poly,rms_D_poly))
 outfile.write('b_poly: %.16f %.16f\n' % (b_poly,rms_b_poly))
 outfile.close()
+
+outfile_ds = open(outfilename_ds,'w')
+outfile_ds.write('Time step; Time; <R^2>; <dx^2>; <dy^2>; <dz^2>; <dx^2+dy^2>\n')
+for i in range(len(averageRs)):
+    outfile_ds.write('%i %.2e %.5e %.5e %.5e %.5e %.5e\n' % (times_single[i], times_single_real[i], averageRs_SI[i], averagedxs_SI[i], averagedys_SI[i], averagedzs_SI[i], averagedparallel_SI[i]))
+outfile_ds.close()
+
     
 plt.figure(figsize=(6,5))
 plt.plot(alltimes, allRs, ',', label='Data, brush')
@@ -482,6 +504,16 @@ plt.title('RMSD in bulk, d = %i nm' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_all)
+
+plt.figure(figsize=(6,5))
+plt.plot(times_single, averagedzs, ',', label=r'dz$^2$')
+plt.plot(times_single, averagedparallel, ',', label=r'dx$^2$+dy$^2$')
+plt.xlabel(r'Step number')
+plt.ylabel(r'Distance$^2$ [in unit length]')
+plt.title('Averaged RMSD in bulk, d = %i nm' % spacing)
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.savefig(plotname_parallel_orthogonal)
 
 plt.figure(figsize=(6,5))
 plt.plot(plotgammaagainst, sorted_gamma_avgs)
