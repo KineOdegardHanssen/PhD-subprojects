@@ -1,8 +1,8 @@
 # Prime numbers over 19: 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109 og 113
 label nloop
-variable seed index 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97 101 103 107 109 113 #41 43 47 53 #29 31 37 #### DANGER OF CRASHING! MAY ONLY GET THE FIRST OF THESE!
-variable spacing equal 100
-variable sigma_atom equal 1.0 # Vary this?
+variable seed index 101 103 107 109 113 #23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97 101 103 107 109 113 #41 43 47 53 #29 31 37 #### DANGER OF CRASHING! MAY ONLY GET THE FIRST OF THESE!
+variable spacing equal 10
+variable sigma_atom equal 0.1 # Vary this?
 variable pmass equal 1.5#1.5  # Mass of the particle # Is this reasonable?
 
 ######################### Setting the sytem ####################################
@@ -29,7 +29,7 @@ variable ljepsilon_standard equal 1.042
 variable ljepsilon equal ${ljepsilon_standard}/${energyunit_ljinnano}
 variable ljcutoff equal 1.122 # Vary this?
 variable ljsigma equal 1.0 # What should this be?
-variable atomcutoff equal 1.122
+variable atomcutoff equal 1.122*${sigma_atom}
 
 print 'energyunit_ljinnano: ${energyunit_ljinnano}'
 
@@ -57,7 +57,7 @@ angle_style harmonic
 
 # Making the atoms:
 read_data data.chaingrids_substrate_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge}_mass1
-log log.part_in_chgr_subst_quadr_M9N101_ljunits_spacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debcutoff${debyecutoff}_chargeel${charge}_effdiel${conversionfactor}_T$T_theta0is180_pmass${pmass}_psigma${sigma_atom}_pstdcutoff_sect_placeexact_ljcut1p122_seed${seed} #_correctconversions_twofirst_are_fixed #The file name gets too long
+log /home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/Quadr_M9N101_ljunits_Langevin_scaled_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debcutoff${debyecutoff}_chargeel${charge}_effdiel${conversionfactor}_T$T_ljcut1p122/Spacing${spacing}/Sigma_bead_${sigma_atom}/log.pmass${pmass}_seed${seed} #_correctconversions_twofirst_are_fixed #The file name gets too long
 # Do I even use the log-file anymore?
 
 velocity all create $T 87287 # I can reset the velocities.
@@ -65,8 +65,8 @@ velocity all create $T 87287 # I can reset the velocities.
 pair_coeff 1 1 ${ljepsilon} ${ljsigma} ${ljcutoff} ${debyecutoff}
 pair_coeff 1 2 ${ljepsilon} ${ljsigma} ${ljcutoff} ${debyecutoff}
 pair_coeff 2 2 ${ljepsilon} ${ljsigma} ${ljcutoff} ${debyecutoff}
-pair_coeff * 3 ${ljepsilon} ${sigma_atom} ${atomcutoff} 0 # Is this how you turn off Debye?
 pair_coeff * 4 ${ljepsilon} ${ljsigma} ${ljcutoff} 0 # Is this how you turn off Debye?
+pair_coeff * 3 ${ljepsilon} ${sigma_atom} ${atomcutoff} 0 # Is this how you turn off Debye?
 bond_coeff * ${Kbond} 1.0
 angle_coeff * ${Kangle} ${theta0}
 
@@ -94,7 +94,6 @@ compute coulombenergy all pe pair
 run 20000 # Don't need to shake it up that much
 
 ############################# Add atom ################################################
-
 # Adding an atom moving around in the matrix
 
 #                              # Change z-coordinate of insertion point of free bead if the grid spacing is sufficiently small (I put 250 for spacing=1)
@@ -114,10 +113,11 @@ velocity freeatom set 1e-5 1e-5 ${zvel}
 #print 'T: $T'
 #velocity freeatom set 1e-5 1e-5 -0.001
 #velocity freeatom create $T ${seed}
+variable scalefac equal ${pmass}/${sigma_atom}
 
 unfix lgvfix
 unfix 1
-fix lgvfix movingatoms langevin $T $T 100.0 699483
+fix lgvfix movingatoms langevin $T $T 100.0 699483 scale 3 ${scalefac}
 fix 1 movingatoms nve
 
 
@@ -132,8 +132,8 @@ fix 1 movingatoms nve
 ### Maybe I shoud have equilibrated too, but then the atom only disappears ###
 ############################ Run ##############################################
 
-dump walltest freeatom custom 10 part_in_chgr_subst_freeatom_quadr_M9N101_ljunits_spacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debcutoff${debyecutoff}_chargeel${charge}_effdiel${conversionfactor}_T$T_pmass${pmass}_psigma${sigma_atom}_pstdcutoff_sect_placeexact_ljcut1p122_seed${seed}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
-dump walltest_all all custom 700000 part_in_chgr_subst_all_quadr_M9N101_ljunits_spacing${spacing}_Langevin_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debcutoff${debyecutoff}_chargeel${charge}_effdiel${conversionfactor}_T$T_pmass${pmass}_psigma${sigma_atom}_pstdcutoff_sect_placeexact_ljcut1p122_seed${seed}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
+dump walltest freeatom custom 10 /home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/Quadr_M9N101_ljunits_Langevin_scaled_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debcutoff${debyecutoff}_chargeel${charge}_effdiel${conversionfactor}_T$T_ljcut1p122/Spacing${spacing}/Sigma_bead_${sigma_atom}/freeatom_pmass${pmass}}_seed${seed}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
+dump walltest_all all custom 700000 /home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/Quadr_M9N101_ljunits_Langevin_scaled_Kangle${Kangle}_Kbond${Kbond}_debye_kappa${kappa}_debcutoff${debyecutoff}_chargeel${charge}_effdiel${conversionfactor}_T$T_ljcut1p122/Spacing${spacing}/Sigma_bead_${sigma_atom}/all_pmass${pmass}_seed${seed}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
 
 run 800000
 
