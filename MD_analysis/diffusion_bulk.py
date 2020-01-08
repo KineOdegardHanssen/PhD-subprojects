@@ -93,7 +93,7 @@ alltimes  = []
 for seed in seeds:
     print('On seed', seed)
     seedstr = str(seed)
-    infilename_free = namebase+'_seed'+seedstr+'.lammpstrj'
+    infilename_free = endlocation+'pmass'+str(pmass)+'_seed'+seedstr+'.lammpstrj'
     plotname_dirs   = endlocation+'lammpsdiffusion_'+namebase_short+'_dxdydzR2_seed'+seedstr+'.png'
     plotname_testsect = endlocation+'lammpsdiffusion_'+namebase_short+'_testsectioned_seed'+seedstr+'.png'
     #print('infilename:',infilename_free)

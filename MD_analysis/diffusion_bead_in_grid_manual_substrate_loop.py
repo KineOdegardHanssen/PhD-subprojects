@@ -48,12 +48,14 @@ Npartitions = 5 # For extracting more walks from one file (but is it really such
 #namebase    = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122' %spacing
 #folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
 # Usual cutoff (bead):
+foldername  = 'Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122'
+endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)+'/'
 namebase_start = '_quadr_M9N101_ljunits_'
 folderbase_mid = 'Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5'
-folderbase_end = '_ljcut1p122'
+#folderbase_end = '_ljcut1p122'
 namebase = namebase_start+'spacing%i_' % spacing + folderbase_mid + '_psigma' +str(psigma)+'_sect_placeexact_ljcut1p122'
 #namebase = 'spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_pstdcutoff_sect_placeexact_ljcut1p122'
-folderbase = 'Part_in_chgr_subst'+namebase_start+folderbase_mid+folderbase_end
+#folderbase = 'Part_in_chgr_subst'+namebase_start+folderbase_mid+folderbase_end
 
 endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)
 outfilename       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.txt'
@@ -64,6 +66,7 @@ plotname_all      = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_all.png'
 plotname_gamma    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.png'
 plotname_SI       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_SI.png'
 plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_par_ort.png' 
+
 # Setting arrays
 # These are all squared:
 # All together:
@@ -95,8 +98,8 @@ alltimes  = []
 for seed in seeds:
     print('On seed', seed)
     seedstr = str(seed)
-    infilename_all  = 'part_in_chgr_subst_all'+namebase+'_seed'+seedstr+'.lammpstrj'
-    infilename_free = 'part_in_chgr_subst_freeatom'+namebase+'_seed'+seedstr+'.lammpstrj'
+    infilename_all  = endlocation+'all_pmass'+str(pmass)+'_seed'+seedstr+'.lammpstrj'
+    infilename_free = endlocation+'freeatom_pmass'+str(pmass)+'_seed'+seedstr+'.lammpstrj'
     plotname_dirs   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_dxdydzR2_seed'+seedstr+'.png'
     plotname_testsect = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_testsectioned_seed'+seedstr+'.png'
     
