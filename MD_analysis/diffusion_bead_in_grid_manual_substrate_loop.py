@@ -28,6 +28,7 @@ def rmsd(x,y):
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 spacing = 5
 psigma  = 1
+pmass   = 1.5
 
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
@@ -49,7 +50,7 @@ Npartitions = 5 # For extracting more walks from one file (but is it really such
 #folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
 # Usual cutoff (bead):
 foldername  = 'Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122'
-endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)+'/'
+endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)+'/'
 namebase_start = '_quadr_M9N101_ljunits_'
 folderbase_mid = 'Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5'
 #folderbase_end = '_ljcut1p122'
@@ -57,7 +58,7 @@ namebase = namebase_start+'spacing%i_' % spacing + folderbase_mid + '_psigma' +s
 #namebase = 'spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_pstdcutoff_sect_placeexact_ljcut1p122'
 #folderbase = 'Part_in_chgr_subst'+namebase_start+folderbase_mid+folderbase_end
 
-endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)
+#endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)
 outfilename       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.txt'
 outfilename_ds    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_av_ds.txt'
 outfilename_gamma = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.txt'

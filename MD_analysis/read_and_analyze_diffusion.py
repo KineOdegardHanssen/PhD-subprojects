@@ -14,6 +14,9 @@ import os
 import glob
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
+bulkdiffusion = False
+substrate     = False
+
 spacing = 5
 psigma  = 1
 
@@ -24,7 +27,7 @@ endindex   = 10000
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
 # Should divide into folders in a more thorough manner?
-# Extracting the correct names (all of them
+# Extracting the correct names (all of them)
 plotseed = 0
 plotdirs = False
 test_sectioned = False
@@ -44,16 +47,33 @@ Npartitions = 5 # For extracting more walks from one file (but is it really such
 #namebase    = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122' %spacing
 #folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
 # Usual cutoff (bead):
-namebase = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_pstdcutoff_sect_placeexact_ljcut1p122'
-namebase_short = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14_Kbond140_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_pstdcutoff_sect_placeexact_ljcut1p122'
-folderbase = 'Part_in_chgr_subst_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma'+str(psigma)+'_pstdcutoff_sect_placeexact_ljcut1p122'
-
-endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+folderbase+'/Spacing'+str(spacing)+'/'
-infilename    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_av_ds.txt'
-outfilename   = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
-plotname_R    = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_R.png'
-plotname_dz   = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_dz.png'
-plotname_dpar = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_dpar.png'
+if bulkdiffusion==True:
+    startpart = '_'
+    parentfolder = 'Pure_bulk/'
+    if substrate==True:
+        startpart = '_withsubstrate_'
+        parentfolder = 'Bulk_substrate/'
+    namebase = 'bulkdiffusion'+startpart+'ljunits_spacing%i_Langevin_scaled_T3_pmass1.5_sect_placeexact_ljepsilon0.730372054992096_ljcut1p122' % spacing
+    folderbase = 'Bulkdiffusion'+startpart+'ljunits_Langevin_scaled_T3_pmass1.5_sect_placeexact_ljepsilon0.730372054992096_ljcut1p122'
+    namebase_short = namebase # In case I ever need to shorten it
+    
+    endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)+'/'
+    infilename    = endlocation+'lammpsdiffusion_'+namebase_short+'_av_ds.txt'
+    outfilename   = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
+    plotname_R    = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_R.png'
+    plotname_dz   = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_dz.png'
+    plotname_dpar = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_dpar.png'
+else:
+    namebase = '_quadr_M9N101_ljunits_spacing%i_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_sect_placeexact_ljcut1p122'
+    namebase_short = '_quadr_M9N101_ljunits_spacing%i_Langevin_scaled_Kangle14_Kbond140_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_sect_placeexact_ljcut1p122'
+    folderbase  = 'Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122'
+    
+    endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)+'/'
+    infilename    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_av_ds.txt'
+    outfilename   = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
+    plotname_R    = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_R.png'
+    plotname_dz   = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_dz.png'
+    plotname_dpar = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_dpar.png'
 
 # Set up arrays
 Nsteps = endindex-startindex 
