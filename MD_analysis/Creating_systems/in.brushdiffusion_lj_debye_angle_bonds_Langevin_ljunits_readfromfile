@@ -4,8 +4,8 @@ variable confignr loop 21 #41 43 47 53 #29 31 37 #### DANGER OF CRASHING! MAY ON
 variable spacing equal 5
 variable sigma_atom equal 1.5 # Vary this?   # FOR FRIGG'S SAKE, REMEMBER TO MAKE THE FOLDER FIRST!!!!
 #variable pmass equal 1.5#1.5  # Mass of the particle # Is this reasonable?
-variable density equal 1
-variable pmass equal 4*PI*${sigma_atom}^3/3
+variable density equal 3/(4*PI)
+variable pmass equal 4*PI*${sigma_atom}^3/3*density
 
 ######################### Setting the sytem ####################################
 ## Getting conversion factors and constructing the dielectric
