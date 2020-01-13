@@ -9,6 +9,7 @@ import math
 # System info
 spacing = 5
 charge  = -1
+T       = 3
 
 # Number of files out, etc.
 Nfiles = 21 # The number of files I had before
@@ -23,6 +24,14 @@ distrange  = 1   # The spread of z-values of the bead. E.g. from 0.5 to 1.5. Wil
 Ncopylines = 36 # The number of lines we are going to read from the data.-infile and write to the data.-outfile # I will update this with the number of atoms later, so it should be sort of automatic
 
 # Could I just write chunks of text to file without touching it? Use line in lines to write? I only really need the atom positions now.
+
+vx = np.sqrt(T)
+vy = np.sqrt(T)
+vz = np.sqrt(T)
+
+xran = np.zeros(Nfiles)
+yran = np.zeros(Nfiles)
+zran = np.zeros(Nfiles)
 
 brush_beads = [] # We know where the substrate atoms are (at z=0), but we should know where the beads are so that we can avoid overlap
 
@@ -45,6 +54,8 @@ LAMMPS data file via write_data, version 11 Aug 2017, timestep = 200000
 
 '''
 
+foldername = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T%i_ljcut1p122/Spacing%i/Initial_configurations/' % (T,spacing)
+#foldername = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T%i_ljcut1p122/' % (T)
 infilename = 'data.chaingrids_substrate_N909_Nchains9_Ly3_gridspacing%i_twofixed_charge%i_mass1_equilibrated' % (spacing, charge)
 infile     = open(infilename, 'r')
 lines      = infile.readlines()
@@ -135,10 +146,10 @@ beadpos = []
 i = 0
 while i<Nfiles: # I need to get the box edges here # USE CONTINUE??????
     breakit = False
-    xran = random.uniform(xmin,xmax)
-    yran = random.uniform(ymin,ymax)
-    zran = random.uniform(substr_tol,substr_tol+distrange) # Random placement not too far from the substrate.
-    rran = np.array([xran,yran,zran])
+    xran[i] = random.uniform(xmin,xmax)
+    yran[i] = random.uniform(ymin,ymax)
+    zran[i] = random.uniform(substr_tol,substr_tol+distrange) # Random placement not too far from the substrate.
+    rran = np.array([xran[i],yran[i],zran[i]])
     for rbr in brush_beads:
         distvec = rbr-rran
         dist2   = np.dot(distvec,distvec)
@@ -153,12 +164,24 @@ while i<Nfiles: # I need to get the box edges here # USE CONTINUE??????
 
 print('beadpos:',beadpos)
 
+freebead_number = N_atoms+1
 ############# Write to file. Multiple times. #############
 for i in range(Nfiles):
-    filename = infilename + '_bead_file%i' % (i+1)
+    filename = foldername + infilename + '_bead_file%i' % (i+1)
     outfile = open(filename, 'w')
     # Write lines from infile to the outfile.
-    for j in range(Ncopylines):
+    for j in range(Ncopylines+1):
         # if-test to update number of atoms?
+        if len(lines[j].split())==2 and lines[j].split()[1]=='atoms':
+            outfile.write('%i atoms\n' % (N_atoms+2))
+        else:
+            outfile.write(lines[j])
+    outfile.write('%i %i 3 0 %.16e %.16e %.16e 0 0 0\n' % (freebead_number, max(molID)+1,xran[i],yran[i],zran[i])) # atom-ID molecule-ID atom-type q x y z # And the three last numbers I don't know. Flags? Counters of how many times they have crossed a border?
+    for j in range(N_atoms+3):                        # Writing velocities to file.
+        outfile.write(lines[j+Ncopylines+1]) # -1 ?
+    # How to pick the velocity? Just choose one?
+    outfile.write('%i %.16e %.16e %.16e\n' % (freebead_number,vx,vy,vz))
+    for j in range(N_atoms+4+Ncopylines,Nlines):      # Write the rest of the lines to file. Everything from here on can be copy-pasted
         outfile.write(lines[j])
-    outfile_write('%i %i 3' % (, max(molID)+1, )) # atom-ID molecule-ID atom-type q x y z
+    outfile.close()                                   # This should be important since I write to multiple files
+    # Write to meta file too?
