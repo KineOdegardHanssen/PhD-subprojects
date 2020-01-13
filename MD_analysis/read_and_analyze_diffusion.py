@@ -18,7 +18,7 @@ bulkdiffusion = False
 substrate     = False
 
 spacing = 5
-psigma  = 1
+psigma  = 1.5
 
 # Choosing which part to fit
 startindex = 5000
@@ -59,10 +59,11 @@ if bulkdiffusion==True:
     
     endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)+'/'
     infilename    = endlocation+'lammpsdiffusion_'+namebase_short+'_av_ds.txt'
-    outfilename   = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
-    plotname_R    = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_R.png'
-    plotname_dz   = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_dz.png'
-    plotname_dpar = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_dpar.png'
+    outfilename   = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion.txt'
+    metaname      = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_metadata.txt'
+    plotname_R    = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_R.png'
+    plotname_dz   = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_dz.png'
+    plotname_dpar = endlocation+'lammpsdiffusion_'+namebase_short+'_diffusion_dpar.png'
 else:
     namebase = '_quadr_M9N101_ljunits_spacing%i_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_sect_placeexact_ljcut1p122'
     namebase_short = '_quadr_M9N101_ljunits_spacing%i_Langevin_scaled_Kangle14_Kbond140_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_sect_placeexact_ljcut1p122'
@@ -70,10 +71,11 @@ else:
     
     endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)+'/'
     infilename    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_av_ds.txt'
-    outfilename   = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
-    plotname_R    = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_R.png'
-    plotname_dz   = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_dz.png'
-    plotname_dpar = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'_dpar.png'
+    outfilename   = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion.txt'
+    metaname      = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_metadata.txt'
+    plotname_R    = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_R.png'
+    plotname_dz   = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_dz.png'
+    plotname_dpar = endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_diffusion_dpar.png'
 
 # Set up arrays
 Nsteps = endindex-startindex 
@@ -133,6 +135,12 @@ fit_par2 = a_par2*times+b_par2
 outfile = open(outfilename,'w')
 outfile.write('D_R2  sigmaD_R2 b_R2 sigmab_R2; D_z2  sigmaD_z2  b_z2  sigmaD_z2; D_par2 sigmaD_par2  b_par2  sigmab_par2\n')
 outfile.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (D_R2, rms_D_R2, b_R2, rms_b_par2, D_z2, rms_D_z2, b_z2, rms_b_par2, D_par2, rms_D_par2, b_par2, rms_b_par2))
+outfile.close()
+
+metafile = open(metaname, 'w')
+metafile.write('startindex: %i\n' % startindex)
+metafile.write('endindex: %i\n' % endindex)
+metafile.close()
 
 plt.figure(figsize=(6,5))
 plt.plot(times, dR2s, ',', label='Average, brush')
