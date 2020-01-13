@@ -27,7 +27,10 @@ def rmsd(x,y):
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 spacing = 10
-psigmas = [0.1, 1, 2, 3]
+if spacing==10:
+    psigmas = [0.1, 0.5, 1, 1.5, 2, 3]
+else:
+    psigmas = [0.1, 0.5, 1, 1.5, 2]
 pmass   = 1.5
 startindex = 5000
 endindex   = 10000
@@ -90,12 +93,16 @@ else:
     name_end   = '_sect_placeexact_ljcut1p122'
 
 endlocation_gathered = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/'
-outfilename = endlocation_gathered+'D_vs_psigma_'+name_start+namebase+name_end+'.txt'
-plotname    = endlocation_gathered+'D_vs_psigma_'+name_start+namebase+name_end+'.png'
+outfilename  = endlocation_gathered+'D_vs_psigma_'+name_start+namebase+name_end+'.txt'
+plotname     = endlocation_gathered+'D_vs_psigma_'+name_start+namebase+name_end+'.png'
+plotname_fit = endlocation_gathered+'D_vs_psigma_'+name_start+namebase+name_end+'_fit.png'
+indfilename  = endlocation_gathered+'D_vs_psigma_'+name_start+namebase+name_end+'_fitindices.txt'
 
 outfile = open(outfilename, 'w')
 outfile.write('psigma   D_R2   sigmaD_R2  b_R2 sigmab_R2; D_z2  sigmaD_z2 b_z2  sigmaD_z2; D_par2 sigmaD_par2  b_par2  sigmab_par2\n')
 
+indexfile = open(indfilename, 'w')
+indexfile.write('Start-index     end-index\n')
 
 for i in range(N):
     psigma = psigmas[i]
@@ -103,7 +110,8 @@ for i in range(N):
     namebase_start = '_quadr_M9N101_ljunits_'
     folderbase_mid = 'Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5'
     namebase_short = namebase+'_psigma'+str(psigma)+name_end
-    infilename = endlocation+name_start+namebase_short+'_diffusion_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
+    infilename = endlocation+name_start+namebase_short+'_diffusion.txt' #_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
+    metaname   = endlocation+name_start+namebase_short+'_diffusion_metadata.txt' # In original file set as:  endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_metadata.txt'
 
     #print('infilename_all:',infilename_all)
     
@@ -139,7 +147,16 @@ for i in range(N):
     bzs_stdv[i] = float(words[7])
     bparallel_stdv[i] = float(words[11])
     
+    infile.close()
+    
     outfile.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e \n' % (psigma, DRs[i], DRs_stdv[i], bRs[i], bRs_stdv[i], Dzs[i], Dzs_stdv[i], bzs[i], bzs_stdv[i], Dparallel[i], Dparallel_stdv[i], bparallel[i], bparallel[i]))
+    
+    metafile = open(metadata, 'r')
+    mlines   = metafile.readlines()
+    startindex = int(mlines[0].split()[1])
+    endindex   = int(mlines[1].split()[1])
+    metafile.close()
+    indexfile.write('%i %i\n' % (startindex,endindex))
 
 outfile.close()
 
