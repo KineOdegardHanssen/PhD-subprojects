@@ -176,7 +176,7 @@ for i in range(Nfiles):
             outfile.write('%i atoms\n' % (N_atoms+2))
         else:
             outfile.write(lines[j])
-    outfile.write('%i %i 3 0 %.16e %.16e %.16e 0 0 0\n' % (freebead_number, max(molID)+1,xran[i],yran[i],zran[i])) # atom-ID molecule-ID atom-type q x y z # And the three last numbers I don't know. Flags? Counters of how many times they have crossed a border?
+    outfile.write('%i %i 3 0 %.16e %.16e %.16e\n' % (freebead_number, max(molID)+1,xran[i],yran[i],zran[i])) # atom-ID molecule-ID atom-type q x y z # And the three last numbers I don't know. Flags? Counters of how many times they have crossed a border?
     for j in range(N_atoms+3):                        # Writing velocities to file.
         outfile.write(lines[j+Ncopylines+1]) # -1 ?
     # How to pick the velocity? Just choose one?
