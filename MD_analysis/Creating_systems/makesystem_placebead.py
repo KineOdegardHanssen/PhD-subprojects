@@ -20,8 +20,8 @@ tol        = 0.2 # The closest we'll allow the bead to be to a brush 'atom'
 substr_tol = tol # the closest we'll allow the bead to be to the substrate
 distrange  = 1   # The spread of z-values of the bead. E.g. from 0.5 to 1.5. Will be from substr_tol to substr_tol+distrange
 
-# 
-Ncopylines = 36 # The number of lines we are going to read from the data.-infile and write to the data.-outfile # I will update this with the number of atoms later, so it should be sort of automatic
+#          # Is this not as set as I thought? It was 36 before:
+startlines = 23 # The number of lines we are going to read from the data.-infile and write to the data.-outfile # I will update this with the number of atoms later, so it should be sort of automatic
 
 # Could I just write chunks of text to file without touching it? Use line in lines to write? I only really need the atom positions now.
 
@@ -53,8 +53,9 @@ LAMMPS data file via write_data, version 11 Aug 2017, timestep = 200000
 0.0000000000000000e+00 3.0000000000000000e+02 zlo zhi
 
 '''
-
-foldername = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T%i_ljcut1p122/Spacing%i/Initial_configurations/' % (T,spacing)
+foldername  = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Initial_configurations/'
+outfilename = 'data.bead_wsubstr_eq_N909_d%i_charge%i_mass1_file' % (spacing,charge)
+#foldername = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T%i_ljcut1p122/Spacing%i/Initial_configurations/' % (T,spacing) # Too long for LAMMPS.
 #foldername = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T%i_ljcut1p122/' % (T)
 infilename = 'data.chaingrids_substrate_N909_Nchains9_Ly3_gridspacing%i_twofixed_charge%i_mass1_equilibrated' % (spacing, charge)
 infile     = open(infilename, 'r')
@@ -77,7 +78,7 @@ ymax = float(lines[10].split()[1])
 zmin = float(lines[9].split()[0])
 zmax = float(lines[9].split()[1])
 
-Ncopylines += N_atoms
+#Ncopylines += N_atoms
 
 #atom_nr   = []
 molID     = np.zeros(N_atoms)
@@ -167,21 +168,29 @@ print('beadpos:',beadpos)
 freebead_number = N_atoms+1
 ############# Write to file. Multiple times. #############
 for i in range(Nfiles):
-    filename = foldername + infilename + '_bead_file%i' % (i+1)
+    filename = foldername + outfilename + '%i' % (i+1)
     outfile = open(filename, 'w')
     # Write lines from infile to the outfile.
-    for j in range(Ncopylines+1):
+    for j in range(startlines-1):
         # if-test to update number of atoms?
         if len(lines[j].split())==2 and lines[j].split()[1]=='atoms':
-            outfile.write('%i atoms\n' % (N_atoms+2))
+            outfile.write('%i atoms\n' % (N_atoms+1))
         else:
             outfile.write(lines[j])
+    for j in range(startlines-1,startlines+N_atoms-1):
+        words = lines[j].split()
+        #print('len(words):',len(words))
+        if len(words)>0:
+            outfile.write('%i %i %i %.16e %.16e %.16e %.16e\n' % (int(words[0]), int(words[1]), int(words[2]), float(words[3]), float(words[4]), float(words[5]), float(words[6])))
+        else:    # I don't want an empty line between this one and the next
+            #print('I broke.')
+            break
     outfile.write('%i %i 3 0 %.16e %.16e %.16e\n' % (freebead_number, max(molID)+1,xran[i],yran[i],zran[i])) # atom-ID molecule-ID atom-type q x y z # And the three last numbers I don't know. Flags? Counters of how many times they have crossed a border?
     for j in range(N_atoms+3):                        # Writing velocities to file.
-        outfile.write(lines[j+Ncopylines+1]) # -1 ?
+        outfile.write(lines[j+startlines+N_atoms-1])
     # How to pick the velocity? Just choose one?
     outfile.write('%i %.16e %.16e %.16e\n' % (freebead_number,vx,vy,vz))
-    for j in range(N_atoms+4+Ncopylines,Nlines):      # Write the rest of the lines to file. Everything from here on can be copy-pasted
+    for j in range(2*N_atoms+4+startlines-2,Nlines):      # Write the rest of the lines to file. Everything from here on can be copy-pasted
         outfile.write(lines[j])
     outfile.close()                                   # This should be important since I write to multiple files
     # Write to meta file too?

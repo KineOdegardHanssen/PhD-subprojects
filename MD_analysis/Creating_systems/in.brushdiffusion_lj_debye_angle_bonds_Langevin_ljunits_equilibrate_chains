@@ -88,4 +88,4 @@ fix 1 movingmonomers nve
 run 200000 # I only need to do this once for each d, so I can afford to make the simulation pretty long.
 
 # write_data?
-write_data data.chaingrids_substrate_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge}_mass1_equilibrated
+write_data data.chaingrids_substrate_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge}_mass1_equilibrated nocoeff
