@@ -6,6 +6,7 @@ from pylab import *
 from scipy.ndimage import measurements, convolve    # Should have used the command below, but changing now will lead to confusion
 from scipy import ndimage                           # For Euclidean distance measurement
 import maintools_percolation as perctools
+import data_treatment as datr
 import numpy as np
 import random
 import math
@@ -26,10 +27,12 @@ def rmsd(x,y):
     return delta
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 5
-psigma  = 1
-pmass   = 1.5
-
+spacing = 10
+psigma  = 2.5
+density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
+#pmass   = 1.5
+print('spacing:', spacing)
+print('psigma:', psigma)
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
 # Should divide into folders in a more thorough manner?
@@ -37,9 +40,10 @@ pmass   = 1.5
 plotseed = 0
 plotdirs = False
 test_sectioned = False
-seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
-Nseeds = len(seeds)
-Nsteps = 80001
+#seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
+confignrs = np.arange(1,22) 
+Nseeds    = len(confignrs)      # So that I don't have to change that much
+Nsteps    = 80001
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
 timestepsize = 0.00045*unittime
@@ -67,6 +71,13 @@ plotname_all      = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_all.png'
 plotname_gamma    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.png'
 plotname_SI       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_SI.png'
 plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_par_ort.png' 
+plotname_parallel    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_par.png' 
+plotname_orthogonal  = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_ort.png'
+plotname_short_all   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_short_all.png'
+plotname_velocity    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_velocity.png'
+plotname_velocity_SI = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_velocity_SI.png'
+
+steps, partition_walks, numberofsamples, len_all, lengths = datr.partition_holders_averaged(Nsteps,minlength)
 
 # Setting arrays
 # These are all squared:
@@ -76,11 +87,15 @@ alldxs    = []
 alldys    = []
 alldzs    = []
 # Averages:
-averageRs = np.zeros(Nsteps)
+averageRs = np.zeros(Nsteps)   # Distances
 averagedxs = np.zeros(Nsteps)
 averagedys = np.zeros(Nsteps)
 averagedzs = np.zeros(Nsteps)
-averagedparallel = np.zeros(Nsteps)
+averagevs  = np.zeros(Nsteps)  # Velocities
+averagevxs = np.zeros(Nsteps)
+averagevys = np.zeros(Nsteps)
+averagevzs = np.zeros(Nsteps)
+averagedparallel = np.zeros(Nsteps) # Distances
 average_counter   = np.zeros(Nsteps)
 # Separated by seed:
 Rs_byseed    = []
@@ -96,13 +111,12 @@ Nins          = []
 # This is not squared, obviously:
 alltimes  = []
 
-for seed in seeds:
-    print('On seed', seed)
-    seedstr = str(seed)
-    infilename_all  = endlocation+'all_pmass'+str(pmass)+'_seed'+seedstr+'.lammpstrj'
-    infilename_free = endlocation+'freeatom_pmass'+str(pmass)+'_seed'+seedstr+'.lammpstrj'
-    plotname_dirs   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_dxdydzR2_seed'+seedstr+'.png'
-    plotname_testsect = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_testsectioned_seed'+seedstr+'.png'
+for confignr in confignrs:
+    print('On config number:', confignr)
+    infilename_all  = endlocation+'all_density'+str(density)+'_confignr'+str(confignr)+'.lammpstrj'
+    infilename_free = endlocation+'freeatom_density'+str(density)+'_confignr'+str(confignr)+'.lammpstrj'
+    plotname_dirs   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_dxdydzR2_seed'+str(confignr)+'.png'
+    plotname_testsect = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_testsectioned_seed'+str(confignr)+'.png'
     
     #print('infilename_all:',infilename_all)
     
@@ -213,6 +227,9 @@ for seed in seeds:
             y        = float(words[4])
             z        = float(words[5])
             freeatom_positions.append(np.array([x,y,z]))
+            vx.append(float(words[6]))                       # Check the output format!!!!
+            vy.append(float(words[7]))
+            vz.append(float(words[8]))
             counter+=1
             i+=1
     infile_free.close()
@@ -275,6 +292,10 @@ for seed in seeds:
         dy2  = dist[1]*dist[1]
         dz2  = dist[2]*dist[2]
         gamma = (R2-dz2)/R2
+        # Velocity:
+        vxi = vx[i]
+        vyi = vy[i]
+        vzi = vz[i]
         # All together:
         allRs.append(R2)
         alldxs.append(dx2)
@@ -282,11 +303,15 @@ for seed in seeds:
         alldzs.append(dz2)
         alltimes.append(i)
         # Averages:
-        averageRs[i] +=R2
+        averageRs[i] +=R2   # Distance
         averagedxs[i]+=dx2
         averagedys[i]+=dy2
         averagedzs[i]+=dz2
-        averagedparallel[i] += dx2+dy2
+        averagevs[i] += np.sqrt(vxi*vxi + vyi*vyi + vzi*vzi)  # Velocity
+        averagevxs[i]+= vxi
+        averagevys[i]+= vyi
+        averagevzs[i]+= vzi
+        averagedparallel[i] += dx2+dy2 # Distance
         average_counter[i] +=1
         # Separated by seed:
         R_temp.append(R2)
@@ -324,7 +349,7 @@ for seed in seeds:
         plt.plot(step_temp, dz_temp, label=r'$<dz^2>$')
         plt.xlabel(r'Step number')
         plt.ylabel(r'Distance$^2$ [in unit length]')
-        plt.title('Random walk in polymer brush, seed %s, d = %i nm' % (seedstr,spacing))
+        plt.title('Random walk in polymer brush, config %i, d = %i nm' % (confignr,spacing))
         plt.tight_layout()
         plt.legend(loc='upper left')
         plt.savefig(plotname_dirs)
@@ -352,17 +377,22 @@ for seed in seeds:
         part_walks.append(this_part)
         part_steps.append(these_steps)
     
-    if test_sectioned==True and (seed==29 or seed==47 or seed==53 or seed==59 or seed==83 or seed==103):
+    if test_sectioned==True and (config==1 or seed==5 or seed==11 or seed==15 or seed==17 or seed==21): # This does not make much sense now... I wanted to inspect some plots.
         plt.figure(figsize=(6,5))
         for i in range(Npartitions):
             plt.plot(part_steps[i], part_walks[i], label='Section %i' % i)
         plt.xlabel(r'Step number')
         plt.ylabel(r'Distance$^2$ [in unit length]')
-        plt.title('Random walk in polymer brush, seed %s, d = %i nm' % (seedstr,spacing))
+        plt.title('Random walk in polymer brush, config %i, d = %i nm' % (confignr,spacing))
         plt.tight_layout()
         plt.legend(loc='upper left')
         plt.savefig(plotname_testsect)
-        
+    # Do something else than this? Use the data I already have?
+    time_beforepartition = time.process_time()
+    partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
+    time_afterpartition = time.process_time()
+    print('Time, partitioning:',time_afterpartition-time_beforepartition)
+
 allRs      = np.array(allRs)
 alltimes   = np.array(alltimes)
 gamma_avgs = np.array(gamma_avgs)
@@ -386,11 +416,17 @@ Ninbrush = Nsteps # Default, in case it does not exit the brush
 for i in range(1,Nsteps):
     counter = average_counter[i]
     if counter!=0:
+        # Distance
         averageRs[i]/=counter
         averagedxs[i]/=counter
         averagedys[i]/=counter
         averagedzs[i]/=counter
         averagedparallel[i]/= counter
+        # Velocity
+        averagevs[i]/=counter
+        averagevxs[i]/=counter
+        averagevys[i]/=counter
+        averagevzs[i]/=counter
     else:
        Ninbrush = i-1
        break
@@ -409,11 +445,11 @@ print('Nsteps:', Nsteps)
 
 # Opening file
 outfile_gamma = open(outfilename_gamma, 'w')
-outfile_gamma.write('This is an attempt to find the relative contribution of dz to R. The smaller the value in the second column, the more important dz is.\nOrder: <(R^2(n)-dz^2(n))/R^2(n)>_n, slope a of line fit, rmsd R^2(n) line fit, Nin, seed\n')
+outfile_gamma.write('This is an attempt to find the relative contribution of dz to R. The smaller the value in the second column, the more important dz is.\nOrder: <(R^2(n)-dz^2(n))/R^2(n)>_n, slope a of line fit, rmsd R^2(n) line fit, Nin, confignr\n')
 for i in range(Nseeds):
     index = index_sorted[i]
     rmsds_sorted[i] = rmsds[index]
-    seeds_sorted[i] = seeds[index]
+    seeds_sorted[i] = confignrs[index]
     Nins_sorted[i]  = Nins[index]
     single_slopes_sorted[i] = single_slopes[index]
     outfile_gamma.write('%.16f %.16f %.16f %i %i\n' % (sorted_gamma_avgs[i], single_slopes_sorted[i], rmsds_sorted[i], Nins_sorted[i], seeds_sorted[i]))
@@ -465,13 +501,20 @@ averagedys_SI = averagedys*unitlength**2
 averagedzs_SI = averagedzs*unitlength**2
 averagedparallel_SI = averagedparallel*unitlength**2
 
+
+print('----------------------------------')
+print(' averageRs_SI[2]:', averageRs_SI[2])
+
 coeffs_poly, covs = polyfit(times_single_real, averageRs_SI, 1, full=False, cov=True) # Using all the data in the fit # Should probably cut the first part, but I don't know how much to include
 a_poly_SI = coeffs_poly[0]
 b_poly_SI = coeffs_poly[1]
 rms_D_poly_SI = np.sqrt(covs[0,0])/6.
 rms_b_poly_SI = np.sqrt(covs[1,1])
 D_poly_SI = a_poly_SI/6.
- 
+
+print(' averageRs_SI[2]:', averageRs_SI[2])
+
+print('----------------------------------')
 fit_poly_SI = a_poly_SI*times_single_real+b_poly_SI
 
 print('Fit, average, SI:')
@@ -487,16 +530,42 @@ outfile.close()
 outfile_ds = open(outfilename_ds,'w')
 outfile_ds.write('Time step; Time; <R^2>; <dx^2>; <dy^2>; <dz^2>; <dx^2+dy^2>\n')
 for i in range(len(averageRs)):
-    outfile_ds.write('%i %.2e %.5e %.5e %.5e %.5e %.5e\n' % (times_single[i], times_single_real[i], averageRs_SI[i], averagedxs_SI[i], averagedys_SI[i], averagedzs_SI[i], averagedparallel_SI[i]))
+    outfile_ds.write('%i %.16e %.16e %.16e %.16e %.16e %.16e\n' % (times_single[i], times_single_real[i], averageRs_SI[i], averagedxs_SI[i], averagedys_SI[i], averagedzs_SI[i], averagedparallel_SI[i]))
 outfile_ds.close()
+'''
+maxind = 10000
+plt.figure(figsize=(6,5))
+plt.plot(times_single_real, averageRs_SI, label=r'$<R^2>$')
+plt.plot(times_single_real, averagedzs_SI, label=r'$<dz^2>$')
+plt.plot(times_single_real, averagedparallel_SI, label=r'$<dx^2+dy^2>$')
+plt.xlabel(r'Index (s)')
+plt.ylabel(r'Distance$^2$ [in unit length]')
+plt.title(r'RMSD in bulk, d = %i nm, $\sigma_b=%.2f$, SI' % (spacing,psigma))
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.axis([0, times_single_real[maxind], 0, max(averageRs_SI[0:maxind])])
+plt.show()
+'''
+# To determine the range
+xmax_plot = 10000
+plt.figure(figsize=(6,5))
+plt.plot(times_single, averageRs, label=r'$<R^2>$')
+plt.plot(times_single, averagedzs, label=r'$<dz^2>$')
+plt.plot(times_single, averagedparallel, label=r'$<dx^2+dy^2>$')
+plt.xlabel(r'Index (s)')
+plt.ylabel(r'Distance$^2$ [in unit length]')
+plt.title(r'RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.axis([0, xmax_plot, 0, max(averageRs[0:xmax_plot])])
+plt.savefig(plotname_short_all)
 
-    
 plt.figure(figsize=(6,5))
 plt.plot(alltimes, allRs, ',', label='Data, brush')
 plt.plot(times_single, fit_poly_av, '--', label='Fit, brush')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title('RMSD in bulk, d = %i nm' % spacing)
+plt.title(r'RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname)
@@ -508,7 +577,7 @@ plt.plot(alltimes, fit_poly, '--', label='Fit, data, brush')
 plt.plot(times_single, fit_poly_av, '--', label='Fit, average, brush')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title('RMSD in bulk, d = %i nm' % spacing)
+plt.title(r'RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_all)
@@ -518,16 +587,32 @@ plt.plot(times_single, averagedzs, ',', label=r'dz$^2$')
 plt.plot(times_single, averagedparallel, ',', label=r'dx$^2$+dy$^2$')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title('Averaged RMSD in bulk, d = %i nm' % spacing)
+plt.title(r'Averaged RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_parallel_orthogonal)
 
 plt.figure(figsize=(6,5))
+plt.plot(times_single, averagedzs, ',')
+plt.xlabel(r'Step number')
+plt.ylabel(r'Distance$^2$ [in unit length]')
+plt.title(r'$<dz^2>$ in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.tight_layout()
+plt.savefig(plotname_orthogonal)
+
+plt.figure(figsize=(6,5))
+plt.plot(times_single, averagedparallel, ',')
+plt.xlabel(r'Step number')
+plt.ylabel(r'Distance$^2$ [in unit length]')
+plt.title(r'$<dx^2+dy^2>$ in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.tight_layout()
+plt.savefig(plotname_parallel)
+
+plt.figure(figsize=(6,5))
 plt.plot(plotgammaagainst, sorted_gamma_avgs)
 plt.xlabel(r'Different runs')
 plt.ylabel(r'$\gamma = <\frac{R^2-dz^2}{R^2}>$')
-plt.title(r'Random walk in polymer brush, $\gamma$; d = %i nm' % spacing)
+plt.title(r'Random walk in polymer brush, $\gamma$; d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.savefig(plotname_gamma)
 
@@ -536,9 +621,37 @@ plt.plot(times_single_real, averageRs_SI, ',', label='Average, brush')
 plt.plot(times_single_real, fit_poly_SI, '--', label='Fit, average, brush')
 plt.xlabel(r'Time (s)')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title('RMSD in bulk, d = %i nm, SI' % spacing)
+plt.title(r'RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_SI)
 
+plt.figure()
+plt.plot(times_single, averagevs, label=r'v')
+plt.plot(times_single, averagevxs, label=r'vx')
+plt.plot(times_single, averagevys, label=r'vy')
+plt.plot(times_single, averagevzs, label=r'vz')
+plt.xlabel(r'Step number')
+plt.ylabel(r'Velocity [in unit length/time]')
+plt.title('Averaged velocity in bulk, system size by d = %i nm' % spacing)
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.savefig(plotname_velocity)
+
+plt.figure()
+plt.plot(times_single_real, averagevs_SI, label=r'v')
+plt.plot(times_single_real, averagexvs_SI, label=r'vx')
+plt.plot(times_single_real, averagevys_SI, label=r'vy')
+plt.plot(times_single_real, averagevzs_SI, label=r'vz')
+plt.xlabel(r'Time [s]')
+plt.ylabel(r'Velocity [m/s]')
+plt.title('Averaged velocity in bulk, system size by d = %i nm, SI' % spacing)
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.savefig(plotname_velocity_SI)
+
+
 print('counters:',average_counter)
+
+print('spacing:', spacing)
+print('psigma:', psigma)

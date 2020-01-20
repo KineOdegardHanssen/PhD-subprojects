@@ -6,6 +6,7 @@ from pylab import *
 from scipy.ndimage import measurements, convolve    # Should have used the command below, but changing now will lead to confusion
 from scipy import ndimage                           # For Euclidean distance measurement
 import maintools_percolation as perctools
+import data_treatment as datr
 import numpy as np
 import random
 import math
@@ -13,6 +14,8 @@ import time
 import os
 import glob
 
+# Get these from datr:
+'''
 def rmsd(x,y):
     Nx = len(x)
     Ny = len(y)
@@ -25,8 +28,69 @@ def rmsd(x,y):
     delta = np.sqrt(delta/(Nx-1))
     return delta
 
+def partition_holders(Nthr,Nsteps,minlength):   # Perhaps I should have this in it's own module. Right now it is just a copy of the version I have in percolation_from_MD.py 
+    interval     = minlength                           # Spacing between start points
+    end_interval = Nsteps-interval+1             # +1 because of the indexing and how arange works (but will check and see later)
+    startpoints  = np.arange(0,end_interval, interval) # Points to start the calculation of the rmsd.
+    numberofsamples = len(startpoints)                 # Number of such walks. Will be the number of lists
+    len_all = 0
+    partitioned_walks_holder = []
+    steps_holder             = []
+    lengths                  = []
+    for i in range(numberofsamples):
+        length = Nsteps-i*interval
+        len_all += length
+        lengths.append(length)
+        partitioned_walks_holder.append(np.zeros((Nthr,length))) # Should hold in general # Should I use Nseeds here? Or just store the average?
+        steps_holder.append(np.arange(0,length))
+    return steps_holder, partitioned_walks_holder, numberofsamples, len_all, lengths
+
+
+def partition_rw(thesepositions,partition_walks, Nsteps, minlength, thisthr, Nthr): # Or should I use something like Nsections instead?
+    interval     = minlength                           # Spacing between start points
+    end_interval = Nsteps-interval+1             # +1 because of the indexing and how arange works (but will check and see later)
+    startpoints  = np.arange(0,end_interval, interval) # Points to start the calculation of the rmsd.
+    numberofsamples = len(startpoints)                 # Number of such walks. Will be the number of lists
+    for i in range(numberofsamples): # Looping over the number of partitioned walks
+        startindex = startpoints[i]
+        startpoint = thesepositions[startindex]
+        counter    = 1
+        length     = Nsteps-i*interval
+        these_rmsd = np.zeros((Nthr,length))
+        this_index = startindex+counter
+        while this_index<Nsteps:
+            this_point = thesepositions[this_index]
+            distvec    = this_point-startpoint
+            rmsd       = np.dot(distvec,distvec)
+            #print('thisthr:', thisthr, '; counter:', counter)
+            these_rmsd[thisthr,counter] += rmsd 
+            this_index+=1
+            counter   +=1 
+        partition_walks[i] += these_rmsd
+        #steps.append(thesesteps)
+        #partitioned_walks.append(these_rmsd)
+    return partition_walks
+
+def partition_holders_averaged(Nsteps,minlength):   # Perhaps I should have this in it's own module. Right now it is just a copy of the version I have in percolation_from_MD.py 
+    interval     = minlength                           # Spacing between start points
+    end_interval = Nsteps-interval+1             # +1 because of the indexing and how arange works (but will check and see later)
+    startpoints  = np.arange(0,end_interval, interval) # Points to start the calculation of the rmsd.
+    numberofsamples = len(startpoints)                 # Number of such walks. Will be the number of lists
+    len_all = 0
+    partitioned_walks_holder = []
+    steps_holder             = []
+    lengths                  = []
+    for i in range(numberofsamples):
+        length = Nsteps-i*interval
+        len_all += length
+        lengths.append(length)
+        partitioned_walks_holder.append(np.zeros(length)) # Smaller than it's original counterpart
+        steps_holder.append(np.arange(0,length))
+    return steps_holder, partitioned_walks_holder, numberofsamples, len_all, lengths
+'''
+
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 100 #100
+spacing = 10 #100
 psigma  = 1
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
@@ -39,42 +103,58 @@ if startpart=='_':
 else:
     parentfolder = 'Bulk_substrate/'
 test_sectioned = True
-seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
+seeds  = np.arange(1,1001)#[23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 Nseeds = len(seeds)
-Nsteps = 80001
+Nsteps = 20001
+minlength = 5 # For sectioning the data
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
 timestepsize = 0.00045*unittime
 print('timestepsize:', timestepsize)
 Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 nextpart = 'ljunits_'
-namemid  = 'Langevin_scaled_T3_pmass1.5'
+namemid  = 'Langevin_scaled_T3'#_pmass1.5'
 nameend  = '_sect_placeexact_ljepsilon0.730372054992096_ljcut1p122'
 namebase = 'bulkdiffusion'+startpart+'ljunits_spacing%i_' % spacing + namemid +'_psigma'+str(psigma)+ nameend
 folderbase = 'Bulkdiffusion'+startpart+nextpart+namemid+nameend
 namebase_short = namebase # In case I ever need to shorten it
-endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/'
-outfilename       = endlocation+'lammpsdiffusion_'+namebase_short+'.txt'
-outfilename_ds    = endlocation+'lammpsdiffusion_'+namebase+'_av_ds.txt'
-outfilename_gamma = endlocation+'lammpsdiffusion_'+namebase_short+'_zimportance'+'.txt'
-plotname          = endlocation+'lammpsdiffusion_'+namebase_short+'.png'
-plotname_gamma    = endlocation+'lammpsdiffusion_'+namebase_short+'_zimportance'+'.png'
-plotname_SI       = endlocation+'lammpsdiffusion_'+namebase_short+'_SI'+'.png'
+endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_' + str(psigma)+'/'
+outfilename          = endlocation+'lammpsdiffusion_'+namebase_short+'.txt'
+outfilename_ds       = endlocation+'lammpsdiffusion_'+namebase+'_av_ds.txt'
+outfilename_gamma    = endlocation+'lammpsdiffusion_'+namebase_short+'_zimportance'+'.txt'
+plotname             = endlocation+'lammpsdiffusion_'+namebase_short+'.png'
+plotname_gamma       = endlocation+'lammpsdiffusion_'+namebase_short+'_zimportance'+'.png'
+plotname_SI          = endlocation+'lammpsdiffusion_'+namebase_short+'_SI'+'.png'
+plotname_velocity    = endlocation+'lammpsdiffusion_'+namebase_short+'_velocity'+'.png'
+plotname_velocity_SI = endlocation+'lammpsdiffusion_'+namebase_short+'_velocity_SI'+'.png'
 plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_'+namebase+'_par_ort.png'
 # Setting arrays
+# Prepare for sectioning distance data:
+steps, partition_walks, numberofsamples, len_all, lengths = datr.partition_holders_averaged(Nsteps,minlength)
 # These are all squared:
 # All together:
-allRs     = []
+allRs     = [] # Distance
 alldxs    = []
 alldys    = []
 alldzs    = []
+'''
+allvs     = [] # Velocity
+allvxs    = []
+allvys    = []
+allvzs    = []
+'''
 # Averages:
-averageRs = np.zeros(Nsteps)
+averageRs = np.zeros(Nsteps)   # Distances
 averagedxs = np.zeros(Nsteps)
 averagedys = np.zeros(Nsteps)
 averagedzs = np.zeros(Nsteps)
+averagevs  = np.zeros(Nsteps)  # Velocities
+averagevxs = np.zeros(Nsteps)
+averagevys = np.zeros(Nsteps)
+averagevzs = np.zeros(Nsteps)
 averagedparallel = np.zeros(Nsteps)
-average_counter = np.zeros(Nsteps)
+average_counter  = np.zeros(Nsteps)
+
 # Separated by seed:
 Rs_byseed    = []
 dxs_byseed   = []
@@ -90,11 +170,13 @@ Nins          = []
 alltimes  = []
 #times_single = np.zeros(Nsteps) # I set this in the loop, after having extracted dt
 
+
 for seed in seeds:
     print('On seed', seed)
     seedstr = str(seed)
-    infilename_free = endlocation+'pmass'+str(pmass)+'_seed'+seedstr+'.lammpstrj'
-    plotname_dirs   = endlocation+'lammpsdiffusion_'+namebase_short+'_dxdydzR2_seed'+seedstr+'.png'
+    #infilename_free = endlocation+'pmass'+str(pmass)+'_seed'+seedstr+'.lammpstrj' # Old file name
+    infilename_free   = endlocation+'seed'+seedstr+'.lammpstrj'
+    plotname_dirs     = endlocation+'lammpsdiffusion_'+namebase_short+'_dxdydzR2_seed'+seedstr+'.png'
     plotname_testsect = endlocation+'lammpsdiffusion_'+namebase_short+'_testsectioned_seed'+seedstr+'.png'
     #print('infilename:',infilename_free)
     # Read in:
@@ -118,12 +200,15 @@ for seed in seeds:
     skiplines  += (Nall+skiplines)*sampleevery # Check!
     
     # Setting arrays for treatment:
-    freeatom_positions = [] # Fill with xu,yu,zu-coordinates. One position for each time step. # We have the same time step for the whole of the simulation. Can bother with time later
-    times              = [] # Not useful anymore?
+    vx = [] # x-component of the velocity. 
+    vy = []
+    vz = []
+    positions = [] # Fill with xu,yu,zu-coordinates. One position for each time step. # We have the same time step for the whole of the simulation. Can bother with time later
+    times     = [] # Not useful anymore?
     
     # For now: Only find the largest z-position among the beads in the chain. # Otherwise I must read off the atom number (will do that with the free bead anyways.)
     maxz = -1000 # No z-position is this small.
-    
+    # id type xu yu zu vx vy vz 
     time_start = time.process_time()
     counter = 0
     while i<totlines:
@@ -143,16 +228,23 @@ for seed in seeds:
         elif len(words)<8:
             i+=1
         else:
+            #print('words:', words)
             # Find properties
+            # Order:  id  type xu  yu   zu  vx  vy  vz # I don't have mol anymore!!! #### IS THIS A PURE DIFFUSION THING, OR DOES IT HAPPEN FOR SUBSTRATE_BEAD TOO?????
+            #         [0] [1]  [2] [3]  [4] [5] [6] [7]
             # Order:  id  type mol ux  uy  uz  vx  vy   vz
             #         [0] [1]  [2] [3] [4] [5] [6] [7]  [8]
             ind      = int(words[0])-1 # Atom ids go from zero to N-1.
             #atomtype = int(words[1]) 
             #molID    = int(words[2])
-            x        = float(words[3])
-            y        = float(words[4])
-            z        = float(words[5])
-            freeatom_positions.append(np.array([x,y,z]))
+            x        = float(words[2]) #float(words[3])
+            y        = float(words[3]) #float(words[4])
+            z        = float(words[4]) #float(words[5])
+            positions.append(np.array([x,y,z]))
+            vx.append(float(words[5]))
+            vy.append(float(words[6]))
+            vz.append(float(words[7]))
+            #velocity.append(np.sqrt(vx*vx + vy*vy + vz*vz)) # Shouldn't I only perform this when I need it?
             counter+=1
             i+=1
     infile_free.close()
@@ -164,23 +256,12 @@ for seed in seeds:
     
     time_end = time.process_time()
     
-    positions = []
     
     
     # I do not take into account that the free bead can enter the polymer grid and then exit again. If that happens, there might be discontinuities or weird kinks in the data (if you look at the graphs...) # I do not have this in my test-dataset. Maybe make the bead lighter and see what happens?
     
-    Nin   = 0
-    maxzpol = 0
-    for i in range(counter):
-        thesepos = freeatom_positions[i]
-        z        = thesepos[2]
-        positions.append(thesepos)
-        if z>maxzpol:
-            maxzpol = z
-        Nin+=1
-    
-    startpos_in   = positions[0]
-        
+    Nin         = counter
+    startpos_in = positions[0]
     #######
     # Will divide into several walks with different starting points later on
     # Should store for RMS too? ... Then I need to have more starting points or more time frames.
@@ -203,7 +284,8 @@ for seed in seeds:
     step_temp.append(0)
     allRs.append(0)        # We will set this here since we know the value
     alltimes.append(0)
-    for i in range(1,Nin):       
+    for i in range(1,Nin):
+        # Distance
         this_in = positions[i]
         dist = this_in-startpos_in
         R2   = np.dot(dist,dist)
@@ -211,6 +293,10 @@ for seed in seeds:
         dy2  = dist[1]*dist[1]
         dz2  = dist[2]*dist[2]
         gamma = (R2-dz2)/R2
+        # Velocity:
+        vxi = vx[i]
+        vyi = vy[i]
+        vzi = vz[i]
         # All together:
         allRs.append(R2)
         alldxs.append(dx2)
@@ -218,11 +304,15 @@ for seed in seeds:
         alldzs.append(dz2)
         alltimes.append(i)
         # Averages:
-        averageRs[i] +=R2
-        averagedxs[i]+=dx2
-        averagedys[i]+=dy2
-        averagedzs[i]+=dz2
-        averagedparallel[i] += dx2+dy2
+        averageRs[i] += R2   # Distance
+        averagedxs[i]+= dx2
+        averagedys[i]+= dy2
+        averagedzs[i]+= dz2
+        averagevs[i] += np.sqrt(vxi*vxi + vyi*vyi + vzi*vzi)  # Velocity
+        averagevxs[i]+= vxi
+        averagevys[i]+= vyi
+        averagevzs[i]+= vzi
+        averagedparallel[i] += dx2+dy2 # Distance
         average_counter[i] +=1
         # Separated by seed:
         R_temp.append(R2)
@@ -246,7 +336,7 @@ for seed in seeds:
     
     linefit = a*np.array(step_temp)+b
     
-    rmsd_with_linefit = rmsd(R_temp,linefit)
+    rmsd_with_linefit = datr.rmsd(R_temp,linefit)
     
     single_slopes.append(a)
     rmsds.append(rmsd_with_linefit)
@@ -298,6 +388,12 @@ for seed in seeds:
         plt.tight_layout()
         plt.legend(loc='upper left')
         plt.savefig(plotname_testsect)
+    #print('Hubba hubba zoot zoot')
+    time_beforepartition = time.process_time()
+    partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
+    time_afterpartition = time.process_time()
+    #print('Deba uba zat zat')
+    print('Time, partitioning:',time_afterpartition-time_beforepartition)
         
 allRs      = np.array(allRs)
 alltimes   = np.array(alltimes)
@@ -322,11 +418,17 @@ single_slopes_sorted = np.zeros(Nseeds)
 for i in range(Nsteps):
     counter = average_counter[i]
     if counter!=0:
+        # Distance
         averageRs[i]/=counter
         averagedxs[i]/=counter
         averagedys[i]/=counter
         averagedzs[i]/=counter
         averagedparallel[i]/= counter
+        # Velocity
+        averagevs[i]/=counter
+        averagevxs[i]/=counter
+        averagevys[i]/=counter
+        averagevzs[i]/=counter
 
 
 # Opening file
@@ -386,6 +488,12 @@ averagedxs_SI = averagedxs*unitlength**2
 averagedys_SI = averagedys*unitlength**2
 averagedzs_SI = averagedzs*unitlength**2
 averagedparallel_SI = averagedparallel*unitlength**2
+# Velocity:
+averagevs_SI  = averageRs*unitlength/unit
+averagevxs_SI = averagedxs*unitlength/unit
+averagevys_SI = averagedys*unitlength/unit
+averagevzs_SI = averagedzs*unitlength/unit
+
 
 coeffs_poly, covs = polyfit(times_single_real, averageRs_SI, 1, full=False, cov=True) # Using all the data in the fit # Should probably cut the first part, but I don't know how much to include
 a_poly_SI = coeffs_poly[0]
@@ -444,10 +552,34 @@ plt.savefig(plotname_gamma)
 plt.figure(figsize=(6,5))
 plt.plot(times_single_real, averageRs_SI, ',', label='Average, brush')
 plt.plot(times_single_real, fit_poly_SI, '--', label='Fit, average, brush')
-plt.xlabel(r'Time (s)')
+plt.xlabel(r'Time [s]')
 plt.ylabel(r'Distance$^2$ [in unit length]')
 plt.title('RMSD in bulk, d = %i nm, SI' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_SI)
+
+plt.figure()
+plt.plot(times_single, averagevs, label=r'v')
+plt.plot(times_single, averagevxs, label=r'vx')
+plt.plot(times_single, averagevys, label=r'vy')
+plt.plot(times_single, averagevzs, label=r'vz')
+plt.xlabel(r'Step number')
+plt.ylabel(r'Velocity [in unit length/time]')
+plt.title('Averaged velocity in bulk, system size by d = %i nm' % spacing)
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.savefig(plotname_velocity)
+
+plt.figure()
+plt.plot(times_single_real, averagevs_SI, label=r'v')
+plt.plot(times_single_real, averagexvs_SI, label=r'vx')
+plt.plot(times_single_real, averagevys_SI, label=r'vy')
+plt.plot(times_single_real, averagevzs_SI, label=r'vz')
+plt.xlabel(r'Time [s]')
+plt.ylabel(r'Velocity [m/s]')
+plt.title('Averaged velocity in bulk, system size by d = %i nm, SI' % spacing)
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.savefig(plotname_velocity_SI)
 
