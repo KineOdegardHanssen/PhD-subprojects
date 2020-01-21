@@ -109,9 +109,11 @@ Nseeds = len(seeds)
 Nsteps = 20001
 Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
+writeevery   = 10                  # I'm writing to file every this many time steps
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
-timestepsize = 0.00045*unittime
+timestepsize = 0.00045*unittime*writeevery
+
 print('timestepsize:', timestepsize)
 nextpart = 'ljunits_'
 namemid  = 'Langevin_scaled_T3'#_pmass1.5'
@@ -133,7 +135,7 @@ plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_'+namebase+'_par_ort
 plotname_sectioned_average = endlocation+'lammpsdiffusion_'+namebase+'_sections.png'
 # Setting arrays
 # Prepare for sectioning distance data:
-steps, partition_walks, numberofsamples, len_all, lengths = datr.partition_holders_averaged(Nsteps,minlength)
+steps, partition_walks, numberofsamples, len_all, lengths, startpoints = datr.partition_holders_averaged(Nsteps,minlength)
 # These are all squared:
 # All together:
 allRs     = [] # Distance
@@ -158,7 +160,9 @@ averagevzs = np.zeros(Nsteps)
 averagedparallel = np.zeros(Nsteps)
 average_counter  = np.zeros(Nsteps)
 average_walks    = copy.copy(partition_walks)
+average_walks_SI = copy.copy(partition_walks)
 average_counters = copy.copy(partition_walks)
+time_walks_SI    = copy.copy(steps)
 
 # Separated by seed:
 Rs_byseed    = []
@@ -539,13 +543,20 @@ for i in range(len(averageRs)):
     outfile_ds.write('%i %.2e %.5e %.5e %.5e %.5e %.5e\n' % (times_single[i], times_single_real[i], averageRs_SI[i], averagedxs_SI[i], averagedys_SI[i], averagedzs_SI[i], averagedparallel_SI[i]))
 outfile_ds.close()
 
+
+'''
+average_walks_SI = copy.copy(partition_walks)
+average_counters = copy.copy(partition_walks)
+time_walks_SI    = copy.copy(steps)
+'''
+
 outfile_sections = open(outfilename_sections, 'w')
 for i in range(Npartitions):
     outfile_sections.write('Section %i\n' % i) # When reading from the file afterwards, I can extract the section number by if words[0]=='Section' and use that to divide the data into sections
     for j in range(lengths[i]):
-        time_this = steps[i][j]*timestepsize
-        dist_this = average_walks[i][j]*unitlength
-        outfile_sections.write('%.16f %16.f\n' % (time_this,dist_this))
+        average_walks_SI[i][j] = steps[i][j]*timestepsize
+        time_walks_SI[i][j] = average_walks[i][j]*unitlength
+        outfile_sections.write('%.16f %16.f\n' % (time_walks_SI[i][j],average_walks_SI[i][j]))
 outfile_sections.close()
 
 ## Making figures.
@@ -583,7 +594,7 @@ plt.figure(figsize=(6,5))
 plt.plot(times_single_real, averageRs_SI, ',', label='Average, brush')
 plt.plot(times_single_real, fit_poly_SI, '--', label='Fit, average, brush')
 plt.xlabel(r'Time [s]')
-plt.ylabel(r'Distance$^2$ [in unit length]')
+plt.ylabel(r'Distance$^2$ [m]')
 plt.title('RMSD in bulk, d = %i nm, SI' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
@@ -615,6 +626,11 @@ plt.savefig(plotname_velocity_SI)
 
 plt.figure()
 for i in range(Npartitions):
-    plt.plot()
+    plt.plot(time_walks_SI[i][:],average_walks_SI[i][:], label='Start at step %i' % startpoints[i])
+plt.xlabel(r'Time [s]')
+plt.ylabel(r'Distance$^2$ [m]')
+plt.title('RMSD in bulk, system size by d = %i nm, SI, sectioning' % spacing)
+plt.tight_layout()
+plt.legend(loc='upper left')
 plt.savefig(plotname_sectioned_average)
 
