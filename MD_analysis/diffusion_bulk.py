@@ -107,12 +107,12 @@ test_sectioned = True
 seeds  = np.arange(1,1001)#[23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 Nseeds = len(seeds)
 Nsteps = 20001
-minlength = 5 # For sectioning the data
+Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
+minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
 timestepsize = 0.00045*unittime
 print('timestepsize:', timestepsize)
-Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 nextpart = 'ljunits_'
 namemid  = 'Langevin_scaled_T3'#_pmass1.5'
 nameend  = '_sect_placeexact_ljepsilon0.730372054992096_ljcut1p122'
@@ -147,7 +147,7 @@ allvys    = []
 allvzs    = []
 '''
 # Averages:
-averageRs = np.zeros(Nsteps)   # Distances
+averageRs  = np.zeros(Nsteps)   # Distances
 averagedxs = np.zeros(Nsteps)
 averagedys = np.zeros(Nsteps)
 averagedzs = np.zeros(Nsteps)
@@ -542,7 +542,7 @@ outfile_ds.close()
 outfile_sections = open(outfilename_sections, 'w')
 for i in range(Npartitions):
     outfile_sections.write('Section %i\n' % i) # When reading from the file afterwards, I can extract the section number by if words[0]=='Section' and use that to divide the data into sections
-    for j in range(average_walks[i]):
+    for j in range(lengths[i]):
         time_this = steps[i][j]*timestepsize
         dist_this = average_walks[i][j]*unitlength
         outfile_sections.write('%.16f %16.f\n' % (time_this,dist_this))
@@ -603,7 +603,7 @@ plt.savefig(plotname_velocity)
 
 plt.figure()
 plt.plot(times_single_real, averagevs_SI, label=r'v')
-plt.plot(times_single_real, averagexvs_SI, label=r'vx')
+plt.plot(times_single_real, averagevxs_SI, label=r'vx')
 plt.plot(times_single_real, averagevys_SI, label=r'vy')
 plt.plot(times_single_real, averagevzs_SI, label=r'vz')
 plt.xlabel(r'Time [s]')

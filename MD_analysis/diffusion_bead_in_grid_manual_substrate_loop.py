@@ -43,10 +43,12 @@ test_sectioned = False
 #seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 confignrs = np.arange(1,22) 
 Nseeds    = len(confignrs)      # So that I don't have to change that much
-Nsteps    = 80001
+Nsteps    = 20001
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
 timestepsize = 0.00045*unittime
+Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
+minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 print('timestepsize:', timestepsize)
 Npartitions = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 ## Weird cutoff (bead):
@@ -63,13 +65,14 @@ namebase = namebase_start+'spacing%i_' % spacing + folderbase_mid + '_psigma' +s
 #folderbase = 'Part_in_chgr_subst'+namebase_start+folderbase_mid+folderbase_end
 
 #endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)
-outfilename       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.txt'
-outfilename_ds    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_av_ds.txt'
-outfilename_gamma = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.txt'
-plotname          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.png'
-plotname_all      = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_all.png'
-plotname_gamma    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.png'
-plotname_SI       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_SI.png'
+outfilename          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.txt'
+outfilename_ds       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_av_ds.txt'
+outfilename_gamma    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.txt'
+outfilename_sections = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_sections'+'.txt'
+plotname             = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.png'
+plotname_all         = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_all.png'
+plotname_gamma       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.png'
+plotname_SI          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_SI.png'
 plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_par_ort.png' 
 plotname_parallel    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_par.png' 
 plotname_orthogonal  = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_ort.png'
@@ -77,7 +80,6 @@ plotname_short_all   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_short_all
 plotname_velocity    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_velocity.png'
 plotname_velocity_SI = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_velocity_SI.png'
 
-steps, partition_walks, numberofsamples, len_all, lengths = datr.partition_holders_averaged(Nsteps,minlength)
 
 # Setting arrays
 # These are all squared:
@@ -96,7 +98,9 @@ averagevxs = np.zeros(Nsteps)
 averagevys = np.zeros(Nsteps)
 averagevzs = np.zeros(Nsteps)
 averagedparallel = np.zeros(Nsteps) # Distances
-average_counter   = np.zeros(Nsteps)
+average_counter  = np.zeros(Nsteps)
+average_walks    = copy.copy(partition_walks)
+average_counters = copy.copy(partition_walks) # Okay, this choice of name is confusing.
 # Separated by seed:
 Rs_byseed    = []
 dxs_byseed   = []
@@ -108,8 +112,14 @@ gamma_avgs   = []
 single_slopes = []
 rmsds         = []
 Nins          = []
+#
+sections_walk  = []
+sections_steps = []
 # This is not squared, obviously:
 alltimes  = []
+
+# Prepare for sectioning distance data:
+steps, partition_walks, numberofsamples, len_all, lengths = datr.partition_holders_averaged(Nsteps,minlength)
 
 for confignr in confignrs:
     print('On config number:', confignr)
@@ -372,10 +382,14 @@ for confignr in confignrs:
             rthis =  pos_inpolymer[part_start+j]
             drvec = rthis - rstart
             dr2   = np.dot(drvec,drvec)
+            average_walks[i][j] += dr2 # Notation? [i,j] or [i][j] # Ugh, and should I have one of these for R2, dx2, dy2 and dz2?
+            average_counters[i][j] += 1
             this_part.append(dr2)
             these_steps.append(j)
         part_walks.append(this_part)
         part_steps.append(these_steps)
+    sections_walk.append(part_walks)
+    sections_steps.append(part_steps)
     
     if test_sectioned==True and (config==1 or seed==5 or seed==11 or seed==15 or seed==17 or seed==21): # This does not make much sense now... I wanted to inspect some plots.
         plt.figure(figsize=(6,5))
@@ -532,6 +546,18 @@ outfile_ds.write('Time step; Time; <R^2>; <dx^2>; <dy^2>; <dz^2>; <dx^2+dy^2>\n'
 for i in range(len(averageRs)):
     outfile_ds.write('%i %.16e %.16e %.16e %.16e %.16e %.16e\n' % (times_single[i], times_single_real[i], averageRs_SI[i], averagedxs_SI[i], averagedys_SI[i], averagedzs_SI[i], averagedparallel_SI[i]))
 outfile_ds.close()
+
+
+outfile_sections = open(outfilename_sections, 'w')
+for i in range(Npartitions):
+    outfile_sections.write('Section %i\n' % i) # When reading from the file afterwards, I can extract the section number by if words[0]=='Section' and use that to divide the data into sections
+    for j in range(lengths[i]):
+        time_this = steps[i][j]*timestepsize
+        dist_this = average_walks[i][j]*unitlength
+        outfile_sections.write('%.16f %16.f\n' % (time_this,dist_this))
+outfile_sections.close()
+
+
 '''
 maxind = 10000
 plt.figure(figsize=(6,5))
@@ -640,7 +666,7 @@ plt.savefig(plotname_velocity)
 
 plt.figure()
 plt.plot(times_single_real, averagevs_SI, label=r'v')
-plt.plot(times_single_real, averagexvs_SI, label=r'vx')
+plt.plot(times_single_real, averagevxs_SI, label=r'vx')
 plt.plot(times_single_real, averagevys_SI, label=r'vy')
 plt.plot(times_single_real, averagevzs_SI, label=r'vz')
 plt.xlabel(r'Time [s]')
