@@ -13,6 +13,7 @@ import math
 import time
 import os
 import glob
+import copy
 
 # Get these from datr:
 '''
@@ -121,13 +122,15 @@ namebase_short = namebase # In case I ever need to shorten it
 endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_' + str(psigma)+'/'
 outfilename          = endlocation+'lammpsdiffusion_'+namebase_short+'.txt'
 outfilename_ds       = endlocation+'lammpsdiffusion_'+namebase+'_av_ds.txt'
-outfilename_gamma    = endlocation+'lammpsdiffusion_'+namebase_short+'_zimportance'+'.txt'
+outfilename_gamma    = endlocation+'lammpsdiffusion_'+namebase_short+'_zimportance.txt'
+outfilename_sections = endlocation+'lammpsdiffusion_'+namebase_short+'_sections.txt'
 plotname             = endlocation+'lammpsdiffusion_'+namebase_short+'.png'
-plotname_gamma       = endlocation+'lammpsdiffusion_'+namebase_short+'_zimportance'+'.png'
-plotname_SI          = endlocation+'lammpsdiffusion_'+namebase_short+'_SI'+'.png'
-plotname_velocity    = endlocation+'lammpsdiffusion_'+namebase_short+'_velocity'+'.png'
-plotname_velocity_SI = endlocation+'lammpsdiffusion_'+namebase_short+'_velocity_SI'+'.png'
+plotname_gamma       = endlocation+'lammpsdiffusion_'+namebase_short+'_zimportance.png'
+plotname_SI          = endlocation+'lammpsdiffusion_'+namebase_short+'_SI.png'
+plotname_velocity    = endlocation+'lammpsdiffusion_'+namebase_short+'_velocity.png'
+plotname_velocity_SI = endlocation+'lammpsdiffusion_'+namebase_short+'_velocity_SI.png'
 plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_'+namebase+'_par_ort.png'
+plotname_sectioned_average = endlocation+'lammpsdiffusion_'+namebase+'_sections.png'
 # Setting arrays
 # Prepare for sectioning distance data:
 steps, partition_walks, numberofsamples, len_all, lengths = datr.partition_holders_averaged(Nsteps,minlength)
@@ -154,6 +157,8 @@ averagevys = np.zeros(Nsteps)
 averagevzs = np.zeros(Nsteps)
 averagedparallel = np.zeros(Nsteps)
 average_counter  = np.zeros(Nsteps)
+average_walks    = copy.copy(partition_walks)
+average_counters = copy.copy(partition_walks)
 
 # Separated by seed:
 Rs_byseed    = []
@@ -166,6 +171,10 @@ gamma_avgs   = []
 single_slopes = []
 rmsds         = []
 Nins          = []
+#
+sections_walk  = []
+sections_steps = []
+
 # This is not squared, obviously:
 alltimes  = []
 #times_single = np.zeros(Nsteps) # I set this in the loop, after having extracted dt
@@ -373,10 +382,14 @@ for seed in seeds:
             rthis = positions[part_start+j]
             drvec = rthis - rstart
             dr2   = np.dot(drvec,drvec)
+            average_walks[i][j] += dr2 # Notation? [i,j] or [i][j] # Ugh, and should I have one of these for R2, dx2, dy2 and dz2?
+            average_counters[i][j] += 1
             this_part.append(dr2)
             these_steps.append(j)
         part_walks.append(this_part)
         part_steps.append(these_steps)
+    sections_walk.append(part_walks)
+    sections_steps.append(part_steps)
     
     if test_sectioned==True and (seed==29 or seed==47 or seed==53 or seed==59 or seed==83 or seed==103):
         plt.figure(figsize=(6,5))
@@ -388,13 +401,14 @@ for seed in seeds:
         plt.tight_layout()
         plt.legend(loc='upper left')
         plt.savefig(plotname_testsect)
+    # I tried calling the function before, but that was slow...
     #print('Hubba hubba zoot zoot')
-    time_beforepartition = time.process_time()
-    partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
-    time_afterpartition = time.process_time()
+    #time_beforepartition = time.process_time()
+    #partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
+    #time_afterpartition = time.process_time()
     #print('Deba uba zat zat')
-    print('Time, partitioning:',time_afterpartition-time_beforepartition)
-        
+    #print('Time, partitioning:',time_afterpartition-time_beforepartition)
+
 allRs      = np.array(allRs)
 alltimes   = np.array(alltimes)
 gamma_avgs = np.array(gamma_avgs)
@@ -413,8 +427,8 @@ seeds_sorted         = np.zeros(Nseeds)
 Nins_sorted          = np.zeros(Nseeds)
 single_slopes_sorted = np.zeros(Nseeds)
 
-# Calculating averages:
-
+## Calculating averages:
+# All data
 for i in range(Nsteps):
     counter = average_counter[i]
     if counter!=0:
@@ -430,8 +444,13 @@ for i in range(Nsteps):
         averagevys[i]/=counter
         averagevzs[i]/=counter
 
+# Sectioned walks
+for i in range(Npartitions):
+    for j in range(lengths[i]):
+        if average_counters[i][j]!=0:
+            average_walks[i][j]/=average_counters[i][j]
 
-# Opening file
+## Opening file
 outfile_gamma = open(outfilename_gamma, 'w')
 outfile_gamma.write('This is an attempt to find the relative contribution of dz to R. The smaller the value in the second column, the more important dz is.\nOrder: <(R^2(n)-dz^2(n))/R^2(n)>_n, slope a of line fit, rmsd R^2(n) line fit, Nin, seed\n')
 for i in range(Nseeds):
@@ -445,6 +464,7 @@ outfile_gamma.close()
 
 
 ## Finding the diffusion coefficient (in polymer)
+# Nonsense as of now
 # Finding the last 25% of the data:               # Do this later! In loop! # But do now just for testing purposes.
 # Performing the line fit:
 coeffs_poly, covs = polyfit(alltimes, allRs, 1, full=False, cov=True) # Using all the data in the fit # Should probably cut the first part, but I don't know how much to include
@@ -489,10 +509,10 @@ averagedys_SI = averagedys*unitlength**2
 averagedzs_SI = averagedzs*unitlength**2
 averagedparallel_SI = averagedparallel*unitlength**2
 # Velocity:
-averagevs_SI  = averageRs*unitlength/unit
-averagevxs_SI = averagedxs*unitlength/unit
-averagevys_SI = averagedys*unitlength/unit
-averagevzs_SI = averagedzs*unitlength/unit
+averagevs_SI  = averageRs*unitlength/timestepsize
+averagevxs_SI = averagedxs*unitlength/timestepsize
+averagevys_SI = averagedys*unitlength/timestepsize
+averagevzs_SI = averagedzs*unitlength/timestepsize
 
 
 coeffs_poly, covs = polyfit(times_single_real, averageRs_SI, 1, full=False, cov=True) # Using all the data in the fit # Should probably cut the first part, but I don't know how much to include
@@ -518,7 +538,17 @@ outfile_ds.write('Time step; Time; <R^2>; <dx^2>; <dy^2>; <dz^2>; <dx^2+dy^2>\n'
 for i in range(len(averageRs)):
     outfile_ds.write('%i %.2e %.5e %.5e %.5e %.5e %.5e\n' % (times_single[i], times_single_real[i], averageRs_SI[i], averagedxs_SI[i], averagedys_SI[i], averagedzs_SI[i], averagedparallel_SI[i]))
 outfile_ds.close()
-    
+
+outfile_sections = open(outfilename_sections, 'w')
+for i in range(Npartitions):
+    outfile_sections.write('Section %i\n' % i) # When reading from the file afterwards, I can extract the section number by if words[0]=='Section' and use that to divide the data into sections
+    for j in range(average_walks[i]):
+        time_this = steps[i][j]*timestepsize
+        dist_this = average_walks[i][j]*unitlength
+        outfile_sections.write('%.16f %16.f\n' % (time_this,dist_this))
+outfile_sections.close()
+
+## Making figures.
 plt.figure(figsize=(6,5))
 plt.plot(alltimes, allRs, ',', label='Data, brush')
 plt.plot(times_single, averageRs, ',', label='Average, brush')
@@ -582,4 +612,9 @@ plt.title('Averaged velocity in bulk, system size by d = %i nm, SI' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_velocity_SI)
+
+plt.figure()
+for i in range(Npartitions):
+    plt.plot()
+plt.savefig(plotname_sectioned_average)
 
