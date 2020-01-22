@@ -13,6 +13,7 @@ import math
 import time
 import os
 import glob
+import copy
 
 def rmsd(x,y):
     Nx = len(x)
@@ -28,7 +29,7 @@ def rmsd(x,y):
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 spacing = 10
-psigma  = 2.5
+psigma  = 2#.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
 print('spacing:', spacing)
@@ -41,7 +42,7 @@ plotseed = 0
 plotdirs = False
 test_sectioned = False
 #seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
-confignrs    = np.arange(1,22) 
+confignrs    = np.arange(1,300)#20)#101)#1001)#22) 
 Nseeds       = len(confignrs)      # So that I don't have to change that much
 Nsteps       = 20001
 writeevery   = 10                  # I'm writing to file every this many time steps
@@ -66,26 +67,28 @@ namebase = namebase_start+'spacing%i_' % spacing + folderbase_mid + '_psigma' +s
 #folderbase = 'Part_in_chgr_subst'+namebase_start+folderbase_mid+folderbase_end
 
 #endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)
-outfilename          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.txt'
-outfilename_ds       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_av_ds.txt'
-outfilename_gamma    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.txt'
-outfilename_sections = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_sections'+'.txt'
-plotname             = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'.png'
-plotname_all         = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_all.png'
-plotname_gamma       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_zimportance'+'.png'
-plotname_SI          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_SI.png'
-plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_par_ort.png' 
-plotname_parallel    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_par.png' 
-plotname_orthogonal  = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_ort.png'
-plotname_short_all   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_short_all.png'
-plotname_velocity    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_velocity.png'
-plotname_velocity_SI = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_velocity_SI.png'
-plotname_sectioned_average = endlocation+'lammpsdiffusion_'+namebase+'_sections.png'
+filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
+outfilename          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'.txt'
+outfilename_ds       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_av_ds.txt'
+outfilename_gamma    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.txt'
+outfilename_sections = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_sections.txt'
+plotname             = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'.png'
+plotname_all         = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_all.png'
+plotname_gamma       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.png'
+plotname_SI          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_SI.png'
+plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par_ort.png' 
+plotname_parallel    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par.png' 
+plotname_orthogonal  = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_ort.png'
+plotname_short_all   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_short_all.png'
+plotname_velocity    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity.png'
+plotname_velocity_SI = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity_SI.png'
+plotname_sectioned_average = endlocation+'lammpsdiffusion_'+namebase+filestext+'_sections.png'
+plotname_sectioned_average_vs_steps = endlocation+'lammpsdiffusion_'+namebase+filestext+'_sections_steps.png'
 
 
 ## Setting arrays
 # Prepare for sectioning distance data:
-steps, partition_walks, numberofsamples, len_all, lengths, startpoints = datr.partition_holders_averaged(Nsteps,minlength)
+time_walks_SI, steps, partition_walks, numberofsamples, len_all, lengths, startpoints = datr.partition_holders_averaged(Nsteps,minlength)
 # These are all squared:
 # All together:
 allRs     = []
@@ -103,10 +106,10 @@ averagevys = np.zeros(Nsteps)
 averagevzs = np.zeros(Nsteps)
 averagedparallel = np.zeros(Nsteps) # Distances
 average_counter  = np.zeros(Nsteps)
-average_walks    = copy.copy(partition_walks)
-average_walks_SI = copy.copy(partition_walks)
-average_counters = copy.copy(partition_walks) # Okay, this name is confusing.
-time_walks_SI    = copy.copy(steps)
+average_walks    = copy.deepcopy(partition_walks)
+average_walks_SI = copy.deepcopy(partition_walks)
+average_counters = copy.deepcopy(partition_walks) # Okay, this name is confusing.
+
 
 # Separated by seed:
 Rs_byseed    = []
@@ -125,6 +128,7 @@ sections_steps = []
 # This is not squared, obviously:
 alltimes  = []
 
+skippedfiles = 0
 
 for confignr in confignrs:
     print('On config number:', confignr)
@@ -138,7 +142,13 @@ for confignr in confignrs:
     # Read in:
     #### Automatic part
     ## Find the extent of the polymers: Max z-coord of beads in the chains
-    infile_all = open(infilename_all, "r")
+    try:
+        infile_all = open(infilename_all, "r")
+    except:
+        print('Oh, lammpstrj-file! Where art thou?')
+        skippedfiles += 1
+        continue # Skipping this file if it does not exist
+    # Moving on, if the file
     lines = infile_all.readlines() # This takes some time
     # Getting the number of lines, etc.
     totlines = len(lines)         # Total number of lines
@@ -207,8 +217,13 @@ for confignr in confignrs:
     skiplines  += (Nall+skiplines)*sampleevery # Check!
     
     # Setting arrays for treatment:
-    freeatom_positions = [] # Fill with xu,yu,zu-coordinates. One position for each time step. # We have the same time step for the whole of the simulation. Can bother with time later
-    times              = [] # Not useful anymore?
+    
+    # Setting arrays for treatment:
+    vx = [] # x-component of the velocity. 
+    vy = []
+    vz = []
+    positions = [] # Fill with xu,yu,zu-coordinates. One position for each time step. # We have the same time step for the whole of the simulation. Can bother with time later
+    times     = [] # Not useful anymore?
     
     # For now: Only find the largest z-position among the beads in the chain. # Otherwise I must read off the atom number (will do that with the free bead anyways.)
     maxz = -1000 # No z-position is this small.
@@ -241,7 +256,7 @@ for confignr in confignrs:
             x        = float(words[3])
             y        = float(words[4])
             z        = float(words[5])
-            freeatom_positions.append(np.array([x,y,z]))
+            positions.append(np.array([x,y,z]))
             vx.append(float(words[6]))                       # Check the output format!!!!
             vy.append(float(words[7]))
             vz.append(float(words[8]))
@@ -265,7 +280,7 @@ for confignr in confignrs:
     Nin   = 0
     maxzpol = 0
     for i in range(counter):
-        thesepos = freeatom_positions[i]
+        thesepos = positions[i]
         z        = thesepos[2]
         if z>extent_polymers: # If the polymer is in bulk # We don't want it to go back and forth between brush and bulk # That will cause discontinuities in our data
             break
@@ -387,8 +402,15 @@ for confignr in confignrs:
             rthis =  pos_inpolymer[part_start+j]
             drvec = rthis - rstart
             dr2   = np.dot(drvec,drvec)
-            average_walks[i][j] += dr2 # Notation? [i,j] or [i][j] # Ugh, and should I have one of these for R2, dx2, dy2 and dz2?
-            average_counters[i][j] += 1
+            '''
+            print('part_start:',part_start, '; part_start+j:', part_start+j, ';   j:',j)
+            print('rthis:',rthis)
+            print('rstart:',rstart)
+            print('drvec:', drvec)
+            print('dr2:', dr2)
+            '''
+            average_walks[i][j]    +=dr2#= average_walks[i][j] + dr2 # Notation? [i,j] or [i][j] # Ugh, and should I have one of these for R2, dx2, dy2 and dz2?
+            average_counters[i][j] +=1#= average_counters[i][j] + 1
             this_part.append(dr2)
             these_steps.append(j)
         part_walks.append(this_part)
@@ -407,10 +429,12 @@ for confignr in confignrs:
         plt.legend(loc='upper left')
         plt.savefig(plotname_testsect)
     # Do something else than this? Use the data I already have?
-    time_beforepartition = time.process_time()
-    partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
-    time_afterpartition = time.process_time()
-    print('Time, partitioning:',time_afterpartition-time_beforepartition)
+    #time_beforepartition = time.process_time()
+    #partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
+    #time_afterpartition = time.process_time()
+    #print('Time, partitioning:',time_afterpartition-time_beforepartition)
+
+newlen = len(gamma_avgs)
 
 allRs      = np.array(allRs)
 alltimes   = np.array(alltimes)
@@ -421,14 +445,14 @@ Nins          = np.array(Nins)
 
 # Sorted arrays:
 sorted_gamma_avgs = np.sort(gamma_avgs)
-plotgammaagainst  = np.arange(Nseeds)
+plotgammaagainst  = np.arange(newlen)
 index_sorted      = np.argsort(gamma_avgs)
 
 # Making arrays
-rmsds_sorted         = np.zeros(Nseeds)
-seeds_sorted         = np.zeros(Nseeds)
-Nins_sorted          = np.zeros(Nseeds)
-single_slopes_sorted = np.zeros(Nseeds)
+rmsds_sorted         = np.zeros(newlen)
+seeds_sorted         = np.zeros(newlen)
+Nins_sorted          = np.zeros(newlen)
+single_slopes_sorted = np.zeros(newlen)
 
 # Calculating averages:
 Ninbrush = Nsteps # Default, in case it does not exit the brush
@@ -462,10 +486,23 @@ print('len(averageRs):',len(averageRs))
 print('Ninbrush:',Ninbrush)
 print('Nsteps:', Nsteps)
 
+
+
+
+# Sectioned walks
+for i in range(Npartitions):
+    for j in range(lengths[i]):
+        if average_counters[i][j]!=0:
+            #print('Before division: Average_walks=', average_walks[i][j], '     average_counters=',average_counters[i][j])
+            average_walks[i][j]/=average_counters[i][j]
+            #print('After division: Average_walks=', average_walks[i][j], '     average_counters=',average_counters[i][j])
+
+print('gamma_avgs:',gamma_avgs)
+print('index_sorted:',index_sorted)
 # Opening file
 outfile_gamma = open(outfilename_gamma, 'w')
 outfile_gamma.write('This is an attempt to find the relative contribution of dz to R. The smaller the value in the second column, the more important dz is.\nOrder: <(R^2(n)-dz^2(n))/R^2(n)>_n, slope a of line fit, rmsd R^2(n) line fit, Nin, confignr\n')
-for i in range(Nseeds):
+for i in range(newlen):
     index = index_sorted[i]
     rmsds_sorted[i] = rmsds[index]
     seeds_sorted[i] = confignrs[index]
@@ -513,13 +550,17 @@ print('b_poly (should be small):', b_poly_av)
 print('D_poly:', D_poly_av)
 
 ## Average, SI units:
-
+# Distance:
 averageRs_SI  = averageRs*unitlength**2
 averagedxs_SI = averagedxs*unitlength**2
 averagedys_SI = averagedys*unitlength**2
 averagedzs_SI = averagedzs*unitlength**2
 averagedparallel_SI = averagedparallel*unitlength**2
-
+# Velocity:
+averagevs_SI  = averageRs*unitlength/timestepsize
+averagevxs_SI = averagedxs*unitlength/timestepsize
+averagevys_SI = averagedys*unitlength/timestepsize
+averagevzs_SI = averagedzs*unitlength/timestepsize
 
 print('----------------------------------')
 print(' averageRs_SI[2]:', averageRs_SI[2])
@@ -557,8 +598,9 @@ outfile_sections = open(outfilename_sections, 'w')
 for i in range(Npartitions):
     outfile_sections.write('Section %i\n' % i) # When reading from the file afterwards, I can extract the section number by if words[0]=='Section' and use that to divide the data into sections
     for j in range(lengths[i]):
-        average_walks_SI[i][j] = steps[i][j]*timestepsize
-        time_walks_SI[i][j] = average_walks[i][j]*unitlength
+        average_walks_SI[i][j] = average_walks[i][j]*unitlength 
+        time_walks_SI[i][j]    = steps[i][j]*timestepsize
+        #print('time_walks_SI[i][j]:', time_walks_SI[i][j], ': steps[i][j]:',steps[i][j], ';   timestepsize:',timestepsize, '; steps[i][j]*timestepsize:', steps[i][j]*timestepsize)
         outfile_sections.write('%.16f %16.f\n' % (time_walks_SI[i][j],average_walks_SI[i][j]))
 outfile_sections.close()
 
@@ -585,7 +627,7 @@ plt.plot(times_single, averagedzs, label=r'$<dz^2>$')
 plt.plot(times_single, averagedparallel, label=r'$<dx^2+dy^2>$')
 plt.xlabel(r'Index (s)')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title(r'RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.title(r'RMSD in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.axis([0, xmax_plot, 0, max(averageRs[0:xmax_plot])])
@@ -596,7 +638,7 @@ plt.plot(alltimes, allRs, ',', label='Data, brush')
 plt.plot(times_single, fit_poly_av, '--', label='Fit, brush')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title(r'RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.title(r'RMSD in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname)
@@ -608,7 +650,7 @@ plt.plot(alltimes, fit_poly, '--', label='Fit, data, brush')
 plt.plot(times_single, fit_poly_av, '--', label='Fit, average, brush')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title(r'RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.title(r'RMSD in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_all)
@@ -618,7 +660,7 @@ plt.plot(times_single, averagedzs, ',', label=r'dz$^2$')
 plt.plot(times_single, averagedparallel, ',', label=r'dx$^2$+dy$^2$')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title(r'Averaged RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.title(r'Averaged RMSD in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_parallel_orthogonal)
@@ -627,7 +669,7 @@ plt.figure(figsize=(6,5))
 plt.plot(times_single, averagedzs, ',')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title(r'$<dz^2>$ in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.title(r'$<dz^2>$ in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.savefig(plotname_orthogonal)
 
@@ -635,7 +677,7 @@ plt.figure(figsize=(6,5))
 plt.plot(times_single, averagedparallel, ',')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title(r'$<dx^2+dy^2>$ in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.title(r'$<dx^2+dy^2>$ in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.savefig(plotname_parallel)
 
@@ -652,7 +694,7 @@ plt.plot(times_single_real, averageRs_SI, ',', label='Average, brush')
 plt.plot(times_single_real, fit_poly_SI, '--', label='Fit, average, brush')
 plt.xlabel(r'Time (s)')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title(r'RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.title(r'RMSD in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_SI)
@@ -664,7 +706,7 @@ plt.plot(times_single, averagevys, label=r'vy')
 plt.plot(times_single, averagevzs, label=r'vz')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Velocity [in unit length/time]')
-plt.title('Averaged velocity in bulk, system size by d = %i nm' % spacing)
+plt.title('Averaged velocity in brush, d = %i nm' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_velocity)
@@ -676,24 +718,65 @@ plt.plot(times_single_real, averagevys_SI, label=r'vy')
 plt.plot(times_single_real, averagevzs_SI, label=r'vz')
 plt.xlabel(r'Time [s]')
 plt.ylabel(r'Velocity [m/s]')
-plt.title('Averaged velocity in bulk, system size by d = %i nm, SI' % spacing)
+plt.title('Averaged velocity in brush, d = %i nm, SI' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_velocity_SI)
 
+'''
+print('Original:')
+print('steps[0][:]:',steps[0][:])
+print('steps[:][0]:',steps[:][0])
+print('steps[1][:]:',steps[1][:])
+print('steps[:][1]:',steps[:][1])
+print('steps[2][:]:',steps[2][:])
+print('steps[:][2]:',steps[:][2])
+
+
+print('SI!!!!:')
+print('time_walks_SI[0][:]:',time_walks_SI[0][:])
+print('time_walks_SI[:][0]:',time_walks_SI[:][0])
+print('time_walks_SI[1][:]:',time_walks_SI[1][:])
+print('time_walks_SI[:][1]:',time_walks_SI[:][1])
+print('time_walks_SI[2][:]:',time_walks_SI[2][:])
+print('time_walks_SI[:][2]:',time_walks_SI[:][2])
+
+
+print('average_walks_SI[0][:]:',average_walks_SI[0][:])
+print('average_walks_SI[:][0]:',average_walks_SI[:][0])
+print('average_walks_SI[1][:]:',average_walks_SI[1][:])
+print('average_walks_SI[:][1]:',average_walks_SI[:][1])
+print('average_walks_SI[2][:]:',average_walks_SI[2][:])
+print('average_walks_SI[:][2]:',average_walks_SI[:][2])
+'''
+print('average_walks:',average_walks)
+print('average_walks_SI:',average_walks_SI)
+#'''
+
 plt.figure()
 for i in range(Npartitions):
-    plt.plot(time_walks_SI[i][:],average_walks_SI[i][:], label='Start at step %i' % startpoints[i])
+    plt.plot(time_walks_SI[:][i],average_walks_SI[:][i], label='Start at step %i' % startpoints[i])
 plt.xlabel(r'Time [s]')
 plt.ylabel(r'Distance$^2$ [m]')
-plt.title('RMSD in bulk, system size by d = %i nm, SI, sectioning' % spacing)
+plt.title('RMSD in brush, d = %i nm, SI, sectioning' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_sectioned_average)
 
+plt.figure()
+for i in range(Npartitions):
+    plt.plot(steps[:][i],average_walks_SI[:][i], label='Start at step %i' % startpoints[i])
+plt.xlabel(r'Time step')
+plt.ylabel(r'Distance$^2$ [m]')
+plt.title('RMSD in brush, d = %i nm, SI, sectioning' % spacing)
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.savefig(plotname_sectioned_average_vs_steps)
 
+plotname_sectioned_average_vs_steps
 
 print('counters:',average_counter)
 
 print('spacing:', spacing)
 print('psigma:', psigma)
+print('Number of skipped files:', skippedfiles, ' out of', Nseeds)

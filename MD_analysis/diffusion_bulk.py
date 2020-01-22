@@ -112,7 +112,7 @@ minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 writeevery   = 10                  # I'm writing to file every this many time steps
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
-timestepsize = 0.00045*unittime*writeevery
+timestepsize = 0.00045*unittime*writeevery # LAMMPS writes the actual time step to file, but I recreate the time array using np.arange. Therefore I need to multiply with writeevery
 
 print('timestepsize:', timestepsize)
 nextpart = 'ljunits_'
@@ -135,7 +135,7 @@ plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_'+namebase+'_par_ort
 plotname_sectioned_average = endlocation+'lammpsdiffusion_'+namebase+'_sections.png'
 # Setting arrays
 # Prepare for sectioning distance data:
-steps, partition_walks, numberofsamples, len_all, lengths, startpoints = datr.partition_holders_averaged(Nsteps,minlength)
+time_walks_SI, steps, partition_walks, numberofsamples, len_all, lengths, startpoints = datr.partition_holders_averaged(Nsteps,minlength)
 # These are all squared:
 # All together:
 allRs     = [] # Distance
@@ -159,10 +159,9 @@ averagevys = np.zeros(Nsteps)
 averagevzs = np.zeros(Nsteps)
 averagedparallel = np.zeros(Nsteps)
 average_counter  = np.zeros(Nsteps)
-average_walks    = copy.copy(partition_walks)
-average_walks_SI = copy.copy(partition_walks)
-average_counters = copy.copy(partition_walks)
-time_walks_SI    = copy.copy(steps)
+average_walks    = copy.deepcopy(partition_walks)
+average_walks_SI = copy.deepcopy(partition_walks)
+average_counters = copy.deepcopy(partition_walks)
 
 # Separated by seed:
 Rs_byseed    = []
@@ -554,8 +553,8 @@ outfile_sections = open(outfilename_sections, 'w')
 for i in range(Npartitions):
     outfile_sections.write('Section %i\n' % i) # When reading from the file afterwards, I can extract the section number by if words[0]=='Section' and use that to divide the data into sections
     for j in range(lengths[i]):
-        average_walks_SI[i][j] = steps[i][j]*timestepsize
-        time_walks_SI[i][j] = average_walks[i][j]*unitlength
+        average_walks_SI[i][j] = average_walks[i][j]*unitlength
+        time_walks_SI[i][j]    = steps[i][j]*timestepsize
         outfile_sections.write('%.16f %16.f\n' % (time_walks_SI[i][j],average_walks_SI[i][j]))
 outfile_sections.close()
 
