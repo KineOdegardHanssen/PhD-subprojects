@@ -30,7 +30,7 @@ plotdirs = False
 startpart = '_'
 parentfolder = 'Pure_bulk/'
 test_sectioned = True
-seeds  = np.arange(1,11)#(1,1001)#(52,54)#(1,1001)#[23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
+seeds  = np.arange(1,1001)#(52,54)#(1,1001)#[23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 Nseeds = len(seeds)
 Nsteps = 20001
 Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
@@ -235,14 +235,6 @@ for seed in seeds:
     step_temp.append(0)
     allRs.append(0)        # We will set this here since we know the value
     alltimes.append(0)
-    vxi = vx[i]
-    vyi = vy[i]
-    vzi = vz[i]
-    averagevs[0] += np.sqrt(vxi*vxi + vyi*vyi + vzi*vzi)
-    averagevxs[0]+= vxi
-    averagevys[0]+= vyi
-    averagevzs[0]+= vzi
-    averagevparallel[0] += np.sqrt(vxi*vxi+vyi*vyi)
     for i in range(1,Nin):
         # Distance
         this_in = positions[i]
@@ -392,6 +384,15 @@ single_slopes_sorted = np.zeros(Nseeds)
 
 ## Calculating averages:
 # All data
+# Know the velocity at t=0:
+vxi = vx[0]
+vyi = vy[0]
+vzi = vz[0]
+averagevs[0] = np.sqrt(vxi*vxi + vyi*vyi + vzi*vzi)
+averagevxs[0]= vxi
+averagevys[0]= vyi
+averagevzs[0]= vzi
+averagevparallel[0] = np.sqrt(vxi*vxi+vyi*vyi)
 for i in range(Nsteps):
     counter = average_counter[i]
     if counter!=0:
