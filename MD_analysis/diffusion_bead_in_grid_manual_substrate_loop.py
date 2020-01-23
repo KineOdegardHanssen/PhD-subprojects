@@ -37,12 +37,13 @@ print('psigma:', psigma)
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
 # Should divide into folders in a more thorough manner?
-# Extracting the correct names (all of them
+# Extracting the correct names (all of them)
+T        = 3
 plotseed = 0
 plotdirs = False
 test_sectioned = False
 #seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
-confignrs    = np.arange(1,300)#20)#101)#1001)#22) 
+confignrs    = np.arange(1,5)#300)#20)#101)#1001)#22) 
 Nseeds       = len(confignrs)      # So that I don't have to change that much
 Nsteps       = 20001
 writeevery   = 10                  # I'm writing to file every this many time steps
@@ -52,7 +53,6 @@ timestepsize = 0.00045*unittime*writeevery
 Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 print('timestepsize:', timestepsize)
-Npartitions = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 ## Weird cutoff (bead):
 #namebase    = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122' %spacing
 #folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
@@ -89,6 +89,10 @@ plotname_sectioned_average_vs_steps = endlocation+'lammpsdiffusion_'+namebase+fi
 ## Setting arrays
 # Prepare for sectioning distance data:
 time_walks_SI, steps, partition_walks, numberofsamples, len_all, lengths, startpoints = datr.partition_holders_averaged(Nsteps,minlength)
+
+print('Sections, walks:')
+print('minlength:', minlength)
+print('lenghts:', lengths)
 # These are all squared:
 # All together:
 allRs     = []
@@ -127,6 +131,13 @@ sections_walk  = []
 sections_steps = []
 # This is not squared, obviously:
 alltimes  = []
+
+# Set elements that I know:
+averagevs[0]  = np.sqrt(3*T)
+averagevxs[0] = np.sqrt(T)
+averagevys[0] = np.sqrt(T)
+averagevzs[0] = np.sqrt(T)
+
 
 skippedfiles = 0
 
@@ -291,7 +302,6 @@ for confignr in confignrs:
             Nin+=1
     
     startpos_in   = pos_inpolymer[0]
-        
     #######
     # Will divide into several walks with different starting points later on
     # Should store for RMS too? ... Then I need to have more starting points or more time frames.
@@ -389,16 +399,20 @@ for confignr in confignrs:
     part_walks    = []
     part_steps    = []
     part_start    = 0
-    smallest_part_walk = int(math.floor(Nin/Npartitions))
+    #smallest_part_walk = int(math.floor(Nin/Npartitions))
     for i in range(Npartitions):
         this_part    = []
         these_steps  = []
-        part_start   = i*smallest_part_walk
-        len_thiswalk = Nin-part_start       # Do I need this?
-        #print('part_start:', part_start)
-        #print('len(pos_inpolymer):', len(pos_inpolymer))
+        part_start   = startpoints[i]
+        len_thiswalk = lengths[i]
+        part_end     = part_start+len_thiswalk
+        if part_start>(Nin-1):              # Do not start this section if the bead has left the brush.
+            break
         rstart = pos_inpolymer[part_start]
         for j in range(len_thiswalk):
+            #print('i:',i,', j:',j)
+            if part_start+j>(Nin-1):
+                break
             rthis =  pos_inpolymer[part_start+j]
             drvec = rthis - rstart
             dr2   = np.dot(drvec,drvec)
@@ -483,11 +497,7 @@ averagedzs = averagedzs[0:Ninbrush]
 averagedparallel = averagedparallel[0:Ninbrush]
 
 print('len(averageRs):',len(averageRs))
-print('Ninbrush:',Ninbrush)
 print('Nsteps:', Nsteps)
-
-
-
 
 # Sectioned walks
 for i in range(Npartitions):
@@ -557,10 +567,10 @@ averagedys_SI = averagedys*unitlength**2
 averagedzs_SI = averagedzs*unitlength**2
 averagedparallel_SI = averagedparallel*unitlength**2
 # Velocity:
-averagevs_SI  = averageRs*unitlength/timestepsize
-averagevxs_SI = averagedxs*unitlength/timestepsize
-averagevys_SI = averagedys*unitlength/timestepsize
-averagevzs_SI = averagedzs*unitlength/timestepsize
+averagevs_SI  = averagevs*unitlength/timestepsize
+averagevxs_SI = averagevxs*unitlength/timestepsize
+averagevys_SI = averagevys*unitlength/timestepsize
+averagevzs_SI = averagevzs*unitlength/timestepsize
 
 print('----------------------------------')
 print(' averageRs_SI[2]:', averageRs_SI[2])
@@ -604,8 +614,19 @@ for i in range(Npartitions):
         outfile_sections.write('%.16f %16.f\n' % (time_walks_SI[i][j],average_walks_SI[i][j]))
 outfile_sections.close()
 
-
 '''
+plt.figure()
+for i in range(Npartitions):
+    plt.plot(steps[:][i],average_walks[:][i], label='Start at step %i' % startpoints[i])
+plt.xlabel(r'Time step')
+plt.ylabel(r'Distance$^2$ [m]')
+plt.title('RMSD in brush, d = %i nm, SI, sectioning' % spacing)
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+plt.show()
+
+
 maxind = 10000
 plt.figure(figsize=(6,5))
 plt.plot(times_single_real, averageRs_SI, label=r'$<R^2>$')
@@ -761,6 +782,7 @@ plt.ylabel(r'Distance$^2$ [m]')
 plt.title('RMSD in brush, d = %i nm, SI, sectioning' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(axis='both', style='sci', scilimits=(0,0))
 plt.savefig(plotname_sectioned_average)
 
 plt.figure()
