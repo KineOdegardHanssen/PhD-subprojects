@@ -324,6 +324,13 @@ for confignr in confignrs:
     step_temp.append(0)
     allRs.append(0)        # We will set this here since we know the value
     alltimes.append(0)
+    vxi = vx[i]
+    vyi = vy[i]
+    vzi = vz[i]
+    averagevs[0] += np.sqrt(vxi*vxi + vyi*vyi + vzi*vzi)
+    averagevxs[0]+= vxi
+    averagevys[0]+= vyi
+    averagevzs[0]+= vzi
     for i in range(1,Nin):       
         this_in = pos_inpolymer[i]
         dist = this_in-startpos_in
