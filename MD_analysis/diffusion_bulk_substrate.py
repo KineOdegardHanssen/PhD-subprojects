@@ -31,7 +31,7 @@ plotdirs = False
 startpart = '_withsubstrate_'
 parentfolder = 'Bulk_substrate/'
 test_sectioned = True
-seeds  = np.arange(1,1001)#(1,1001)#(52,54)#(1,1001)#[23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
+seeds  = np.arange(1,1001)#(52,54)#(1,1001) # Old seeds: [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 Nseeds = len(seeds)
 Nsteps = 20001
 testh_times  = np.zeros(Nseeds)
@@ -626,6 +626,7 @@ for i in range(Npartitions):
         average_walks_SI[i][j] = average_walks[i][j]*unitlength
         time_walks_SI[i][j]    = steps[i][j]*timestepsize
         outfile_sections.write('%.16f %16.f\n' % (time_walks_SI[i][j],average_walks_SI[i][j]))
+plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 outfile_sections.close()
 
 ## Making figures.
@@ -641,18 +642,20 @@ plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname)
 
+
 plt.figure(figsize=(6,5))
-plt.plot(times_single, averageRs, label=r'$\braket{dR^2}$')
-plt.plot(times_single, averagedxs, label=r'$\braket{dx^2}$')
-plt.plot(times_single, averagedys, label=r'$\braket{dy^2}$')
-plt.plot(times_single, averagedzs, label=r'$\braket{dz^2}$')
-plt.plot(times_single, averagedparallel, label=r'$\braket{dx^2+dy^2}')
+plt.plot(times_single, averageRs, label=r'$<dR^2>$') #label=r'$\braket{dR^2}$')
+plt.plot(times_single, averagedxs, label=r'$<dx^2>$') #label=r'$\braket{dx^2}$')
+plt.plot(times_single, averagedys, label=r'$<dy^2>$')#label=r'$\braket{dy^2}$')
+plt.plot(times_single, averagedzs, label=r'$<dz^2>$')#label=r'$\braket{dz^2}$')
+plt.plot(times_single, averagedparallel,label=r'$<dx^2+dy^2>') #label=r'$\braket{dx^2+dy^2}')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
 plt.title('Averaged RMSD, substrate only, d = %i nm' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_parallel_orthogonal)
+
 
 plt.figure(figsize=(6,5))
 plt.plot(plotgammaagainst, sorted_gamma_avgs)
@@ -662,6 +665,7 @@ plt.title(r'RMSD, substrate-only, $\gamma$; d = %i nm' % spacing)
 plt.tight_layout()
 plt.savefig(plotname_gamma)
 
+
 plt.figure(figsize=(6,5))
 plt.plot(times_single_real, averageRs_SI, ',', label='Average, brush')
 plt.plot(times_single_real, fit_poly_SI, '--', label='Fit, average, brush')
@@ -670,7 +674,9 @@ plt.ylabel(r'Distance$^2$ [m]')
 plt.title('RMSD, substrate only, d = %i nm, SI' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.savefig(plotname_SI)
+
 
 plt.figure()
 plt.plot(times_single, averagevs, label=r'$v$')
@@ -686,6 +692,7 @@ plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_velocity)
 
+
 plt.figure()
 plt.plot(times_single_real, averagevs_SI, label=r'$v$')
 plt.plot(times_single_real, averagevxs_SI, label=r'$v_x$')
@@ -697,7 +704,9 @@ plt.ylabel(r'Velocity [m/s]')
 plt.title('Averaged velocity, substrate only, system size by d = %i nm, SI' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.savefig(plotname_velocity_SI)
+
 
 plt.figure()
 for i in range(Npartitions):
@@ -707,6 +716,7 @@ plt.ylabel(r'Distance$^2$ [m]')
 plt.title('RMSD, substrate only, system size by d = %i nm, SI, sectioning' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.savefig(plotname_sectioned_average)
 
 print('averagedxs[-1]:',averagedxs[-1])
@@ -749,7 +759,6 @@ plt.xlabel(r'$t_h$ [s]')
 plt.ylabel(r'Hits/$N_{sims}$')
 plt.title('$t_h$ in system size by d = %i nm, substrate only' % spacing)
 plt.tight_layout()
-plt.legend(loc='upper left')
 plt.savefig(plotname_th_hist)
 
 

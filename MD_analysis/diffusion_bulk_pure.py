@@ -16,8 +16,9 @@ import glob
 import copy
 
 # Limiting the walk: Not interested in what happens when the bead has moved too far in the z-direction.
-maxh = 100 # Height, box: 300 nm. Should maxh=300?
-
+maxh  = 1e7#100 # Height, box: 300 nm. Should maxh=300?
+testh = 78 # An 'arbitrary' value for now ## Print this part to file (i.e. testh_times)?
+Nbins = 20 # Bins for plotting distribution of testh_times
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 spacing = 10 #100
@@ -30,15 +31,16 @@ plotdirs = False
 startpart = '_'
 parentfolder = 'Pure_bulk/'
 test_sectioned = True
-seeds  = np.arange(1,1001)#(52,54)#(1,1001)#[23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
+seeds  = np.arange(1,1001)#(1,1001)#(52,54)#(1,1001)#[23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 Nseeds = len(seeds)
 Nsteps = 20001
+testh_times  = np.zeros(Nseeds)
 Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
-writeevery   = 10                  # I'm writing to file every this many time steps
+#writeevery   = 10                  # I'm writing to file every this many time steps ### THIS IS AUTOMATED!!!
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
-timestepsize = 0.00045*unittime*writeevery # LAMMPS writes the actual time step to file, but I recreate the time array using np.arange. Therefore I need to multiply with writeevery
+timestepsize = 0.00045*unittime#*writeevery # LAMMPS writes the actual time step to file, but I recreate the time array using np.arange. Therefore I need to multiply with writeevery
 
 print('timestepsize:', timestepsize)
 nextpart = 'ljunits_'
@@ -54,6 +56,7 @@ outfilename          = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'.t
 outfilename_ds       = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_av_ds.txt'
 outfilename_gamma    = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_zimportance.txt'
 outfilename_sections = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_sections.txt'
+outfilename_th       = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_th.txt'
 plotname             = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'.png'
 plotname_gamma       = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_zimportance.png'
 plotname_SI          = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_SI.png'
@@ -61,6 +64,10 @@ plotname_velocity    = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_v
 plotname_velocity_SI = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_velocity_SI.png'
 plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_par_ort.png'
 plotname_sectioned_average = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_sections.png'
+plotname_traj_xy = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_traj_xy.png'
+plotname_traj_xz = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_traj_xz.png'
+plotname_traj_yz = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_traj_yz.png'
+plotname_th_hist = endlocation+'lammpsdiffusion_'+namebase_out+filestext+'_th_hist.png'
 # Setting arrays
 # Prepare for sectioning distance data:
 time_walks_SI, steps, partition_walks, numberofsamples, len_all, lengths, startpoints = datr.partition_holders_averaged(Nsteps,minlength)
@@ -90,6 +97,18 @@ average_counter  = np.zeros(Nsteps)
 average_walks    = copy.deepcopy(partition_walks)
 average_walks_SI = copy.deepcopy(partition_walks)
 average_counters = copy.deepcopy(partition_walks)
+
+# For testing:
+# Negative elements:
+vx_neg = np.zeros(Nsteps)
+vy_neg = np.zeros(Nsteps)
+vz_neg = np.zeros(Nsteps)
+v_all = np.zeros(Nsteps)
+vx_neg_fraction = np.zeros(Nsteps)
+vy_neg_fraction = np.zeros(Nsteps)
+vz_neg_fraction = np.zeros(Nsteps)
+# Plot appearance:
+averagevparallel_fake = np.zeros(Nsteps)
 
 # Separated by seed:
 Rs_byseed    = []
@@ -203,6 +222,7 @@ for seed in seeds:
         thesepos = positions[i]
         z        = thesepos[2]
         if z>maxh: # If the polymer is in bulk # We don't want it to go back and forth between brush and bulk # That will cause discontinuities in our data
+            print('seed',seed,', z>maxh, breaking. z =', z,'. Nin=',Nin)
             break
         else:
             pos_inbulk.append(thesepos)
@@ -210,9 +230,18 @@ for seed in seeds:
                 maxzbulk = z
             Nin+=1
     
+    # testh_times:
+    for i in range(counter):
+        thesepos = positions[i]
+        z        = thesepos[2]
+        if z>testh: # If the polymer is in bulk # Measuring the time when is first reaches height h.
+            testh_times[seed] = i*dt
+            break
+    
     # I do not take into account that the free bead can enter the polymer grid and then exit again. If that happens, there might be discontinuities or weird kinks in the data (if you look at the graphs...) # I do not have this in my test-dataset. Maybe make the bead lighter and see what happens?
     
     startpos_in = positions[0]
+    #print('test:::', startpos_in)
     #######
     # Will divide into several walks with different starting points later on
     # Should store for RMS too? ... Then I need to have more starting points or more time frames.
@@ -243,6 +272,10 @@ for seed in seeds:
         dx2  = dist[0]*dist[0]
         dy2  = dist[1]*dist[1]
         dz2  = dist[2]*dist[2]
+        if this_in[2]>maxh:
+            print('Wut?')
+        if np.sqrt(dz2)>maxh:
+            print('dz2 larger than it should. np.sqrt(dz2)=',np.sqrt(dz2),', position:', this_in)
         gamma = (R2-dz2)/R2
         # Velocity:
         vxi = vx[i]
@@ -265,7 +298,16 @@ for seed in seeds:
         averagevzs[i]+= vzi
         averagevparallel[i] += np.sqrt(vxi*vxi+vyi*vyi)
         averagedparallel[i] += dx2+dy2 # Distance
+        averagevparallel_fake[i] += vxi+vyi
         average_counter[i]  +=1
+        # For testing purposes:
+        if vxi<0:
+            vx_neg[i] += 1
+        if vyi<0:
+            vy_neg[i] += 1
+        if vzi<0:
+            vz_neg[i] += 1
+        v_all[i] += 1
         # Separated by seed:
         R_temp.append(R2)
         dx_temp.append(dx2)
@@ -364,6 +406,38 @@ for seed in seeds:
     #print('Deba uba zat zat')
     #print('Time, partitioning:',time_afterpartition-time_beforepartition)
 
+for i in range(1,Nsteps):    
+    #print('Step',i,', neg vz:', vz_neg[i], ' out of', v_all[i])  
+    vx_neg_fraction[i] = vx_neg[i]/v_all[i]
+    vy_neg_fraction[i] = vy_neg[i]/v_all[i]
+    vz_neg_fraction[i] = vz_neg[i]/v_all[i]
+
+'''
+plt.figure()
+plt.plot(times_single,vx_neg, label=r'Neg $v_x$')
+plt.plot(times_single,vy_neg, label=r'Neg $v_y$')
+plt.plot(times_single,vz_neg, label=r'Neg $v_z$')
+plt.plot(times_single,v_all, label=r'No of $v$s')
+plt.xlabel('Time step')
+plt.ylabel('Occurences')
+plt.title(r'How many negative $v$-components?')
+plt.legend(loc='upper left')
+plt.tight_layout()
+plt.show()
+
+
+plt.figure()
+plt.plot(times_single,vx_neg_fraction, label=r'Neg $v_x$')
+plt.plot(times_single,vy_neg_fraction, label=r'Neg $v_y$')
+plt.plot(times_single,vz_neg_fraction, label=r'Neg $v_z$')
+plt.xlabel('Time step')
+plt.ylabel('Fraction')
+plt.title(r'Fraction of negative $v$-components')
+plt.legend(loc='upper left')
+plt.tight_layout()
+plt.show()
+'''
+
 allRs      = np.array(allRs)
 alltimes   = np.array(alltimes)
 gamma_avgs = np.array(gamma_avgs)
@@ -408,6 +482,7 @@ for i in range(Nsteps):
         averagevys[i]/=counter
         averagevzs[i]/=counter
         averagevparallel[i]/=counter
+        averagevparallel_fake[i]/=counter
 
 # Sectioned walks
 for i in range(Npartitions):
@@ -505,6 +580,40 @@ for i in range(len(averageRs)):
     outfile_ds.write('%i %.2e %.5e %.5e %.5e %.5e %.5e\n' % (times_single[i], times_single_real[i], averageRs_SI[i], averagedxs_SI[i], averagedys_SI[i], averagedzs_SI[i], averagedparallel_SI[i]))
 outfile_ds.close()
 
+xpos = []
+ypos = []
+zpos = []
+
+for i in range(Nin):
+    pos= positions[i]
+    xpos.append(pos[0])
+    ypos.append(pos[1])
+    zpos.append(pos[2])
+
+
+plt.figure(figsize=(6,5))
+plt.plot(xpos, ypos, '.')
+plt.xlabel(r'x')
+plt.ylabel(r'y')
+plt.title('Trajectory in xy-plane')
+plt.tight_layout()
+plt.savefig(plotname_traj_xy)
+
+plt.figure(figsize=(6,5))
+plt.plot(xpos, zpos, '.')
+plt.xlabel(r'x')
+plt.ylabel(r'z')
+plt.title('Trajectory in zy-plane')
+plt.tight_layout()
+plt.savefig(plotname_traj_xz)
+
+plt.figure(figsize=(6,5))
+plt.plot(ypos, zpos, '.')
+plt.xlabel(r'y')
+plt.ylabel(r'z')
+plt.title('Trajectory in yz-plane')
+plt.tight_layout()
+plt.savefig(plotname_traj_yz)
 
 '''
 average_walks_SI = copy.copy(partition_walks)
@@ -519,6 +628,7 @@ for i in range(Npartitions):
         average_walks_SI[i][j] = average_walks[i][j]*unitlength
         time_walks_SI[i][j]    = steps[i][j]*timestepsize
         outfile_sections.write('%.16f %16.f\n' % (time_walks_SI[i][j],average_walks_SI[i][j]))
+plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 outfile_sections.close()
 
 ## Making figures.
@@ -535,8 +645,11 @@ plt.legend(loc='upper left')
 plt.savefig(plotname)
 
 plt.figure(figsize=(6,5))
-plt.plot(times_single, averagedzs, ',', label=r'dz$^2$')
-plt.plot(times_single, averagedparallel, ',', label=r'dx$^2$+dy$^2$')
+plt.plot(times_single, averageRs, label=r'$<dR^2>$') #label=r'$\braket{dR^2}$')
+plt.plot(times_single, averagedxs, label=r'$<dx^2>$') #label=r'$\braket{dx^2}$')
+plt.plot(times_single, averagedys, label=r'$<dy^2>$')#label=r'$\braket{dy^2}$')
+plt.plot(times_single, averagedzs, label=r'$<dz^2>$')#label=r'$\braket{dz^2}$')
+plt.plot(times_single, averagedparallel,label=r'$<dx^2+dy^2>') #label=r'$\braket{dx^2+dy^2}')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
 plt.title('Averaged RMSD in bulk, d = %i nm' % spacing)
@@ -560,6 +673,7 @@ plt.ylabel(r'Distance$^2$ [m]')
 plt.title('RMSD in bulk, d = %i nm, SI' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.savefig(plotname_SI)
 
 plt.figure()
@@ -568,6 +682,7 @@ plt.plot(times_single, averagevxs, label=r'$v_x$')
 plt.plot(times_single, averagevys, label=r'$v_y$')
 plt.plot(times_single, averagevzs, label=r'$v_z$')
 plt.plot(times_single, averagevparallel, label=r'$v_\parallel$')
+plt.plot(times_single, averagevparallel_fake, label=r'$v_x+v_y$')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Velocity [in unit length/time]')
 plt.title('Averaged velocity in bulk, system size by d = %i nm' % spacing)
@@ -586,6 +701,7 @@ plt.ylabel(r'Velocity [m/s]')
 plt.title('Averaged velocity in bulk, system size by d = %i nm, SI' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.savefig(plotname_velocity_SI)
 
 plt.figure()
@@ -596,5 +712,50 @@ plt.ylabel(r'Distance$^2$ [m]')
 plt.title('RMSD in bulk, system size by d = %i nm, SI, sectioning' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.savefig(plotname_sectioned_average)
+
+print('averagedxs[-1]:',averagedxs[-1])
+print('averagedys[-1]:',averagedys[-1])
+print('averagedzs[-1]:',averagedzs[-1])
+
+print('mean(averagedxs):',np.mean(averagedxs))
+print('mean(averagedys):',np.mean(averagedys))
+print('mean(averagedzs):',np.mean(averagedzs))
+
+## Distribution of times when it reaches height testh:
+#testh_times[seed]
+# Binning:
+maxtime_testh = max(testh_times)
+mintime_testh = min(testh_times)
+binlength     = (maxtime_testh-mintime_testh)/float(Nbins)
+bins_ht       = np.zeros(Nbins)
+bincenters    = np.zeros(Nbins)
+centerstart   = mintime_testh+0.5*binlength
+
+
+# Finding bin values + writing to file
+outfile_th = open(outfilename_th, 'w')
+for i in range(Nseeds):
+    val = testh_times[i]
+    outfile_th.write('%.16f\n' % val)
+    for j in range(Nbins):
+        if val>(mintime_testh+j*binlength) and val<(mintime_testh+(j+1)*binlength):
+            bins_ht[j] += 1
+            continue
+
+Nbinned = np.sum(bins_ht) # Use this or use Nseeds?
+for i in range(Nbins):
+    bins_ht[i] /= Nseeds#Nbinned
+    bincenters[i] = centerstart +i*binlength
+
+plt.figure()
+plt.plot(bincenters, bins_ht)
+plt.xlabel(r'$t_h$ [s]')
+plt.ylabel(r'Hits/$N_{sims}$')
+plt.title('$t_h$ in system size by d = %i nm' % spacing)
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.savefig(plotname_th_hist)
+
 
