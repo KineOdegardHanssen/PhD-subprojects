@@ -26,7 +26,8 @@ def rmsd(x,y):
         delta += (x[i]-y[i])*(x[i]-y[i])
     delta = np.sqrt(delta/(Nx-1))
     return delta
-
+#
+damp = 50
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
 spacing = 10
@@ -48,7 +49,7 @@ confignrs    = np.arange(1,1001)#300)#20)#101)#1001)#22)
 Nseeds       = len(confignrs)      # So that I don't have to change that much
 maxz_av      = 0
 filescounter = 0
-Nsteps       = 20001
+Nsteps       = 2001 # 20001 before
 writeevery   = 10                  # I'm writing to file every this many time steps
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
@@ -60,40 +61,47 @@ print('timestepsize:', timestepsize)
 #namebase    = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122' %spacing
 #folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
 # Usual cutoff (bead):
-foldername  = 'Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122'
-endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)+'/'
-namebase_start = '_quadr_M9N101_ljunits_'
-folderbase_mid = 'Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5'
+#foldername  = 'Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122'
+#endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/damp50_diffseedLgv'+'/Sigma_bead_'+str(psigma)+'/'
+endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Pure_bulk/Sigma_bead_' % (spacing,damp)+str(psigma) + '/'
+#namebase_start = '_quadr_M9N101_ljunits_'
+#folderbase_mid = 'Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5'
 #folderbase_end = '_ljcut1p122'
-namebase = namebase_start+'spacing%i_' % spacing + folderbase_mid + '_psigma' +str(psigma)+'_sect_placeexact_ljcut1p122'
+#namebase = namebase_start+'spacing%i_' % spacing + folderbase_mid + '_psigma' +str(psigma)+'_sect_placeexact_ljcut1p122'
 #namebase = 'spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_pstdcutoff_sect_placeexact_ljcut1p122'
 #folderbase = 'Part_in_chgr_subst'+namebase_start+folderbase_mid+folderbase_end
 
 #endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 #outfilename          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'.txt' # This is redundant
-outfilename_ds       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_av_ds.txt'
-outfilename_gamma    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.txt'
-outfilename_sections = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_sections.txt'
+# Text files
+outfilename_ds       = endlocation+'av_ds_'+filestext+'.txt'                        #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_av_ds.txt'
+outfilename_gamma    = endlocation+'zimportance_'+filestext+'.txt'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.txt'
+outfilename_sections = endlocation+'sections_'+filestext+'.txt'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_sections.txt'
 outfilename_maxz     = endlocation+'maxz_az_'+filestext+'.txt'
-plotname             = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'.png'
-plotname_all         = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_all.png'
-plotname_gamma       = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.png'
-plotname_SI          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_SI.png'
-plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par_ort.png' 
-plotname_dx_dy_dz    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_dx_dy_dz.png' 
-plotname_parallel    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par.png' 
-plotname_orthogonal  = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_ort.png'
-plotname_short_all   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_short_all.png'
-plotname_velocity    = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity.png'
-plotname_velocity_SI = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity_SI.png'
-plotname_velocity_sq = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity_sq.png'
-plotname_sectioned_average = endlocation+'lammpsdiffusion_'+namebase+filestext+'_sections.png'
-plotname_sectioned_average_vs_steps = endlocation+'lammpsdiffusion_'+namebase+filestext+'_sections_steps.png'
-plotname_traj_xy = endlocation+'lammpsdiffusion_'+namebase+filestext+'_traj_xy.png'
-plotname_traj_xz = endlocation+'lammpsdiffusion_'+namebase+filestext+'_traj_xz.png'
-plotname_traj_yz = endlocation+'lammpsdiffusion_'+namebase+filestext+'_traj_yz.png'
-plotname_th_hist = endlocation+'lammpsdiffusion_'+namebase+filestext+'_th_hist.png'
+
+# Plots
+plotname             = endlocation+filestext+'.png'                                 #'lammpsdiffusion_qdrgr_'+namebase+filestext+'.png'
+plotname_all         = endlocation+'all_'+filestext+'.png'                          #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_all.png'
+plotname_gamma       = endlocation+'zimportance_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.png'
+plotname_SI          = endlocation+'SI_'+filestext+'.png'                           #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_SI.png'
+plotname_parallel_orthogonal = endlocation+'par_ort_'+filestext+'.png'              #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par_ort.png' 
+plotname_dx_dy_dz    = endlocation+'dx_dy_dz_'+filestext+'.png'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_dx_dy_dz.png' 
+plotname_parallel    = endlocation+'par_'+filestext+'.png'                          #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par.png' 
+plotname_orthogonal  = endlocation+'ort_'+filestext+'.png'                          #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_ort.png'
+plotname_short_all   = endlocation+'short_all_'+filestext+'.png'                    #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_short_all.png'
+plotname_velocity    = endlocation+'velocity_'+filestext+'.png'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity.png'
+plotname_velocity_SI = endlocation+'velocity_SI_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity_SI.png'
+plotname_velocity_sq = endlocation+'velocity_sq_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity_sq.png'
+plotname_sectioned_average = endlocation+'sections_'+filestext+'.png'               #'lammpsdiffusion_'+namebase+filestext+'_sections.png'
+plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext+'.png'#'lammpsdiffusion_'+namebase+filestext+'_sections_steps.png'
+plotname_traj_xy = endlocation+'traj_xy_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_xy.png'
+plotname_traj_xz = endlocation+'traj_xz_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_xz.png'
+plotname_traj_yz = endlocation+'traj_yz_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_yz.png'
+plotname_traj_xt = endlocation+'traj_xt_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_xt.png'
+plotname_traj_yt = endlocation+'traj_yt_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_yt.png'
+plotname_traj_zt = endlocation+'traj_zt_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_zt.png'
+plotname_th_hist = endlocation+'th_hist_'+filestext+'.png'                          #'lammpsdiffusion_'+namebase+filestext+'_th_hist.png'
 
 
 ## Setting arrays
@@ -151,12 +159,6 @@ sections_steps = []
 # This is not squared, obviously:
 alltimes  = []
 
-# Set elements that I know:
-averagevs[0]  = np.sqrt(3*T)
-averagevxs[0] = np.sqrt(T)
-averagevys[0] = np.sqrt(T)
-averagevzs[0] = np.sqrt(T)
-
 
 skippedfiles = 0
 
@@ -164,8 +166,8 @@ for confignr in confignrs:
     print('On config number:', confignr)
     infilename_all  = endlocation+'all_confignr'+str(confignr)+'.lammpstrj'      #endlocation+'all_density'+str(density)+'_confignr'+str(confignr)+'.lammpstrj'
     infilename_free = endlocation+'freeatom_confignr'+str(confignr)+'.lammpstrj' #endlocation+'freeatom_density'+str(density)+'_confignr'+str(confignr)+'.lammpstrj'
-    plotname_dirs   = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_dxdydzR2_seed'+str(confignr)+'.png'
-    plotname_testsect = endlocation+'lammpsdiffusion_qdrgr_'+namebase+'_testsectioned_seed'+str(confignr)+'.png'
+    plotname_dirs   = endlocation+'dxdydzR2_seed'+str(confignr)+'.png'
+    plotname_testsect = endlocation+'testsectioned_seed'+str(confignr)+'.png'
     
     #print('infilename_all:',infilename_all)
     
@@ -378,11 +380,11 @@ for confignr in confignrs:
         averagedxs[i] +=dx   # Distance, signed
         averagedys[i] +=dy
         averagedzs[i] +=dz
-        averagevs[i]  += np.sqrt(vz2i)  # Velocity
+        averagevs[i]  += np.sqrt(vx2i+vy2i+vz2i)  # Velocity
         averagevxs[i] += vxi
         averagevys[i] += vyi
         averagevzs[i] += vzi
-        averagev2s[i] += vz2i           # Velocity, squared
+        averagev2s[i] += vx2i+vy2i+vz2i            # Velocity, squared
         averagevx2s[i]+= vx2i
         averagevy2s[i]+= vy2i
         averagevz2s[i]+= vz2i
@@ -696,30 +698,55 @@ for i in range(Nin):
     zpos.append(pos[2])
 
 
-if popup_plots==True:
-    plt.figure(figsize=(6,5))
-    plt.plot(xpos, ypos, '.')
-    plt.xlabel(r'x')
-    plt.ylabel(r'y')
-    plt.title('Trajectory in xy-plane')
-    plt.tight_layout()
-    plt.savefig(plotname_traj_xy)
-    
-    plt.figure(figsize=(6,5))
-    plt.plot(xpos, zpos, '.')
-    plt.xlabel(r'x')
-    plt.ylabel(r'z')
-    plt.title('Trajectory in zy-plane')
-    plt.tight_layout()
-    plt.savefig(plotname_traj_xz)
-    
-    plt.figure(figsize=(6,5))
-    plt.plot(ypos, zpos, '.')
-    plt.xlabel(r'y')
-    plt.ylabel(r'z')
-    plt.title('Trajectory in yz-plane')
-    plt.tight_layout()
-    plt.savefig(plotname_traj_yz)
+# Trajectory in plane
+plt.figure(figsize=(6,5))
+plt.plot(xpos, ypos, '.')
+plt.xlabel(r'x')
+plt.ylabel(r'y')
+plt.title('Trajectory in xy-plane')
+plt.tight_layout()
+plt.savefig(plotname_traj_xy)
+
+plt.figure(figsize=(6,5))
+plt.plot(xpos, zpos, '.')
+plt.xlabel(r'x')
+plt.ylabel(r'z')
+plt.title('Trajectory in xz-plane')
+plt.tight_layout()
+plt.savefig(plotname_traj_xz)
+
+plt.figure(figsize=(6,5))
+plt.plot(ypos, zpos, '.')
+plt.xlabel(r'y')
+plt.ylabel(r'z')
+plt.title('Trajectory in yz-plane')
+plt.tight_layout()
+plt.savefig(plotname_traj_yz)
+
+### x, y, z vs t
+plt.figure(figsize=(6,5))
+plt.plot(times_single, xpos, '.')
+plt.xlabel(r't')
+plt.ylabel(r'x')
+plt.title('x(t)')
+plt.tight_layout()
+plt.savefig(plotname_traj_xt)
+
+plt.figure(figsize=(6,5))
+plt.plot(times_single, ypos, '.')
+plt.xlabel(r't')
+plt.ylabel(r'y')
+plt.title('y(t)')
+plt.tight_layout()
+plt.savefig(plotname_traj_yt)
+
+plt.figure(figsize=(6,5))
+plt.plot(times_single, zpos, '.')
+plt.xlabel(r't')
+plt.ylabel(r'z')
+plt.title('z(t)')
+plt.tight_layout()
+plt.savefig(plotname_traj_zt)
 
 
 outfile_sections = open(outfilename_sections, 'w')
@@ -780,7 +807,7 @@ plt.axis([0, times_single_real[maxind], 0, max(averageR2s_SI[0:maxind])])
 plt.show()
 '''
 # To determine the range
-xmax_plot = 10000
+xmax_plot = 100
 plt.figure(figsize=(6,5))
 plt.plot(times_single, averageR2s, label=r'$<R^2>$')
 plt.plot(times_single, averagedx2s, label=r'$<dx^2>$')
@@ -848,8 +875,6 @@ plt.title(r'Averaged RMSD in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigm
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_dx_dy_dz)
-
-
 
 plt.figure(figsize=(6,5))
 plt.plot(times_single, averagedparallel2, ',')
