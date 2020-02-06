@@ -15,12 +15,14 @@ import os
 import glob
 import copy
 
+damp    = 50
 spacing = 10
 sigma_atom = 1
-configs = [1000]#np.arange(1,1001)
+configs = np.arange(1,1001)#[1000]#np.arange(1,1001)
 Nconfigs = len(configs)
 
-basefolder = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122/Spacing%i/Sigma_bead_'% (spacing)+ str(sigma_atom)+'/'
+#basefolder = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122/Spacing%i/Sigma_bead_'% (spacing)+ str(sigma_atom)+'/'
+basefolder = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Brush/Sigma_bead_' % (spacing,damp)+str(sigma_atom) + '/'
 folder = basefolder + 'log-files/'
 outfolder = basefolder
 outfilename = outfolder + 'collisiontimes.txt' #_test_every.txt'
@@ -42,6 +44,7 @@ for config in configs: # Write to file inside loop?
     filename_infolder = 'log.confignr%i' % config #+ '_every'
     infilename = folder + filename_infolder
     
+    #print('infilename:',infilename)
     try:
         infile_all = open(infilename, "r")
     except:
@@ -79,7 +82,7 @@ for config in configs: # Write to file inside loop?
             # Append collition times
             crashtimes.append(thistime)
             outfile.write('%i %.16f\n' % (thistime, pot_en))
-            print('crashtime: %i, pot.en.:, %.5f' % (thistime, pot_en))
+            #print('crashtime: %i, pot.en.:, %.5f' % (thistime, pot_en))
             crashbefore = 1
             #
             timeint       = thistime-prev_coll
