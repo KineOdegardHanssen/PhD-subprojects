@@ -14,12 +14,12 @@ import os
 import glob
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-bulkdiffusion = True
+bulkdiffusion = False
 substrate     = False
 
 spacing = 10
 psigma  = 1
-damp    = 50 
+damp    = 15
 
 Nsteps = 2001
 confignrs = np.arange(1,1001)
@@ -35,7 +35,7 @@ if bulkdiffusion==True:
     if substrate==True:
         parentfolder = 'Bulk_substrate/'
 else:
-    parentfolder = 'Brush'
+    parentfolder = 'Brush/'
     filestext     = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])
 
 
@@ -211,3 +211,4 @@ plt.savefig(plotname_dpar)
 
 print('spacing:', spacing)
 print('psigma:', psigma)
+print('damp:', damp)

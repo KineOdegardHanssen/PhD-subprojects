@@ -15,7 +15,9 @@ import os
 import glob
 import copy
 
-damp    = 50
+## NB: This file only works with indices, so that it is easier to compare with the trajectories
+
+damp    = 15
 spacing = 10
 sigma_atom = 1
 configs = np.arange(1,1001)#[1000]#np.arange(1,1001)
@@ -41,7 +43,7 @@ for config in configs: # Write to file inside loop?
     print('config:', config)
     prev_coll = 0 # To find the collision interval
     
-    filename_infolder = 'log.confignr%i' % config #+ '_every'
+    filename_infolder = 'log.confignr%i_printevery10' % config #+ '_every'
     infilename = folder + filename_infolder
     
     #print('infilename:',infilename)

@@ -27,7 +27,7 @@ def rmsd(x,y):
     delta = np.sqrt(delta/(Nx-1))
     return delta
 #
-damp = 50
+damp = 15
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
 spacing = 10
@@ -50,10 +50,10 @@ Nseeds       = len(confignrs)      # So that I don't have to change that much
 maxz_av      = 0
 filescounter = 0
 Nsteps       = 2001 # 20001 before
-writeevery   = 10                  # I'm writing to file every this many time steps
+#writeevery   = 10                  # I'm writing to file every this many time steps
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
-timestepsize = 0.00045*unittime*writeevery
+timestepsize = 0.00045*unittime#*writeevery
 Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 print('timestepsize:', timestepsize)
@@ -63,7 +63,7 @@ print('timestepsize:', timestepsize)
 # Usual cutoff (bead):
 #foldername  = 'Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122'
 #endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/damp50_diffseedLgv'+'/Sigma_bead_'+str(psigma)+'/'
-endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Pure_bulk/Sigma_bead_' % (spacing,damp)+str(psigma) + '/'
+endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Brush/Sigma_bead_' % (spacing,damp)+str(psigma) + '/'
 #namebase_start = '_quadr_M9N101_ljunits_'
 #folderbase_mid = 'Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5'
 #folderbase_end = '_ljcut1p122'
@@ -79,6 +79,7 @@ outfilename_ds       = endlocation+'av_ds_'+filestext+'.txt'                    
 outfilename_gamma    = endlocation+'zimportance_'+filestext+'.txt'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.txt'
 outfilename_sections = endlocation+'sections_'+filestext+'.txt'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_sections.txt'
 outfilename_maxz     = endlocation+'maxz_az_'+filestext+'.txt'
+outfilename_dt       = endlocation+'dt.txt'
 
 # Plots
 plotname             = endlocation+filestext+'.png'                                 #'lammpsdiffusion_qdrgr_'+namebase+filestext+'.png'
@@ -763,6 +764,10 @@ outfile_sections.close()
 outfile_maxz = open(outfilename_maxz, 'w')
 outfile_maxz.write('%.16f' % maxz_av)         # Should I have some rms value here too?
 outfile_maxz.close()
+
+outfile_dt = open(outfilename_dt, 'w')
+outfile_dt.write('%.16e' % dt)
+outfile_dt.close()
 
 if popup_plots==True:
     maxind = 100#00
