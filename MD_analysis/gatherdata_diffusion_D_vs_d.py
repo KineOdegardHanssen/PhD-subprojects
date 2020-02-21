@@ -27,12 +27,14 @@ def rmsd(x,y):
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 psigma   = 1 # For instance 
-spacings = np.array([5, 10]) # Will add d=100 to this list soon. Need even more points too.
-pmass    = 1.5 # I don't use this anymore, but it got stuck in the file names. Have constant mass density now.
+spacings = np.array([3,4,5,7,10,15,25])#np.array([5, 10]) # Will add d=100 to this list soon. Need even more points too.
+pmass    = 1 # I don't use this anymore, but it got stuck in the file names. Have constant mass density now.
+damp     = 10
 N        = len(spacings)
 # Input booleans for file selection:
 bulkdiffusion = False
 substrate     = False
+confignrs     = np.arange(1,1001)
 
 # Ds
 DRs = np.zeros(N)
@@ -61,36 +63,23 @@ bzs_stdv = np.zeros(N)
 bparallel_stdv = np.zeros(N)
 
 
-
 if bulkdiffusion==True:
-    systemtype   = 'bulk'
-    startpart    = '_'
     parentfolder = 'Pure_bulk/'
+    filestext    = '_seed'+str(confignrs[0])+'to'+str(confignrs[-1])
+    systemtype   = 'bulk'
     if substrate==True:
-        systemtype   = 'substrate'
-        startpart    = '_withsubstrate_'
         parentfolder = 'Bulk_substrate/'
-    namebase_out   = 'bulkdiffusion'+startpart+'ljunits_Langevin_scaled_T3_pmass'
-    name_end       = '_sect_placeexact_ljepsilon0.730372054992096_ljcut1p122'
-    folderbase     = 'Bulkdiffusion'+startpart+'ljunits_Langevin_scaled_T3_pmass1.5_sect_placeexact_ljepsilon0.730372054992096_ljcut1p122'
-    namebase_short = namebase # In case I ever need to shorten it
-    
-    name_start = 'lammpsdiffusion_'
-    
+        systemtype   = 'substrate'
 else:
-    systemtype = 'brush'
     parentfolder = 'Brush/'
-    #namebase = '_quadr_M9N101_ljunits_spacing%i_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass'% spacing + str(pmass)
-    namebase_out = '_quadr_M9N101_ljunits_Langevin_scaled_Kangle14_Kbond140_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass' + str(pmass)
-    folderbase   = 'Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122'    
-    name_start   = 'lammpsdiffusion_qdrgr'
-    name_end     = '_sect_placeexact_ljcut1p122'
+    systemtype   = 'brush'
+    filestext    = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])
 
-endlocation_gathered = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/'
-outfilename  = endlocation_gathered+'D_vs_d_'+name_start+namebase_out+name_end+'.txt'
-plotname     = endlocation_gathered+'D_vs_d_'+name_start+namebase_out+name_end+'.png'
-plotname_fit = endlocation_gathered+'D_vs_d_'+name_start+namebase_out+name_end+'_fit.png'
-indfilename  = endlocation_gathered+'D_vs_d_'+name_start+namebase_out+name_end+'_fitindices.txt'
+endlocation_out = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/'+parentfolder+'Sigma_bead_' +str(psigma) + '/'
+outfilename  = endlocation_out+'D_vs_d.txt'
+plotname     = endlocation_out+'D_vs_d.png'
+plotname_fit = endlocation_out+'D_vs_d_fit.png'
+indfilename  = endlocation_out+'D_vs_d_fitindices.txt'
 
 outfile = open(outfilename, 'w')
 outfile.write('psigma   D_R2   sigmaD_R2  b_R2 sigmab_R2; D_z2  sigmaD_z2 b_z2  sigmaD_z2; D_par2 sigmaD_par2  b_par2  sigmab_par2\n')
@@ -100,16 +89,9 @@ indexfile.write('Start_index_R     end_index_R     Start_index_ort     end_index
 
 for i in range(N):
     spacing = spacings[i]
-    if bulkdiffusion==True:
-        namebase = namebase = 'bulkdiffusion'+startpart+'ljunits_spacing%i_Langevin_scaled_T3_pmass' % spacing
-    else:
-        namebase = '_quadr_M9N101_ljunits_spacing%i_Langevin_scaled_Kangle14_Kbond140_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass'% spacing+ str(pmass)
-    endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)+'/'
-    namebase_start = '_quadr_M9N101_ljunits_'
-    folderbase_mid = 'Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5'
-    namebase_short = namebase+'_psigma'+str(psigma)+name_end
-    infilename = endlocation+name_start+namebase_short+'_diffusion.txt' #_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
-    metaname   = endlocation+name_start+namebase_short+'_metadata.txt' # In original file set as:  endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_metadata.txt'
+    endlocation_in   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder+ 'Sigma_bead_' +str(psigma) + '/'
+    infilename = endlocation_in+'diffusion'+filestext+'.txt' #_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
+    metaname   = endlocation_in+'diffusion_metadata'+filestext+'.txt' # In original file set as:  endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_metadata.txt'
 
     #print('infilename_all:',infilename_all)
     
