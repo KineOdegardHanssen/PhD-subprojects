@@ -272,7 +272,6 @@ int main()
 
     }
 
-
     ofstream dataFile;
     //char *dfilename = new char[1000]; // Possibly a long file name
     dataFile.open(datafilename); // Does this work?
@@ -284,8 +283,35 @@ int main()
     dataFile << "maxz: " << maxz << " minz: " << minz << endl;
     dataFile.close();
 
-    //vector<int> outframes = vector<int>(Nout);
+    ofstream xFile;
+    xFile.open(xfilename);
+    delete xfilename;
 
+    ofstream yFile;
+    yFile.open(yfilename);
+    delete yfilename;
+
+    ofstream zFile;
+    zFile.open(zfilename);
+    delete zfilename;
+
+    for(int i=0; i<Nx; i++){
+        for(int j=0; j<Ny; j++){
+            for(int k=0; k<Nz; k++){
+                // Write to file
+                xFile << std::setprecision(std::numeric_limits<double>::digits10+1) << x_centres[i] << " "; // Is this really necessary?
+                yFile << std::setprecision(std::numeric_limits<double>::digits10+1) << y_centres[j] << " ";
+                zFile << std::setprecision(std::numeric_limits<double>::digits10+1) << z_centres[k] << " ";
+            } // Close loop over z
+            xFile << endl;
+            yFile << endl;
+            zFile << endl;
+        } // Close loop over y
+    } // Close loop over x
+
+    xFile.close();
+    yFile.close();
+    zFile.close();
 
     /*
     */
