@@ -6,6 +6,7 @@
 #include <string>
 //#include <cstdio>
 #include<stdio.h>
+#include<sstream>
 //#include <ostream> // Don't need this?
 // This is buggy. Should I not use qt?
 
@@ -57,27 +58,54 @@ int main()
     //indices = int_linspace(framefirst,framelast,totframes);
     //*
     int framespacing = (framelast-framefirst)/(totframes-1); // Double check
-    for (int i; i<totframes-1; i++)
+    for (int i=0; i<totframes-1; i++)
     {
         indices[i] = framefirst + i*framespacing;
         cout << "i=" << i << "; value =" << framefirst + i*framespacing << endl;
     }
     //*/
+    string currline;
+    /*
+    int shift;
+    str currline;
+    shift = skiplines;
+    for (int i=0; i<totframes-1; i++)
+    {
+        // Use shift and i to extract lines
+        getline(inFile,currline,i+shift);
+    }
+    */
+    //ind   = int(words[0])-1 # Atom ids go from zero to N-1.
+    //x     = float(words[3])
+    //y     = float(words[4])
+    //z     = float(words[5])
+    while (std::getline(inFile, currline))
+    {
+        //cout << "In loop" << endl;
+        std::istringstream iss(currline);
+        //cout << "Have created iss" << endl;
+        int id, type, mol;
+        float x,y,z, vx, vy,vz;
+        if (!(iss >> id >> type >> mol >> x >> y >> z >> vx >> vy >> vz)) {continue;} // if not the line we want
+        /*
+            cout << "Wrong line" << endl;
+            //break;
+            continue;} // error
+        */
+        //cout << "Right line" << endl;
+        //cout << "In loop" << endl;
+        // process pair (a,b)
+    }
 
     //std::ofstream << indices;
 
     cout << "Hello" << ". " << "It is me" << "\n" << totframes << "\n" << indices[0] << "\n" << indices[1] << endl;
-    /*
-    cout << "Hello" << endl;//indices[1];
-    cout << "It is me" << endl;
-    cout << totframes << endl;
-    cout << indices[0] << endl;
-    //cout << indices[1] << endl;*/
 
-    //char filename2[900];
-
-    //filename =
-    //sprintf(filename2, 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%.13f_Kbond%.12f_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj', M, N, gridspacing, wall, Kangle, Kbond, charge, T);
+    /*// A formulation like this would be handier
+    char filename2[900];
+    filename =
+    sprintf(filename2, 'chaingrid_quadratic_M%iN%i_gridspacing%i_Langevin_wall%.3f_Kangle%.13f_Kbond%.12f_debye_kappa1_debyecutoff3_charge%i_T%i_theta0is180_twofirst_are_fixed.lammpstrj', M, N, gridspacing, wall, Kangle, Kbond, charge, T);
+    */
 
     cout << filename << endl;
 
