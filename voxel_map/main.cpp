@@ -33,8 +33,13 @@ int main()
     //filename = "chaingrid_quadratic_M9N101_gridspacing40_Langevin_wall1.042_Kangle20_Kbond200_debye_kappa1_debyecutoff3_charge-1_T3_theta0is180_twofirst_are_fixed.lammpstrj";
     //filename = "C:/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/chaingrid_quadratic_M9N101_gridspacing40_Langevin_wall1.042_Kangle20_Kbond200_debye_kappa1_debyecutoff3_charge-1_T3_theta0is180_twofirst_are_fixed.lammpstrj";
 
-    // File name for testing (look more into which files I've deleted and which I haven't later):
+    // File name for testing (look more into which files I've deleted and which I haven't later): # And look into paths.
     filename = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/chaingrid_quadratic_M9N101_ljdebye1.042_angle_Langevin_wall1.042_Kangle25_Kbond2000_T310_theta0is180_cutoffs3_sigma1_firstatomfixed.lammpstrj";
+    outfilename = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Fast_voxellation/chaingrid_quadratic_M9N101_ljdebye1.042_angle_Langevin_wall1.042_Kangle25_Kbond2000_T310_theta0is180_cutoffs3_sigma1_firstatomfixed_step%i.txt";
+    xfilename   = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Fast_voxellation/x_centres.txt";   // Strictly speaking, I don't need these, but they do make things a bit easier...
+    yfilename   = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Fast_voxellation/y_centres.txt";
+    zfilename   = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Fast_voxellation/z_centres.txt";
+    datafilename = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Fast_voxellation/data.txt";       // This is basically all the information I need to reconstruct the data // But easier if I write bincenters to file.
 
     M = 9;
     N = 101;
@@ -240,9 +245,46 @@ int main()
     //def voxellate(Nx, Ny, Nz, x_centres, y_centres, z_centres, posvecs):
     vector<vector<vector<double>>> voxelmat(Nx,vector<vector<double>>(Ny,vector <double>Nz));
     //vector<vector<vector<double>>> voxelmat; // = vector<vector<vector<double>>>(Nx,vector<vector<double>>(Ny,vector <double>Nz));
-    int frame = 0;
-    voxelmat = voxellate_basic(frame, Nx, Ny, Nz, x_centres, y_centres, z_centres, xes, ys, zs);
+    int frame;
+    ofstream outFile;
+    for(int i=0; i<Nout; i++){
+        frame = outframes[i];
+        voxelmat = voxellate_basic(frame, Nx, Ny, Nz, x_centres, y_centres, z_centres, xes, ys, zs);
 
+        // File name
+        char *ofilename = new char[1000]; // Possibly a long file name
+        outfilename = sprintf(ofilename, outfilename, frame); // Will this work?
+        outFile.open(ofilename);
+        delete ofilename;
+        // Write data to file
+
+        for(int i=0; i<Nx; i++){
+            for(int j=0; j<Ny; j++){
+                for(int k=0; k<Nz; k++){
+                    // Write to file
+                    outFile << std::setprecision(std::numeric_limits<double>::digits10+1) << voxmat[i][j][k] << " ";
+                } // Close loop over z
+                outFile << endl;
+            } // Close loop over y
+        } // Close loop over x
+
+        outFile.close();
+
+    }
+
+
+    ofstream dataFile;
+    //char *dfilename = new char[1000]; // Possibly a long file name
+    dataFile.open(datafilename); // Does this work?
+    delete datafilename;
+    dataFile << "len_voxel: " << lenvoxel << endl;
+    dataFile << "Nx: " << Nx << " Ny: " << Ny << " Nz: " << Nz << endl;
+    dataFile << "maxx: " << maxx << " minx: " << minx << endl;
+    dataFile << "maxy: " << maxy << " miny: " << miny << endl;
+    dataFile << "maxz: " << maxz << " minz: " << minz << endl;
+    dataFile.close();
+
+    //vector<int> outframes = vector<int>(Nout);
 
 
     /*
@@ -279,63 +321,31 @@ vector<int> int_linspace(int framefirst, int framelast, int Nframes) // This doe
 
 vector<vector<vector<double>>> voxellate_basic(int frame, int Nx, int Ny, int Nz, vector<double> x_centres, vector<double> y_centres, vector<double> z_centres, vector<vector<double>> xes, vector<vector<double>> ys, vector<vector<double>> zs)
 {
-    /* // This is the Python code for the base implementation of the voxellation
-      // I guess I should put this in a function?
-        def voxellate(Nx, Ny, Nz, x_centres, y_centres, z_centres, posvecs):
-            voxmat   = np.zeros((Nx,Ny,Nz))
-            n = 0
-            for i in range(Nx):
-                for j in range(Ny):
-                    for k in range(Nz):
-                        smallest_dist = 1e20 # No distance is this big.
-                        xc            = x_centres[i]
-                        yc            = y_centres[j]
-                        zc            = z_centres[k]
-                        centrevec     = np.array([xc,yc,zc])
-                        # Loop over all the atoms.
-                        for m in range(Nall):
-                            vecthis = posvecs[m,:]
-                            distvec = centrevec-vecthis       # This is broadcasting, and Numba likes that
-                            dotprod = np.dot(distvec,distvec) # Numba likes numpy functions
-                            if dotprod<smallest_dist:
-                                 smallest_dist = dotprod
-                        voxval         = np.sqrt(smallest_dist) # Another Numpy function
-                        voxmat[i,j,k]  = voxval
-                        n+=1
-            return voxmat
-    */
-
-    double xc, yc, zc, xthis, ythis, zthis, smallest_dist;
-    vector<double> diffvec       = vector<double>(3);
-    vector<double> thisbeadvec   = vector<double>(3);
-    vector<double> thiscentrevec = vector<double>(3);
+    double dx, dy, dz, xc, yc, zc, xthis, ythis, zthis, smallest_dist, dotprod;
     vector<vector<vector<double>>> voxmat(Nx,vector<vector<double>>(Ny,vector <double>Nz));
     // I'm gonna loop over the beads instead (there are fewer of them)
     for(int i=0; i<Nx; i++){
-        xc = x_centres[i]; // Possibly use thiscentrevec directly. See what works best.
-        thiscentrevec[0] = xc;
+        xc = x_centres[i];
         for(int j=0; j<Ny; j++){
             yc = y_centres[i];
-            thiscentrevec[1] = yc;
             for(int k=0; k<Nz; k++){
                 zc = z_centres[i];
-                thiscentrevec[2] = xc;
                 smallest_dist = 1e20; // No distance is this big
                 for(int m=0; m<Nall; m++){
                     xthis = xes[frame][m];
                     ythis = ys[frame][m];
                     zthis = zs[frame][m];
-                    thisbeadvec[0] = xthis;
-                    thisbeadvec[1] = ythis;
-                    thisbeadvec[2] = zthis;
-                    diffvec = thisbeadvec-thiscentrevec; // Do I really need to involve vectors, though? Why not simply use dx, dy, dz?
-
+                    dx = xthis-xc;
+                    dy = ythis-yc;
+                    dz = zthis-zc;
+                    dotprod = dx*dx +dy*dy +dz*dz;
+                    if(dotprod<smallest_dist){smallest_dist=dotprod;}
                 }
+                voxmat[i][j][k] = sqrt(smallest_dist);
             } // End loop over z-dir
-
         } // End loop over y-dir
     } // End loop over x-dir
 
-
+    return voxmat;
 }
 
