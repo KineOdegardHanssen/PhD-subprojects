@@ -35,7 +35,7 @@ int main()
 
     // File name for testing (look more into which files I've deleted and which I haven't later): # And look into paths.
     infilenamePrefix  = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/chaingrid_quadratic_M9N101_ljdebye1.042_angle_Langevin_wall1.042_Kangle25_Kbond2000_T310_theta0is180_cutoffs3_sigma1_firstatomfixed";
-    outfilenamePrefix = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Fast_voxellation/chaingrid_quadratic_M9N101_ljdebye1.042_angle_Langevin_wall1.042_Kangle25_Kbond2000_T310_theta0is180_cutoffs3_sigma1_firstatomfixed";
+    outfilenamePrefix = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Fast_voxellation/chaingrid_quadratic_M9N101_ljdebye1.042_angle_Langevin_wall1.042_Kangle25_Kbond2000_T310_theta0is180_cutoffs3_sigma1_firstatomfixed/";
     /*
     filename = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/chaingrid_quadratic_M9N101_ljdebye1.042_angle_Langevin_wall1.042_Kangle25_Kbond2000_T310_theta0is180_cutoffs3_sigma1_firstatomfixed.lammpstrj";
     outfilename = "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Fast_voxellation/chaingrid_quadratic_M9N101_ljdebye1.042_angle_Langevin_wall1.042_Kangle25_Kbond2000_T310_theta0is180_cutoffs3_sigma1_firstatomfixed_step%i.txt";
@@ -273,7 +273,7 @@ int main()
 
         // File name
         char *ofilename = new char[100000]; // Possibly a long file name
-        sprintf(ofilename, "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Fast_voxellation/chaingrid_quadratic_M9N101_ljdebye1.042_angle_Langevin_wall1.042_Kangle25_Kbond2000_T310_theta0is180_cutoffs3_sigma1_firstatomfixed_step%i", frame);
+        sprintf(ofilename, "/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Fast_voxellation/chaingrid_quadratic_M9N101_ljdebye1.042_angle_Langevin_wall1.042_Kangle25_Kbond2000_T310_theta0is180_cutoffs3_sigma1_firstatomfixed/step%i", frame);
         //ofilename = sprintf(ofilename, "%s.txt", outfilenamePrefix.c_str());
         outFile.open(ofilename);
         delete ofilename;
@@ -300,7 +300,7 @@ int main()
 
     ofstream dataFile;
     char *dfilename = new char[100000]; // Possibly a long file name
-    sprintf(dfilename, "%s_data.txt", outfilenamePrefix.c_str());
+    sprintf(dfilename, "%sdata.txt", outfilenamePrefix.c_str());
     dataFile.open(dfilename); // Does this work?
     delete dfilename;
     dataFile << "len_voxel: " << lenvoxel << endl;
@@ -313,38 +313,38 @@ int main()
     // Voxel centre coordinates
     ofstream xFile;
     char *xfilename = new char[100000]; // Possibly a long file name
-    sprintf(xfilename, "%s_x_centres.txt", outfilenamePrefix.c_str());
+    sprintf(xfilename, "%sx_centres.txt", outfilenamePrefix.c_str());
     xFile.open(xfilename);
     delete xfilename;
 
     ofstream yFile;
     char *yfilename = new char[100000]; // Possibly a long file name
-    sprintf(yfilename, "%s_y_centres.txt", outfilenamePrefix.c_str());
+    sprintf(yfilename, "%sy_centres.txt", outfilenamePrefix.c_str());
     yFile.open(yfilename);
     delete yfilename;
 
     ofstream zFile;
     char *zfilename = new char[100000]; // Possibly a long file name
-    sprintf(zfilename, "%s_z_centres.txt", outfilenamePrefix.c_str());
+    sprintf(zfilename, "%sz_centres.txt", outfilenamePrefix.c_str());
     zFile.open(zfilename);
     delete zfilename;
 
     // Voxel indices
     ofstream xindFile;
     char *xindfilename = new char[100000]; // Possibly a long file name
-    sprintf(xindfilename, "%s_xind.txt", outfilenamePrefix.c_str());
+    sprintf(xindfilename, "%sxind.txt", outfilenamePrefix.c_str());
     xindFile.open(xindfilename);
     delete xindfilename;
 
     ofstream yindFile;
     char *yindfilename = new char[100000]; // Possibly a long file name
-    sprintf(yindfilename, "%s_yind.txt", outfilenamePrefix.c_str());
+    sprintf(yindfilename, "%syind.txt", outfilenamePrefix.c_str());
     yindFile.open(yindfilename);
     delete yindfilename;
 
     ofstream zindFile;
     char *zindfilename = new char[100000]; // Possibly a long file name
-    sprintf(zindfilename, "%s_zind.txt", outfilenamePrefix.c_str());
+    sprintf(zindfilename, "%szind.txt", outfilenamePrefix.c_str());
     zindFile.open(zindfilename);
     delete zindfilename;
 
