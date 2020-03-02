@@ -23,7 +23,7 @@ int main()
     Nrun = 20000;
     Nblocks = 3;
     blocksize = 2;
-    Nrealizations = 3;
+    Nrealizations = 10;
 
     //srand(seed);
 
@@ -55,31 +55,23 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
         }
     }
 
-    /*
-    for(int i=0; i<Ntotblocks; i++){
-        for(int j=0; j<Ntotblocks; j++){
-            cout << "walkmat["<<i<<"]["<<j<< "]: " << walkmat[i][j] << endl;
-        }
-    }
-    */
-
-    /*
-    int randno;
-    for(int i=0; i<50; i++){
-        randno = rand() % 100 +1;
-        cout << "randno:" << randno << endl;
-    }
-    */
-
+    //---- Set up of run ----//
+    // Random number distributions
     std::default_random_engine generator;
-    std::uniform_int_distribution<int> distribution(0,Nmat-1);
+    std::uniform_int_distribution<int> distribution(0,Ntotblocks-1);
     std::uniform_int_distribution<int> steps_distr(0,1); // Move: +/-1. Should I be able to keep still too?
     std::uniform_int_distribution<int> dir_distr(0,1);
     //auto location = std::bind ( distribution, generator ); // Couldn't get this to work.
 
-    //---- Set up of run ----//
+    // Variables
     bool free, moveit;
-    int indi, indj, nextindi, nextindj, dir, step;
+    //double thisR2;    // Is this a conflict? Should this be an int?
+    int starti, startj, indi, indj, nextindi, nextindj, dir, step, thisR2, nx, ny;
+    vector<int> walk_R2(Nrun);                                           // Average R^2
+    vector<vector<int>> walk_R2_store(Nrealizations, vector<int>(Nrun)); // For calculation of the standard deviation
+    vector<vector<int>> walk_x(Nrealizations, vector<int>(Nrun));        // Useful in case I want to look at the walks for different starting points (post-processing)
+    vector<vector<int>> walk_y(Nrealizations, vector<int>(Nrun));
+
     /*
     vector<int> dir = vector<int>(8); // Direction vector of walks. Inspiration taken from Anders' percwalk.c // Not sure I will keep this. He had flattened the matrix, I think...
     dir[0] = 1;
@@ -91,7 +83,7 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
     dir[6] = 0;
     dir[7] = -1;
     */
-
+    nx = 0; ny = 0;
     for(int i=0; i<Nrealizations; i++){
         // Start the walk by placing the bead in a random position
         // and check that the position is not occupied
@@ -102,29 +94,62 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
             //cout << "walkmat["<<indi<<"]["<<indj<< "]: " << walkmat[indi][indj] << endl;
             if(walkmat[indi][indj]==0){free=true;} // Only place the bead on a free site
         }
+        starti = indi;
+        startj = indj;
+        //cout << "i = " << i << ", starti = " << starti << ", startj = " << startj << endl;
         for(int j=0; j<Nrun; j++){
             moveit = false;
             while(!moveit){
                 step = 2*steps_distr(generator)-1;
+                //cout << "step: " << step << endl;
                 dir = dir_distr(generator);
+                //cout << "dir: " << dir << endl;
                 if(dir==0){
-                    nextindi = indi + dir;
+                    //cout << "dir x chosen" << endl;
+                    nextindi = indi + step;
                     nextindj = indj;
-                    if(walkmat[nextindi][nextindj]==0){moveit=true;}
+                    if(nextindi<Ntotblocks && nextindi>-1){
+                        if(walkmat[nextindi][nextindj]==0){
+                            moveit=true;
+                            nx++;
+                        }
+                    }
                 }
                 else{
+                    //cout << "dir y chosen" << endl;
                     nextindi = indi;
-                    nextindj = indj + dir;
-                    if(walkmat[nextindi][nextindj]==0){moveit=true;}
+                    nextindj = indj + step;
+                    if(nextindj<Ntotblocks && nextindj>-1){ // If the site exists
+                        if(walkmat[nextindi][nextindj]==0){
+                            moveit=true;
+                            ny++;
+                        }
+                    }
                 }
             }
             // Move the walker
             indi = nextindi;
             indj = nextindj;
             // store data somewhere
-            // Average moves?
+            // Average moves
+            //cout << "starti " << starti << "; indi: " << indi << endl;
+            //cout << "startj " << startj << "; indj: " << indj << endl;
+            //cout << "(indi-starti)*(indi-starti): " << (indi-starti)*(indi-starti) << endl;
+            //cout << "(indj-startj)*(indj-startj): " << (indj-startj)*(indj-startj) << endl;
+            thisR2 = (indi-starti)*(indi-starti) + (indj-startj)*(indj-startj);
+            walk_R2[j] += thisR2;
+            walk_R2_store[i][j] = thisR2;
         }
+        //cout << "indi: " << indi << ", indj: " << indj << endl;
+        //cout << "i = " << i << ", starti = " << starti << ", startj = " << startj << endl << "-------------------------------------" << endl;
     }
 
+    for(int i=0; i<Nrun; i++){
+        walk_R2[i]/=Nrealizations;
+        //cout << "walk_R2[" << i << "]: " << walk_R2[i] << endl;
+    } // Averaging complete
+
+    //cout << "nx: " << nx << endl << "ny: " << ny << endl;
+    //cout << "Ntotblocks-1: " << Ntotblocks-1 << endl;
 
 }
