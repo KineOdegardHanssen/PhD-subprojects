@@ -23,10 +23,11 @@ int main()
     Nrun = 20000;
     Nblocks = 3;
     blocksize = 2;
+    Nrealizations = 3;
 
-    srand(seed);
+    //srand(seed);
 
-    matrixwalk_hard(Nblocks, blocksize, Nrealizations, Nrun, seed);
+    matrixwalk_hard(Nblocks, blocksize, Nrun, Nrealizations, seed);
 
 
     cout << "Hello World!" << endl;
@@ -54,11 +55,13 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
         }
     }
 
+    /*
     for(int i=0; i<Ntotblocks; i++){
         for(int j=0; j<Ntotblocks; j++){
             cout << "walkmat["<<i<<"]["<<j<< "]: " << walkmat[i][j] << endl;
         }
     }
+    */
 
     /*
     int randno;
@@ -70,11 +73,14 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
 
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(0,Nmat-1);
+    std::uniform_int_distribution<int> steps_distr(0,1); // Move: +/-1. Should I be able to keep still too?
+    std::uniform_int_distribution<int> dir_distr(0,1);
     //auto location = std::bind ( distribution, generator ); // Couldn't get this to work.
 
     //---- Set up of run ----//
-    bool free;
-    int indi, indj;
+    bool free, moveit;
+    int indi, indj, nextindi, nextindj, dir, step;
+    /*
     vector<int> dir = vector<int>(8); // Direction vector of walks. Inspiration taken from Anders' percwalk.c // Not sure I will keep this. He had flattened the matrix, I think...
     dir[0] = 1;
     dir[1] = 0;
@@ -84,11 +90,11 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
     dir[5] = 1;
     dir[6] = 0;
     dir[7] = -1;
+    */
 
     for(int i=0; i<Nrealizations; i++){
-        // Stuff
         // Start the walk by placing the bead in a random position
-        // Check that the position is not occupied
+        // and check that the position is not occupied
         free = false;
         while(!free){
             indi = distribution(generator); //location();//indi = rand() % Nmat; // Random numbers this way (from <random>) is a bit better than rand() from cstdlib, it seems.
@@ -96,9 +102,27 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
             //cout << "walkmat["<<indi<<"]["<<indj<< "]: " << walkmat[indi][indj] << endl;
             if(walkmat[indi][indj]==0){free=true;} // Only place the bead on a free site
         }
-        //cout << "indi: " << indi << "; indj: " << indj << endl; // Works so far
         for(int j=0; j<Nrun; j++){
+            moveit = false;
+            while(!moveit){
+                step = 2*steps_distr(generator)-1;
+                dir = dir_distr(generator);
+                if(dir==0){
+                    nextindi = indi + dir;
+                    nextindj = indj;
+                    if(walkmat[nextindi][nextindj]==0){moveit=true;}
+                }
+                else{
+                    nextindi = indi;
+                    nextindj = indj + dir;
+                    if(walkmat[nextindi][nextindj]==0){moveit=true;}
+                }
+            }
             // Move the walker
+            indi = nextindi;
+            indj = nextindj;
+            // store data somewhere
+            // Average moves?
         }
     }
 
