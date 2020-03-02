@@ -68,6 +68,7 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
     //double thisR2;    // Is this a conflict? Should this be an int?
     int starti, startj, indi, indj, nextindi, nextindj, dir, step, thisR2, nx, ny;
     vector<int> walk_R2(Nrun);                                           // Average R^2
+    vector<int> walk_R2_rms(Nrun);                                       // RMS R^2
     vector<vector<int>> walk_R2_store(Nrealizations, vector<int>(Nrun)); // For calculation of the standard deviation
     vector<vector<int>> walk_x(Nrealizations, vector<int>(Nrun));        // Useful in case I want to look at the walks for different starting points (post-processing)
     vector<vector<int>> walk_y(Nrealizations, vector<int>(Nrun));
@@ -148,6 +149,15 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
         walk_R2[i]/=Nrealizations;
         //cout << "walk_R2[" << i << "]: " << walk_R2[i] << endl;
     } // Averaging complete
+
+
+    // Finding rms values
+    for(int j=0; j<Nrun; j++){
+        for(int i=0; i<Nrealizations; i++){
+            walk_R2_rms[j] += (walk_R2_store[i][j]-walk_R2[j])*(walk_R2_store[i][j]-walk_R2[j]);
+        }
+        walk_R2_rms[j] = sqrt(walk_R2_rms[j]/(Nrealizations-1));
+    }
 
     //cout << "nx: " << nx << endl << "ny: " << ny << endl;
     //cout << "Ntotblocks-1: " << Ntotblocks-1 << endl;
