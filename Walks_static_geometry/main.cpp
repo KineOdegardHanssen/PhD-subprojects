@@ -23,7 +23,7 @@ int main()
     Nrun = 20000;
     Nblocks = 3;
     blocksize = 2;
-    Nrealizations = 10;
+    Nrealizations = 100;
 
     //srand(seed);
 
@@ -67,8 +67,8 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
     bool free, moveit;
     //double thisR2;    // Is this a conflict? Should this be an int?
     int starti, startj, indi, indj, nextindi, nextindj, dir, step, thisR2, nx, ny;
-    vector<int> walk_R2(Nrun);                                           // Average R^2
-    vector<int> walk_R2_rms(Nrun);                                       // RMS R^2
+    vector<double> walk_R2(Nrun);                                           // Average R^2
+    vector<double> walk_R2_rms(Nrun);                                       // RMS R^2
     vector<vector<int>> walk_R2_store(Nrealizations, vector<int>(Nrun)); // For calculation of the standard deviation
     vector<vector<int>> walk_x(Nrealizations, vector<int>(Nrun));        // Useful in case I want to look at the walks for different starting points (post-processing)
     vector<vector<int>> walk_y(Nrealizations, vector<int>(Nrun));
@@ -161,5 +161,22 @@ void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, in
 
     //cout << "nx: " << nx << endl << "ny: " << ny << endl;
     //cout << "Ntotblocks-1: " << Ntotblocks-1 << endl;
+
+    //----- Writing to file -----//
+    //string outfilenamePrefix;
+
+
+    ofstream outFile;
+    char *filename = new char[100000]; // Possibly a long file name
+    sprintf(filename, "Nsteps%i_Nreal%i_hardpot_R2_basic", Nrun, Nrealizations);
+    outFile.open(filename);
+    delete filename;
+
+    for(int i=0; i<Nrun; i++){
+        outFile << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl;
+        //outFile << std::setprecision(std::numeric_limits<double>::digits10+1) << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl; // Is this long printing really neccessary? // Possibly (probably?) gonna use this later.
+    }
+    outFile.close();
+
 
 }
