@@ -12,18 +12,23 @@ using namespace std;
 
 void matrixwalk_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, int Nsections, int seed);
 void matrixmc_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, int Nsections, int seed);
-void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations, int Nsections, int seed, double sigma, double power, double soften); // Power is expensive
+void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations, int Nsections, int seed, double beta, double sigma, double power, double soften); // Power is expensive
 vector<int> give_startpoints(int Nrun, int Nsections);
+double give_energy(int thisx, int thisy, int Npots, double sigma, double power, double soften, vector<double> x_centres, vector<double> y_centres);
 
 int main()
 {
 
     int Nrun, Nblocks, Nrealizations, Nsections, blocksize, seed;//Lx, Ly;
-    double sigma, power, soften;
+    double beta, sigma, power, soften;
     //Lx = 500;
     //Ly = 500;
+    beta = 3.0;
     seed = 283;
     Nrun = 20000;
+    sigma = 0.1;
+    power = 12;
+    soften = 1;
     Nblocks = 3;
     blocksize = 2;
     Nsections = 5;
@@ -34,7 +39,7 @@ int main()
     //vector<int> startpoints = give_startpoints(Nrun, Nsections); // Call this inside function instead
     //matrixwalk_hard(Nblocks, blocksize, Nrun, Nrealizations, Nsections, seed);
     //matrixmc_hard(Nblocks, blocksize, Nrun, Nrealizations, Nsections, seed);
-    matrixmc_potential(Nblocks, blocksize, Nrun, Nrealizations, Nsections, seed, sigma, power, soften);
+    matrixmc_potential(Nblocks, blocksize, Nrun, Nrealizations, Nsections, seed, beta, sigma, power, soften);
 
 
     cout << "Hello World!" << endl;
@@ -307,9 +312,15 @@ void matrixmc_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, int 
                 //cout << "dir x chosen" << endl;
                 nextindi = indi + step;
                 nextindj = indj;
-                if(nextindi<Ntotblocks && nextindi>-1 && walkmat[nextindi][nextindj]==0){
-                    nx++;
+                if(nextindi<Ntotblocks && nextindi>-1){
+                    if(walkmat[nextindi][nextindj]==0){
+                        nx++;
                     }
+                    else{
+                        nextindi = indi;
+                        nextindj = indj;
+                    }
+                }
                 else{
                     nextindi = indi;
                     nextindj = indj;
@@ -319,8 +330,14 @@ void matrixmc_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, int 
                 //cout << "dir y chosen" << endl;
                 nextindi = indi;
                 nextindj = indj + step;
-                if(nextindj<Ntotblocks && nextindj>-1 && walkmat[nextindi][nextindj]==0){ // If the site exists
-                    ny++;
+                if(nextindj<Ntotblocks && nextindj>-1){ // If the site exists
+                    if(walkmat[nextindi][nextindj]==0){
+                        ny++;
+                    }
+                    else{
+                        nextindi = indi;
+                        nextindj = indj;
+                    }
                 }
                 else{
                     nextindi = indi;
@@ -432,7 +449,7 @@ void matrixmc_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, int 
 }
 
 
-void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations, int Nsections, int seed, double sigma, double power, double soften){
+void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations, int Nsections, int seed, double beta, double sigma, double power, double soften){
     //---- Matrix set up ----//
     // (to make it the same size as the hard potential one)
     int Ntotblocks, Nmat;
@@ -447,6 +464,8 @@ void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations,
     double obspacing = Ntotblocks/(Nblocks+1); // Can have off-grid positions for the centres. // +1: Don't want to position the obstacles at the ends of the matrix
     vector<double> centres_x = vector<double>(Npots);
     vector<double> centres_y = vector<double>(Npots);
+
+    cout << "obspacing: " << obspacing << endl;
 
     int counter = 0;
 
@@ -468,7 +487,7 @@ void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations,
     std::uniform_int_distribution<int> distribution(0,Ntotblocks-1);
     std::uniform_int_distribution<int> steps_distr(0,1); // Move: +/-1. Should I be able to keep still too?
     std::uniform_int_distribution<int> dir_distr(0,1);
-    std::uniform_int_distribution<int> accept_prob(0,1); // Probability of accepting step with higher energy
+    std::uniform_real_distribution<double> accept_prob(0,1); // Probability of accepting step with higher energy
 
     // Variables
     bool free;
@@ -485,7 +504,8 @@ void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations,
 
 
     //---- Performing walk ----//
-    nx = 0; ny = 0;
+    double e_curr, e_next, de, boltzmann, acceptance, illegalmovesuggested;
+    nx = 0; ny = 0; acceptance = 0;
     for(int i=0; i<Nrealizations; i++){
         // Start the walk by placing the bead in a random position
         // and check that the position is not occupied
@@ -493,8 +513,13 @@ void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations,
         while(!free){
             indi = distribution(generator); //location();//indi = rand() % Nmat; // Random numbers this way (from <random>) is a bit better than rand() from cstdlib, it seems.
             indj = distribution(generator); //location();//indj = rand() % Nmat;
+            //cout << "Initiation. indi: " << indi << "; indj: " << indj << endl;
+            e_curr = give_energy(indi, indj, Npots, sigma, power, soften, centres_x, centres_y);
+            boltzmann = exp(-beta*e_curr);
             //cout << "walkmat["<<indi<<"]["<<indj<< "]: " << walkmat[indi][indj] << endl;
-            if(walkmat[indi][indj]==0){free=true;} // Only place the bead on a free site
+            //if(walkmat[indi][indj]==0){free=true;} // Only place the bead on a free site
+            //cout << "i = " << i << "; Energy: " << e_curr << "; Boltzmann factor:" << boltzmann << endl;
+            if(boltzmann>0.5){free=true;} // I've just set some arbitrary threshold so that it won't get too close to a bead.
         }
         starti = indi;
         startj = indj;
@@ -508,30 +533,42 @@ void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations,
                 //cout << "dir x chosen" << endl;
                 nextindi = indi + step;
                 nextindj = indj;
-                if(nextindi<Ntotblocks && nextindi>-1 && walkmat[nextindi][nextindj]==0){
-                    nx++;
-                    }
-                else{
+                if(nextindi>Ntotblocks || nextindi<-1){
                     nextindi = indi;
                     nextindj = indj;
+                    illegalmovesuggested += 1;
                 }
             }
             else{
                 //cout << "dir y chosen" << endl;
                 nextindi = indi;
                 nextindj = indj + step;
-                if(nextindj<Ntotblocks && nextindj>-1 && walkmat[nextindi][nextindj]==0){ // If the site exists
-                    ny++;
-                }
-                else{
+                if(nextindj>Ntotblocks || nextindj<-1){
                     nextindi = indi;
                     nextindj = indj;
+                    illegalmovesuggested += 1;
                 }
             }
-            // Move the walker
-            indi = nextindi;
-            indj = nextindj;
-            // store data somewhere
+            e_next    = give_energy(indi, indj, Npots, sigma, power, soften, centres_x, centres_y);
+            if(e_next<e_curr){
+                // Accept move
+                indi = nextindi;
+                indj = nextindj;
+                e_curr = e_next;
+                acceptance += 1;
+                //cout << "e_curr: " << e_curr << endl;
+            }
+            else{
+                de        = e_next-e_curr;
+                boltzmann = exp(-beta*de);
+                if(accept_prob(generator)<boltzmann){
+                    //cout << "e_next: " << e_next << "; e_curr: " << e_curr << endl;
+                    indi = nextindi;
+                    indj = nextindj;
+                    e_curr = e_next;
+                    acceptance += 1;
+                }
+            }
             // Average moves
             thisR2 = (indi-starti)*(indi-starti) + (indj-startj)*(indj-startj);
             walk_R2[j] += thisR2;
@@ -541,6 +578,7 @@ void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations,
             walk_y[i][j] = indj;
         }
     }
+    acceptance /= (Nrun*Nrealizations);
 
     for(int i=0; i<Nrun; i++){
         walk_R2[i]/=Nrealizations;
@@ -606,7 +644,7 @@ void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations,
 
     ofstream outFile;
     char *filename = new char[100000]; // Possibly a long file name
-    sprintf(filename, "Nsteps%i_Nreal%i_pot_exp%f_R2_basic_mc", Nrun, Nrealizations, power);
+    sprintf(filename, "Nsteps%i_Nreal%i_pot_exp%f_sigma%f_factor%f_R2_basic_mc", Nrun, Nrealizations, power, sigma, soften);
     outFile.open(filename);
     delete filename;
 
@@ -619,7 +657,7 @@ void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations,
 
     ofstream poutFile;
     char *pfilename = new char[100000]; // Possibly a long file name
-    sprintf(pfilename, "Nsteps%i_Nreal%i_Npart%i_pot_exp%f_R2_basic_mc", Nrun, Nrealizations, power, Nsections);
+    sprintf(pfilename, "Nsteps%i_Nreal%i_Npart%i_pot_exp%f_sigma%f_factor%f_R2_basic_mc", Nrun, Nrealizations, Nsections, power, sigma, soften);
     poutFile.open(pfilename);
     delete pfilename;
 
@@ -642,4 +680,26 @@ vector<int> give_startpoints(int Nrun, int Nsections)
         cout << "startpoints["<<i<<"]: " << startpoints[i] << endl;
     }
     return startpoints;
+}
+
+
+double give_energy(int thisx, int thisy, int Npots, double sigma, double power, double soften, vector<double> x_centres, vector<double> y_centres){
+    // Maybe I should have some sort of cutoff?
+    double dx, dy, R2, base;
+    double thisenergy;
+    double energy = 0;
+    //cout << "-------------------" << endl;
+    for(int i=0; i<Npots; i++){
+        dx      = thisx - x_centres[i];
+        dy      = thisy - y_centres[i];
+        R2      = dx*dx + dy*dy;
+        base    = sigma/R2;
+        energy += soften*pow(base, power);
+        thisenergy = soften*pow(base, power);
+        //cout << "---" << endl;
+        //cout << "thisx: " << thisx << ", thisy: " << thisy << "; xcentre: " << x_centres[i] << "; ycentre: " << y_centres[i] << endl;
+        //cout << "distance^2: " << R2 << "; energy contribution: " << thisenergy << "; accumulated energy: " << energy << endl;
+    }
+    return energy;
+
 }
