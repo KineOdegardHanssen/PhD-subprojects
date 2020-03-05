@@ -35,7 +35,7 @@ int main()
     // All
     Nrun = 20000;
     Nblocks = 3;
-    Nrealizations = 100;
+    Nrealizations = 1;//00;
 
     // Blocky implementation (spacing and obstacles are the same length)
     blocksize = 2;
@@ -48,7 +48,7 @@ int main()
 
     // Potential
     beta = 3.0;
-    sigma = 0.1;
+    sigma = 1;
     power = 6;
     soften = 1;
 
@@ -62,9 +62,9 @@ int main()
     //matrixmc_hard(Nblocks, blocksize, Nrun, Nrealizations, Nsections, seed);
     //matrixmc_potential(Nblocks, blocksize, Nrun, Nrealizations, Nsections, seed, beta, sigma, power, soften);
     //matrixwalk_hard_easyinput(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, seed, printmatrix);
-    //matrixmc_potential_easyinput(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, seed, beta, sigma, power, soften); // Is there any
+    matrixmc_potential_easyinput(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, seed, beta, sigma, power, soften); // Is there any
     //matrixmc_hard_easyinput(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, seed, printmatrix);
-    randomwalk(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections);
+    //randomwalk(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections);
 
     cout << "Hello World!" << endl;
     return 0;
@@ -717,7 +717,7 @@ void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun,
         for(int j=0; j<Nblocks; j++){
             centres_x[counter] = (i+1)*intd+(2*i+1)*intsigma + i;
             centres_y[counter] = (j+1)*intd+(2*j+1)*intsigma + j;
-            cout << "centres_x[counter]: " << centres_x[counter] << "; centres_y[counter]: " << centres_y[counter] << endl;
+            //cout << "centres_x[counter]: " << centres_x[counter] << "; centres_y[counter]: " << centres_y[counter] << endl;
             brushFile << centres_x[counter] << " " << centres_y[counter] << endl;
             counter++;
         }
@@ -782,41 +782,45 @@ void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun,
             dir = dir_distr(generator);
             //cout << "dir: " << dir << endl;
             if(dir==0){
-                //cout << "dir x chosen" << endl;
+                cout << "dir x chosen" << endl;
                 nextindi = indi + step;
                 nextindj = indj;
+                cout << "nextindi: " << nextindi << "; nextindj: " << nextindj << endl;
                 if(nextindi>Nmat || nextindi<-1){
                     nextindi = indi;
                     nextindj = indj;
                     illegalmovesuggested += 1;
+                    cout << "illegalmovesuggested" << endl;
                 }
             }
             else{
-                //cout << "dir y chosen" << endl;
+                cout << "dir y chosen" << endl;
                 nextindi = indi;
                 nextindj = indj + step;
+                cout << "nextindi: " << nextindi << "; nextindj: " << nextindj << endl;
                 if(nextindj>Nmat || nextindj<-1){
                     nextindi = indi;
                     nextindj = indj;
                     illegalmovesuggested += 1;
+                    cout << "illegalmovesuggested" << endl;
                 }
             }
-            e_next    = give_energy(indi, indj, Npots, sigma, power, soften, centres_x, centres_y);
+            e_next    = give_energy(nextindi, nextindj, Npots, sigma, power, soften, centres_x, centres_y);
             if(e_next<e_curr){
                 // Accept move
                 indi = nextindi;
                 indj = nextindj;
                 e_curr = e_next;
+                cout << "Energy changed, e_curr: " << e_curr << "; e_next: " << e_next << ": e_next lower" << endl;
                 acceptance += 1;
                 last_locked = false;
                 consecutive_locked = 0;
-                //cout << "Energy changed, e_curr: " << e_curr << endl;
             }
             else{
                 de        = e_next-e_curr;
                 boltzmann = exp(-beta*de);
                 if(accept_prob(generator)<boltzmann){
-                    //cout << "e_next: " << e_next << "; e_curr: " << e_curr << endl;
+                    cout << "Energy changed, e_next: " << e_next << "; e_curr: " << e_curr << ": by prob" << endl;
                     indi = nextindi;
                     indj = nextindj;
                     e_curr = e_next;
@@ -829,11 +833,14 @@ void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun,
                     if(last_locked){
                         consecutive_locked++;
                         //cout << "cout: consecutive_locked:" << consecutive_locked << "Energy not changed, e_curr: " << e_curr << "; e_next: " << e_next << "; Current position: [" << indi << "," << indj << "]" << endl;
-                        /*
+                        // /*
                         if(consecutive_locked>1000){
                             cout << "Energy not changed, e_curr: " << e_curr << "; e_next: " << e_next << "; Current position: [" << indi << "," << indj << "]" << endl;
                         }
-                        */
+                        //*/
+                    }
+                    else{
+                        cout << "Move failed, e_next: " << e_next << "; e_curr: " << e_curr << endl;
                     }
                     last_locked = true;
                 }
@@ -1479,7 +1486,7 @@ void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations,
                     illegalmovesuggested += 1;
                 }
             }
-            e_next    = give_energy(indi, indj, Npots, sigma, power, soften, centres_x, centres_y);
+            e_next    = give_energy(nextindi, nextindj, Npots, sigma, power, soften, centres_x, centres_y);
             if(e_next<e_curr){
                 // Accept move
                 indi = nextindi;
@@ -1654,7 +1661,7 @@ double give_energy(int thisx, int thisy, int Npots, double sigma, double power, 
     double dx, dy, R2, base;
     double thisenergy;
     double energy = 0;
-    //cout << "-------------------" << endl;
+    cout << "-------------------" << endl;
     for(int i=0; i<Npots; i++){
         dx      = thisx - x_centres[i];
         dy      = thisy - y_centres[i];
@@ -1662,11 +1669,11 @@ double give_energy(int thisx, int thisy, int Npots, double sigma, double power, 
         base    = sigma/R2;
         energy += soften*pow(base, power);
         thisenergy = soften*pow(base, power);
-        /*
+        // /*
         cout << "---" << endl;
         cout << "thisx: " << thisx << ", thisy: " << thisy << "; xcentre: " << x_centres[i] << "; ycentre: " << y_centres[i] << endl;
         cout << "distance^2: " << R2 << "; energy contribution: " << thisenergy << "; accumulated energy: " << energy << endl;
-        */
+        //*/
     }
     return energy;
 
