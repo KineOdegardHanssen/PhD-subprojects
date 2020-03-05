@@ -10,7 +10,7 @@
 
 using namespace std;
 
-// The preferred functions, I'd say:
+// The preferred functions, I'd say: // Minor adjustment: intsigma gives the radius/half length of the structure, i.e. intsigma = 2 gives a sphere of diameter 5. Makes it easier to locate midpoint
 void matrixwalk_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, int seed, bool printmatrix);
 void matrixmc_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, int seed, bool printmatrix);
 void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, int seed, double beta, double sigma, double power, double soften); // Power is expensive
@@ -47,7 +47,7 @@ int main()
 
     // Potential
     beta = 3.0;
-    sigma = 0.1;
+    sigma = 2.0;
     power = 6;
     soften = 1;
 
@@ -62,6 +62,7 @@ int main()
     //matrixmc_potential(Nblocks, blocksize, Nrun, Nrealizations, Nsections, seed, beta, sigma, power, soften);
     //matrixwalk_hard_easyinput(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, seed, printmatrix);
     matrixmc_potential_easyinput(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, seed, beta, sigma, power, soften); // Is there any
+    //matrixmc_hard_easyinput(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, seed, printmatrix);
 
     cout << "Hello World!" << endl;
     return 0;
@@ -73,8 +74,8 @@ void matrixwalk_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nrea
     // Sigma: 'radius' of obstactle (i.e. half the length since it is quadratic)
     //---- Matrix set up ----//
     int Nmat, blocksize;
-    blocksize = 2*sigma;
-    Nmat = (Nblocks+1)*d + 2*Nblocks*sigma ; // Size of matrix: contribution from spacings + contributions from obstacles (Structure: sp-obst-sp-obst-...-sp-obst)
+    blocksize = 2*sigma+1;
+    Nmat = (Nblocks+1)*d + Nblocks*blocksize; // Size of matrix: contribution from spacings + contributions from obstacles (Structure: sp-obst-sp-obst-...-sp-obst)
     vector<vector<int>> walkmat(Nmat, vector<int>(Nmat));
 
     // Setting matrix blocks
@@ -83,7 +84,7 @@ void matrixwalk_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nrea
         for(int j=0; j<Nblocks; j++){
             for(int k=0; k<blocksize; k++){
                 for(int l=0; l<blocksize; l++){
-                    walkmat[(i+1)*d+2*i*sigma+k][(j+1)*d+2*j*sigma+l] = 1;
+                    walkmat[(i+1)*d+i*blocksize+k][(j+1)*d+j*blocksize+l] = 1;
                 }
             }
         }
@@ -289,8 +290,8 @@ void matrixmc_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nreali
     // Sigma: 'radius' of obstactle (i.e. half the length since it is quadratic)
     //---- Matrix set up ----//
     int Nmat, blocksize;
-    blocksize = 2*sigma;
-    Nmat = (Nblocks+1)*d + 2*Nblocks*sigma ; // Size of matrix: contribution from spacings + contributions from obstacles (Structure: sp-obst-sp-obst-...-sp-obst)
+    blocksize = 2*sigma+1;
+    Nmat = (Nblocks+1)*d + Nblocks*blocksize; // Size of matrix: contribution from spacings + contributions from obstacles (Structure: sp-obst-sp-obst-...-sp-obst)
     vector<vector<int>> walkmat(Nmat, vector<int>(Nmat));
 
     // Setting matrix blocks
@@ -299,7 +300,7 @@ void matrixmc_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nreali
         for(int j=0; j<Nblocks; j++){
             for(int k=0; k<blocksize; k++){
                 for(int l=0; l<blocksize; l++){
-                    walkmat[(i+1)*d+2*i*sigma+k][(j+1)*d+2*j*sigma+l] = 1;
+                    walkmat[(i+1)*d+i*blocksize+k][(j+1)*d+j*blocksize+l] = 1;
                 }
             }
         }
@@ -317,7 +318,7 @@ void matrixmc_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nreali
     std::uniform_int_distribution<int> dir_distr(0,1);
 
     // Variables
-    bool free, moveit;
+    bool free;
     //double thisR2;    // Is this a conflict? Should this be an int?
     int starti, startj, indi, indj, nextindi, nextindj, dir, step, thisR2, nx, ny;
     vector<double> walk_R2(Nrun);                                           // Average R^2
@@ -514,19 +515,17 @@ void matrixmc_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nreali
 void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, int seed, double beta, double sigma, double power, double soften)
 {
     int Nmat, blocksize;
-    blocksize = 2*intsigma;
-    Nmat = (Nblocks+1)*intd + 2*Nblocks*intsigma ; // Size of matrix: contribution from spacings + contributions from obstacles (Structure: sp-obst-sp-obst-...-sp-obst)
-    vector<vector<int>> walkmat(Nmat, vector<int>(Nmat));
+    blocksize = 2*intsigma+1;
+    Nmat = (Nblocks+1)*intd + Nblocks*blocksize ; // Size of matrix: contribution from spacings + contributions from obstacles (Structure: sp-obst-sp-obst-...-sp-obst)
+    //vector<vector<int>> walkmat(Nmat, vector<int>(Nmat)); // I don't really need walkmat, at least not yet.
 
     //---- Potential set up ----//
     // Number of 'obstacles' given by Nblocks x Nblocks
     // Centre them evenly in a grid-like manner
     int Npots = Nblocks*Nblocks;
-    double obspacing = intd+intsigma; // Can have off-grid positions for the centres. // +1: Don't want to position the obstacles at the ends of the matrix
     vector<double> centres_x = vector<double>(Npots);
     vector<double> centres_y = vector<double>(Npots);
 
-    cout << "obspacing: " << obspacing << endl;
 
     ofstream brushFile;
     char *bfilename = new char[100000]; // Possibly a long file name
@@ -535,11 +534,11 @@ void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun,
     delete bfilename;
 
     int counter = 0;
-    double shift = 0.5; // Because the midpoint is between two sites.
     for(int i=0; i<Nblocks; i++){
         for(int j=0; j<Nblocks; j++){
-            centres_x[counter] = (i+1)*obspacing+(2*i+1)*intsigma + shift; // Hmmm... intsigma or sigma...?s
-            centres_y[counter] = (j+1)*obspacing+(2*j+1)*intsigma + shift;
+            centres_x[counter] = (i+1)*intd+(2*i+1)*intsigma + i;
+            centres_y[counter] = (j+1)*intd+(2*j+1)*intsigma + j;
+            cout << "centres_x[counter]: " << centres_x[counter] << "; centres_y[counter]: " << centres_y[counter] << endl;
             brushFile << centres_x[counter] << " " << centres_y[counter] << endl;
             counter++;
         }
@@ -735,7 +734,7 @@ void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun,
 
     ofstream outFile;
     char *filename = new char[100000]; // Possibly a long file name
-    sprintf(filename, "Nsteps%i_Nreal%i_pot_exp%f_sigma%f_factor%f_R2_basic_mc", Nrun, Nrealizations, power, sigma, soften);
+    sprintf(filename, "Nsteps%i_Nreal%i_Nblocks%i_intsigma%i_intd%i_pot_exp%f_sigma%f_factor%f_R2_basic_mc", Nrun, Nrealizations, Nblocks, intsigma, intd, power, sigma, soften);
     outFile.open(filename);
     delete filename;
 
@@ -748,7 +747,7 @@ void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun,
 
     ofstream poutFile;
     char *pfilename = new char[100000]; // Possibly a long file name
-    sprintf(pfilename, "Nsteps%i_Nreal%i_Npart%i_pot_exp%f_sigma%f_factor%f_R2_basic_mc", Nrun, Nrealizations, Nsections, power, sigma, soften);
+    sprintf(pfilename, "Nsteps%i_Nreal%i_Nblocks%i_intsigma%i_intd%i_Npart%i_pot_exp%f_sigma%f_factor%f_R2_basic_mc", Nrun, Nrealizations, Nblocks, intsigma, intd, Nsections, power, sigma, soften);
     poutFile.open(pfilename);
     delete pfilename;
 
