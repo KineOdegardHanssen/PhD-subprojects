@@ -17,10 +17,10 @@ void matrixwalk_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nrea
 void matrixmc_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix);
 void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, double beta, double sigma, double power, double soften); // Power is expensive
 // Periodic BCs
-void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections);
-void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix);
-void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix);
-void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, double beta, double sigma, double power, double soften); // Power is expensive
+void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool pbc_codetesting);
+void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix, bool pbc_codetesting);
+void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix, bool pbc_codetesting);
+void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, double beta, double sigma, double power, double soften, bool pbc_codetesting); // Power is expensive
 
 
 // I could consider removing these functions:
@@ -36,7 +36,7 @@ int main()
 {
     int intd, intsigma, Nrun, Nblocks, Nrealizations, Nsections, blocksize;//Lx, Ly;
     double beta, sigma, power, soften;
-    bool printmatrix;
+    bool printmatrix, pbc_codetesting;
 
     // All
     Nrun = 20000;
@@ -58,6 +58,9 @@ int main()
     power = 6;
     soften = 1;
 
+    // PBC
+    pbc_codetesting = false;
+
     //----- Function calls -----//
     //vector<int> startpoints = give_startpoints(Nrun, Nsections); // Call this inside function instead
     //matrixwalk_hard(Nblocks, blocksize, Nrun, Nrealizations, Nsections);
@@ -68,10 +71,10 @@ int main()
     //matrixmc_hard_easyinput(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printmatrix);
     //randomwalk(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections);
     //-- PBC --//
-    //randomwalk_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections);
-    //matrixwalk_hard_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printmatrix);
-    //matrixmc_hard_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printmatrix);
-    matrixmc_potential_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, beta, sigma, power, soften); // Power is expensive
+    randomwalk_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, pbc_codetesting);
+    matrixwalk_hard_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printmatrix, pbc_codetesting);
+    matrixmc_hard_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printmatrix, pbc_codetesting);
+    //matrixmc_potential_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, beta, sigma, power, soften, pbc_codetesting); // Power is expensive
 
     cout << "Hello World!" << endl;
     return 0;
@@ -978,7 +981,7 @@ void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun,
 
 
 //-- Periodic BCs --//
-void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections)
+void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool pbc_codetesting)
 {   // Assuming quadratic matrix
     // Sigma: 'radius' of obstactle (i.e. half the length since it is quadratic)
     //---- Matrix set up ----//
@@ -1003,8 +1006,6 @@ void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, 
     int starti, startj, indi, indj, indi_calc, indj_calc, nextindi, nextindj, dir, step, thisR2, nx, ny, accflagx, accflagy;
     vector<double> walk_R2(Nrun);                                           // Average R^2
     vector<double> walk_R2_rms(Nrun);                                       // RMS R^2
-    vector<double> flag_x(Nrun);                                            // To handle boundary crossings. // Do these need to be arrays, though? Could be useful for verification, but...
-    vector<double> flag_y(Nrun);                                            // To handle boundary crossings.
     vector<vector<double>> walk_R2_store(Nrealizations, vector<double>(Nrun)); // For calculation of the standard deviation
     vector<vector<double>> walk_x(Nrealizations, vector<double>(Nrun));        // Useful in case I want to look at the walks for different starting points (post-processing)
     vector<vector<double>> walk_y(Nrealizations, vector<double>(Nrun));
@@ -1012,8 +1013,6 @@ void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, 
     vector<vector<double>> passing_y(Nrealizations, vector<double>(Nrun));        // To handle boundary crossings
     vector<vector<double>> walk_R2_sections(Nsections, vector<double>(len_sections));                                                      // Sections
     vector<vector<double>> walk_R2_sections_rms(Nsections, vector<double>(len_sections));                                                  // Sections, rms
-    vector<vector<double>> flag_x_sections(Nsections, vector<double>(len_sections));                                                       // Sections
-    vector<vector<double>> flag_y_sections(Nsections, vector<double>(len_sections));                                                       // Sections, rms
     vector<vector<vector<double>>> walk_R2_sections_store(Nrealizations, vector<vector<double>>(Nsections, vector<double>(len_sections))); // For calculation of the standard deviation
 
 
@@ -1190,11 +1189,28 @@ void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, 
         } // End loop over steps (len_sections)
     } // End loop over sections
     poutFile.close();
+
+    if(pbc_codetesting){
+        ofstream coordFile;
+        char *cfilename = new char[100000]; // Possibly a long file name
+        sprintf(cfilename, "PBC/sigma%i_d%i/Nblocks%i/randomwalk_Nsteps%i_Nreal%i_coords", sigma, d, Nblocks, Nrun, Nrealizations);
+        //sprintf(cfilename, "Nsteps%i_Nreal%i_Npart%i_pot_exp%f_sigma%f_factor%f_PBC_R2_basic_mc_coords", Nrun, Nrealizations, Nsections, power, sigma, soften);
+        coordFile.open(cfilename);
+        delete cfilename;
+
+        for(int i=0; i<Nrealizations; i++){
+            coordFile << "-- Realization " << i << "--" << endl;
+            for(int j=0; j<Nrun; j++){
+                coordFile << j << " " << walk_x[i][j] << " " << walk_y[i][j] << " ; " << passing_x[i][j] << " " << passing_y[i][j] << endl;
+            }
+        }
+        coordFile.close();
+    }
 }
 
 
 
-void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix)
+void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix, bool pbc_codetesting)
 {   // Assuming quadratic matrix
     // Sigma: 'radius' of obstactle (i.e. half the length since it is quadratic)
     //---- Matrix set up ----//
@@ -1455,10 +1471,26 @@ void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int 
         moutFile.close();
     } // End if(printmatrix)
 
+    if(pbc_codetesting){
+        ofstream coordFile;
+        char *cfilename = new char[100000]; // Possibly a long file name
+        sprintf(cfilename, "PBC/sigma%i_d%i/Nblocks%i/matrixwalk_Nsteps%i_Nreal%i_coords", sigma, d, Nblocks, Nrun, Nrealizations);
+        coordFile.open(cfilename);
+        delete cfilename;
+
+        for(int i=0; i<Nrealizations; i++){
+            coordFile << "-- Realization " << i << "--" << endl;
+            for(int j=0; j<Nrun; j++){
+                coordFile << j << " " << walk_x[i][j] << " " << walk_y[i][j] << " ; " << passing_x[i][j] << " " << passing_y[i][j] << endl;
+            }
+        }
+        coordFile.close();
+    }
+
 }
 
 // MC
-void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix)
+void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix, bool pbc_codetesting)
 {   // Assuming quadratic matrix
     // Sigma: 'radius' of obstactle (i.e. half the length since it is quadratic)
     //---- Matrix set up ----//
@@ -1718,10 +1750,26 @@ void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nr
         moutFile.close();
     } // End if(printmatrix)
 
+    if(pbc_codetesting){
+        ofstream coordFile;
+        char *cfilename = new char[100000]; // Possibly a long file name
+        sprintf(cfilename, "PBC/sigma%i_d%i/Nblocks%i/matrixmc_Nsteps%i_Nreal%i_coords", sigma, d, Nblocks, Nrun, Nrealizations);
+        coordFile.open(cfilename);
+        delete cfilename;
+
+        for(int i=0; i<Nrealizations; i++){
+            coordFile << "-- Realization " << i << "--" << endl;
+            for(int j=0; j<Nrun; j++){
+                coordFile << j << " " << walk_x[i][j] << " " << walk_y[i][j] << " ; " << passing_x[i][j] << " " << passing_y[i][j] << endl;
+            }
+        }
+        coordFile.close();
+    }
+
 }
 
 
-void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, double beta, double sigma, double power, double soften)
+void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, double beta, double sigma, double power, double soften, bool pbc_codetesting)
 {
     int Nmat, blocksize, spacingsi, spacingsj;
     blocksize = 2*intsigma+1;
@@ -2005,22 +2053,23 @@ void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int N
     } // End loop over sections
     poutFile.close();
 
-    /*
-    ofstream coordFile;
-    char *cfilename = new char[100000]; // Possibly a long file name
-    sprintf(cfilename, "PBC/sigma%i_d%i/Nblocks%i/pot_sigma%.3f_exp%.3f_factor%.3f_R2_Nsteps%i_Nreal%i_coords", intsigma, intd, Nblocks, sigma, power, soften, Nrun, Nrealizations);
-    //sprintf(cfilename, "Nsteps%i_Nreal%i_Npart%i_pot_exp%f_sigma%f_factor%f_PBC_R2_basic_mc_coords", Nrun, Nrealizations, Nsections, power, sigma, soften);
-    coordFile.open(cfilename);
-    delete cfilename;
+    if(pbc_codetesting){
+        ofstream coordFile;
+        char *cfilename = new char[100000]; // Possibly a long file name
+        sprintf(cfilename, "PBC/sigma%i_d%i/Nblocks%i/pot_sigma%.3f_exp%.3f_factor%.3f_R2_Nsteps%i_Nreal%i_coords", intsigma, intd, Nblocks, sigma, power, soften, Nrun, Nrealizations);
+        //sprintf(cfilename, "Nsteps%i_Nreal%i_Npart%i_pot_exp%f_sigma%f_factor%f_PBC_R2_basic_mc_coords", Nrun, Nrealizations, Nsections, power, sigma, soften);
+        coordFile.open(cfilename);
+        delete cfilename;
 
-    for(int i=0; i<Nrealizations; i++){
-        coordFile << "-- Realization " << i << "--" << endl;
-        for(int j=0; j<Nrun; j++){
-            coordFile << j << " " << walk_x[i][j] << " " << walk_y[i][j] << endl;
+        for(int i=0; i<Nrealizations; i++){
+            coordFile << "-- Realization " << i << "--" << endl;
+            for(int j=0; j<Nrun; j++){
+                coordFile << j << " " << walk_x[i][j] << " " << walk_y[i][j] << " ; " << passing_x[i][j] << " " << passing_y[i][j] << endl;
+            }
         }
+        coordFile.close();
     }
-    coordFile.close();
-    */
+
 
     cout << "acceptance rate: " << acceptance << endl;
     cout << "consecutive_locked: " << consecutive_locked << endl;
