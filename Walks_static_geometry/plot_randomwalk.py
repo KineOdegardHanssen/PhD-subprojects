@@ -10,12 +10,38 @@ import os
 import glob
 import copy
 
+# Choosing file
 Nsteps = 20000
-Nsect  = 100
+Nreal  = 1000
+Nsect  = 5
+intd   = 10
+intsigma = 2
+Nblocks  = 3
+sigma    = 2
+power    = 6
+factor   = 1
+
+randomwalk = False
+hardpot_rw = False
+hardpot_mc = False
+potential  = True
 
 ### Setting file names
-infilename_totwalk  = 'Nsteps20000_Nreal100_hardpot_R2_basic_mc'
-infilename_sections = 'Nsteps20000_Nreal100_Npart5_hardpot_R2_basic_mc'
+prefix = ''
+if randomwalk==True:
+    prefix = 'randomwalk_'
+elif hardpot_rw==True:
+    prefix = 'hardpotwalk_'
+elif hardpot_mc==True:
+    prefix = 'hardpotmc_'
+elif potential==True:
+    prefix = 'pot_sigma%.3f_exp%.3f_factor%.3f_' % (sigma, power, factor) # I set it to three decimals. Maybe a bit much, but perhaps it is better to be careful.
+
+folder = 'PBC/sigma%i_d%i/Nblocks%i/' % (intsigma, intd, Nblocks)
+infilename_totwalk  = folder + prefix + 'R2_Nsteps%i_Nreal%i' % (Nsteps, Nreal)
+infilename_sections = folder + prefix + 'R2_Nsteps%i_Nreal%i_Npart%i' % (Nsteps, Nreal, Nsect)
+#infilename_totwalk  = 'Nsteps20000_Nreal1000_sigma2_d10_Nblocks3_randomwalk_PBC_R2_basic_mc' #'Nsteps20000_Nreal100_Nblocks3_intsigma2_intd10_pot_exp6.000000_sigma1.000000_factor1.000000_PBC_R2_basic_mc' #'Nsteps20000_Nreal100_hardpot_R2_basic_mc'
+#infilename_sections = 'Nsteps20000_Nreal1000_sigma2_d10_Nblocks3_Npart5_randomwalk_PBC_R2_basic_mc' #'Nsteps20000_Nreal100_Nblocks3_intsigma2_intd10_Npart5_pot_exp6.000000_sigma1.000000_factor1.000000_PBC_R2_basic_mc' #'Nsteps20000_Nreal100_Npart5_hardpot_R2_basic_mc'
 
 plotname_totwalk  = infilename_totwalk + '_step_vs_R2.png'
 plotname_sections = infilename_sections + '_step_vs_R2.png'
