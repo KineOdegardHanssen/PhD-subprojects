@@ -17,10 +17,10 @@ void matrixwalk_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nrea
 void matrixmc_hard_easyinput(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix);
 void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, double beta, double sigma, double power, double soften); // Power is expensive
 // Periodic BCs
-void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool pbc_codetesting);
-void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix, bool pbc_codetesting);
-void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix, bool pbc_codetesting);
-void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, double beta, double sigma, double power, double soften, bool pbc_codetesting); // Power is expensive
+void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, int printevery, bool pbc_codetesting);
+void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, int printevery, bool printmatrix, bool pbc_codetesting);
+void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, int printevery, bool printmatrix, bool pbc_codetesting);
+void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, int printevery, double beta, double sigma, double power, double soften, bool pbc_codetesting); // Power is expensive
 
 
 // I could consider removing these functions:
@@ -34,7 +34,7 @@ double give_energy(int thisx, int thisy, int Npots, double sigma, double power, 
 
 int main()
 {
-    int intd, intsigma, Nrun, Nblocks, Nrealizations, Nsections, blocksize;//Lx, Ly;
+    int intd, intsigma, Nrun, Nblocks, Nrealizations, Nsections, blocksize, printevery;//Lx, Ly;
     double beta, sigma, power, soften;
     bool printmatrix, pbc_codetesting;
 
@@ -42,19 +42,20 @@ int main()
     Nrun = 20000;
     Nblocks = 3;
     Nrealizations = 1000;
+    printevery    = 100;  // Print every this many time steps
 
     // Blocky implementation (spacing and obstacles are the same length)
     blocksize = 2;
     Nsections = 5;
 
     // Flexible hard-block implementation (obstacles and spacing can be of different lengths)
-    intd = 10;
-    intsigma = 2;
+    intd = 1;
+    intsigma = 10;
     printmatrix = true;
 
     // Potential
     beta = 3.0;
-    sigma = 2;
+    sigma = 10;
     power = 6;
     soften = 1;
 
@@ -71,10 +72,10 @@ int main()
     //matrixmc_hard_easyinput(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printmatrix);
     //randomwalk(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections);
     //-- PBC --//
-    randomwalk_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, pbc_codetesting);
-    matrixwalk_hard_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printmatrix, pbc_codetesting);
-    matrixmc_hard_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printmatrix, pbc_codetesting);
-    //matrixmc_potential_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, beta, sigma, power, soften, pbc_codetesting); // Power is expensive
+    randomwalk_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printevery, pbc_codetesting);
+    matrixwalk_hard_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printevery, printmatrix, pbc_codetesting);
+    matrixmc_hard_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printevery, printmatrix, pbc_codetesting);
+    matrixmc_potential_easyinput_PBC(intsigma, intd, Nblocks, Nrun, Nrealizations, Nsections, printevery, beta, sigma, power, soften, pbc_codetesting); // Power is expensive
 
     cout << "Hello World!" << endl;
     return 0;
@@ -981,7 +982,7 @@ void matrixmc_potential_easyinput(int intsigma, int intd, int Nblocks, int Nrun,
 
 
 //-- Periodic BCs --//
-void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool pbc_codetesting)
+void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, int printevery, bool pbc_codetesting)
 {   // Assuming quadratic matrix
     // Sigma: 'radius' of obstactle (i.e. half the length since it is quadratic)
     //---- Matrix set up ----//
@@ -1163,21 +1164,23 @@ void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, 
 
     ofstream outFile;
     char *filename = new char[100000]; // Possibly a long file name
-    sprintf(filename, "PBC/sigma%i_d%i/Nblocks%i/randomwalk_R2_Nsteps%i_Nreal%i", sigma, d, Nblocks, Nrun, Nrealizations);//Nrun, Nrealizations, sigma, d, Nblocks);
+    sprintf(filename, "PBC/sigma%i_d%i/Nblocks%i/randomwalk_R2_Nsteps%i_Nreal%i_printevery%i", sigma, d, Nblocks, Nrun, Nrealizations,printevery);//Nrun, Nrealizations, sigma, d, Nblocks);
     //sprintf(filename, "Nsteps%i_Nreal%i_sigma%i_d%i_Nblocks%i_randomwalk_PBC_R2_basic_mc", Nrun, Nrealizations, sigma, d, Nblocks);
     outFile.open(filename);
     delete filename;
 
 
     for(int i=0; i<Nrun; i++){
-        outFile << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl;
+        if(i%printevery==0){
+            outFile << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl;
+        }
         //outFile << std::setprecision(std::numeric_limits<double>::digits10+1) << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl; // Is this long printing really neccessary? // Possibly (probably?) gonna use this later.
     }
     outFile.close();
 
     ofstream poutFile;
     char *pfilename = new char[100000]; // Possibly a long file name
-    sprintf(pfilename, "PBC/sigma%i_d%i/Nblocks%i/randomwalk_R2_Nsteps%i_Nreal%i_Npart%i", sigma, d, Nblocks, Nrun, Nrealizations, Nsections);//Nrun, Nrealizations, sigma, d, Nblocks);
+    sprintf(pfilename, "PBC/sigma%i_d%i/Nblocks%i/randomwalk_R2_Nsteps%i_Nreal%i_Npart%i_printevery%i", sigma, d, Nblocks, Nrun, Nrealizations, Nsections,printevery);//Nrun, Nrealizations, sigma, d, Nblocks);
     //sprintf(pfilename, "Nsteps%i_Nreal%i_sigma%i_d%i_Nblocks%i_Npart%i_randomwalk_PBC_R2_basic_mc", Nrun, Nrealizations, sigma, d, Nblocks, Nsections);
     poutFile.open(pfilename);
     delete pfilename;
@@ -1185,7 +1188,9 @@ void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, 
     for(int i=0; i<Nsections; i++){
         poutFile << "--- Section " << i <<" ---" << endl;
         for(int j=0; j<len_sections; j++){
-            poutFile << j << " " << walk_R2_sections[i][j] << " " << walk_R2_sections_rms[i][j] << endl;
+            if(j%printevery==0){
+                poutFile << j << " " << walk_R2_sections[i][j] << " " << walk_R2_sections_rms[i][j] << endl;
+            }
         } // End loop over steps (len_sections)
     } // End loop over sections
     poutFile.close();
@@ -1210,7 +1215,7 @@ void randomwalk_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, 
 
 
 
-void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix, bool pbc_codetesting)
+void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, int printevery, bool printmatrix, bool pbc_codetesting)
 {   // Assuming quadratic matrix
     // Sigma: 'radius' of obstactle (i.e. half the length since it is quadratic)
     //---- Matrix set up ----//
@@ -1427,21 +1432,23 @@ void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int 
 
     ofstream outFile;
     char *filename = new char[100000]; // Possibly a long file name
-    sprintf(filename, "PBC/sigma%i_d%i/Nblocks%i/hardpotwalk_R2_Nsteps%i_Nreal%i", sigma, d, Nblocks, Nrun, Nrealizations);//Nrun, Nrealizations, sigma, d, Nblocks);
+    sprintf(filename, "PBC/sigma%i_d%i/Nblocks%i/hardpotwalk_R2_Nsteps%i_Nreal%i_printevery%i", sigma, d, Nblocks, Nrun, Nrealizations, printevery);//Nrun, Nrealizations, sigma, d, Nblocks);
     //sprintf(filename, "Nsteps%i_Nreal%i_sigma%i_d%i_Nblocks%i_hardpot_PBC_R2_basic_mc", Nrun, Nrealizations, sigma, d, Nblocks);
     outFile.open(filename);
     delete filename;
 
 
     for(int i=0; i<Nrun; i++){
-        outFile << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl;
+        if(i%printevery==0){
+            outFile << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl;
+        }
         //outFile << std::setprecision(std::numeric_limits<double>::digits10+1) << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl; // Is this long printing really neccessary? // Possibly (probably?) gonna use this later.
     }
     outFile.close();
 
     ofstream poutFile;
     char *pfilename = new char[100000]; // Possibly a long file name
-    sprintf(pfilename, "PBC/sigma%i_d%i/Nblocks%i/hardpotwalk_R2_Nsteps%i_Nreal%i_Npart%i", sigma, d, Nblocks, Nrun, Nrealizations, Nsections);//Nrun, Nrealizations, sigma, d, Nblocks);
+    sprintf(pfilename, "PBC/sigma%i_d%i/Nblocks%i/hardpotwalk_R2_Nsteps%i_Nreal%i_Npart%i_printevery%i", sigma, d, Nblocks, Nrun, Nrealizations, Nsections,printevery);//Nrun, Nrealizations, sigma, d, Nblocks);
     //sprintf(pfilename, "Nsteps%i_Nreal%i_sigma%i_d%i_Nblocks%i_Npart%i_hardpot_PBC_R2_basic_mc", Nrun, Nrealizations, sigma, d, Nblocks, Nsections);
     poutFile.open(pfilename);
     delete pfilename;
@@ -1449,7 +1456,9 @@ void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int 
     for(int i=0; i<Nsections; i++){
         poutFile << "--- Section " << i <<" ---" << endl;
         for(int j=0; j<len_sections; j++){
-            poutFile << j << " " << walk_R2_sections[i][j] << " " << walk_R2_sections_rms[i][j] << endl;
+            if(j%printevery==0){
+                poutFile << j << " " << walk_R2_sections[i][j] << " " << walk_R2_sections_rms[i][j] << endl;
+            }
         } // End loop over steps (len_sections)
     } // End loop over sections
     poutFile.close();
@@ -1490,7 +1499,7 @@ void matrixwalk_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int 
 }
 
 // MC
-void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, bool printmatrix, bool pbc_codetesting)
+void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nrealizations, int Nsections, int printevery, bool printmatrix, bool pbc_codetesting)
 {   // Assuming quadratic matrix
     // Sigma: 'radius' of obstactle (i.e. half the length since it is quadratic)
     //---- Matrix set up ----//
@@ -1706,21 +1715,23 @@ void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nr
 
     ofstream outFile;
     char *filename = new char[100000]; // Possibly a long file name
-    sprintf(filename, "PBC/sigma%i_d%i/Nblocks%i/hardpotmc_R2_Nsteps%i_Nreal%i", sigma, d, Nblocks, Nrun, Nrealizations);//Nrun, Nrealizations, sigma, d, Nblocks);
+    sprintf(filename, "PBC/sigma%i_d%i/Nblocks%i/hardpotmc_R2_Nsteps%i_Nreal%i_printevery%i", sigma, d, Nblocks, Nrun, Nrealizations, printevery);//Nrun, Nrealizations, sigma, d, Nblocks);
     //sprintf(filename, "Nsteps%i_Nreal%i_sigma%i_d%i_Nblocks%i_hardpot_PBC_R2_basic", Nrun, Nrealizations, sigma, d, Nblocks);
     outFile.open(filename);
     delete filename;
 
 
     for(int i=0; i<Nrun; i++){
-        outFile << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl;
+        if(i%printevery==0){
+           outFile << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl;
+        }
         //outFile << std::setprecision(std::numeric_limits<double>::digits10+1) << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl; // Is this long printing really neccessary? // Possibly (probably?) gonna use this later.
     }
     outFile.close();
 
     ofstream poutFile;
     char *pfilename = new char[100000]; // Possibly a long file name
-    sprintf(pfilename, "PBC/sigma%i_d%i/Nblocks%i/hardpotmc_R2_Nsteps%i_Nreal%i_Npart%i", sigma, d, Nblocks, Nrun, Nrealizations, Nsections);//Nrun, Nrealizations, sigma, d, Nblocks);
+    sprintf(pfilename, "PBC/sigma%i_d%i/Nblocks%i/hardpotmc_R2_Nsteps%i_Nreal%i_Npart%i_printevery%i", sigma, d, Nblocks, Nrun, Nrealizations, Nsections, printevery);//Nrun, Nrealizations, sigma, d, Nblocks);
     //sprintf(pfilename, "Nsteps%i_Nreal%i_sigma%i_d%i_Nblocks%i_Npart%i_hardpot_PBC_R2_basic", Nrun, Nrealizations, sigma, d, Nblocks, Nsections);
     poutFile.open(pfilename);
     delete pfilename;
@@ -1728,7 +1739,9 @@ void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nr
     for(int i=0; i<Nsections; i++){
         poutFile << "--- Section " << i <<" ---" << endl;
         for(int j=0; j<len_sections; j++){
-            poutFile << j << " " << walk_R2_sections[i][j] << " " << walk_R2_sections_rms[i][j] << endl;
+            if(j%printevery==0){
+                poutFile << j << " " << walk_R2_sections[i][j] << " " << walk_R2_sections_rms[i][j] << endl;
+            }
         } // End loop over steps (len_sections)
     } // End loop over sections
     poutFile.close();
@@ -1769,7 +1782,7 @@ void matrixmc_hard_easyinput_PBC(int sigma, int d, int Nblocks, int Nrun, int Nr
 }
 
 
-void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, double beta, double sigma, double power, double soften, bool pbc_codetesting)
+void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int Nrun, int Nrealizations, int Nsections, int printevery, double beta, double sigma, double power, double soften, bool pbc_codetesting)
 {
     int Nmat, blocksize, spacingsi, spacingsj;
     blocksize = 2*intsigma+1;
@@ -2026,21 +2039,23 @@ void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int N
 
     ofstream outFile;
     char *filename = new char[100000]; // Possibly a long file name
-    sprintf(filename, "PBC/sigma%i_d%i/Nblocks%i/pot_sigma%.3f_exp%.3f_factor%.3f_R2_Nsteps%i_Nreal%i", intsigma, intd, Nblocks, sigma, power, soften, Nrun, Nrealizations);
+    sprintf(filename, "PBC/sigma%i_d%i/Nblocks%i/pot_sigma%.3f_exp%.3f_factor%.3f_R2_Nsteps%i_Nreal%i_printevery%i", intsigma, intd, Nblocks, sigma, power, soften, Nrun, Nrealizations, printevery);
     //sprintf(filename, "Nsteps%i_Nreal%i_Nblocks%i_intsigma%i_intd%i_pot_exp%f_sigma%f_factor%f_PBC_R2_basic_mc", Nrun, Nrealizations, Nblocks, intsigma, intd, power, sigma, soften);
     outFile.open(filename);
     delete filename;
 
 
     for(int i=0; i<Nrun; i++){
-        outFile << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl;
+        if(i%printevery==0){
+           outFile << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl;
+        }
         //outFile << std::setprecision(std::numeric_limits<double>::digits10+1) << i+1 << " " << walk_R2[i] << " " << walk_R2_rms[i] << endl; // Is this long printing really neccessary? // Possibly (probably?) gonna use this later.
     }
     outFile.close();
 
     ofstream poutFile;
     char *pfilename = new char[100000]; // Possibly a long file name
-    sprintf(pfilename, "PBC/sigma%i_d%i/Nblocks%i/pot_sigma%.3f_exp%.3f_factor%.3f_R2_Nsteps%i_Nreal%i_Npart%i", intsigma, intd, Nblocks, sigma, power, soften, Nrun, Nrealizations, Nsections);
+    sprintf(pfilename, "PBC/sigma%i_d%i/Nblocks%i/pot_sigma%.3f_exp%.3f_factor%.3f_R2_Nsteps%i_Nreal%i_Npart%i_printevery%i", intsigma, intd, Nblocks, sigma, power, soften, Nrun, Nrealizations, Nsections, printevery);
     //sprintf(pfilename, "Nsteps%i_Nreal%i_Nblocks%i_intsigma%i_intd%i_Npart%i_pot_exp%f_sigma%f_factor%f_PBC_R2_basic_mc", Nrun, Nrealizations, Nblocks, intsigma, intd, Nsections, power, sigma, soften);
     poutFile.open(pfilename);
     delete pfilename;
@@ -2048,7 +2063,9 @@ void matrixmc_potential_easyinput_PBC(int intsigma, int intd, int Nblocks, int N
     for(int i=0; i<Nsections; i++){
         poutFile << "--- Section " << i <<" ---" << endl;
         for(int j=0; j<len_sections; j++){
-            poutFile << j << " " << walk_R2_sections[i][j] << " " << walk_R2_sections_rms[i][j] << endl;
+            if(j%printevery==0){
+                poutFile << j << " " << walk_R2_sections[i][j] << " " << walk_R2_sections_rms[i][j] << endl;
+            }
         } // End loop over steps (len_sections)
     } // End loop over sections
     poutFile.close();
