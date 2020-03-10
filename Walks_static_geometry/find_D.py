@@ -21,19 +21,22 @@ Nblocks  = 3
 sigma    = intsigma
 power    = 6
 factor   = 1
-printevery = 100
+printevery   = 100
+maxstartdist = 10
 
-randomwalk = True
-hardpot_rw = False
-hardpot_mc = False
-potential  = False
-printall   = False
+randomwalk  = False
+hardpot_rw  = False
+hardpot_mc  = False
+potential   = False
+nearwall_rw = True
+nearwall_mc = False
+printall    = False
 
 # Save fig or show fig
-savefig = True
+savefig = False
 
 # Kinks?
-kinks = [2000,3500]
+kinks = [500, 1700, 2800] # nearwall_rw #[2000,3500] # potential, Nsteps20000, Nreal1000, Nsect5, sigma10, d=1
 for i in range(len(kinks)):
     kinks[i] = int(floor(kinks[i]/printevery))
 
@@ -65,6 +68,16 @@ if printall==False:
 else:
     plotname_sections_wfit   = plotname_sections_wfit  + '.png'
 
+if nearwall_rw==True or nearwall_mc==True: # Totally different file convention for this one.
+    difftype = ''
+    if nearwall_rw==True:
+        difftype = 'rw'
+    else:
+        difftype = 'mc'
+    infilename_totwalk     = 'nearwall'+difftype + '_R2_Nsteps%i_Nreal%i_maxstartdist%i_printevery%i' % (Nsteps, Nreal, maxstartdist, printevery)
+    infilename_sections    = 'nearwall'+difftype + '_R2_Nsteps%i_Nreal%i_maxstartdist%i_Npart%i_printevery%i' % (Nsteps, Nreal, maxstartdist, Nsect, printevery)
+    plotname_sections_wfit = infilename_sections + '.png'
+    outfilename            = infilename_totwalk + '_D.txt'
 
 
 ### Read file totwalk
@@ -162,11 +175,10 @@ start = 0
 thesteps = step_all[0] # The steps are the same for all
 for i in range(len(kinks)+1):
     if i!=len(kinks):
-        if kinks[i]!=kinks[-1]: # An awful lot of code for a small part
-            end = kinks[i]
+        end = kinks[i]
     else:
         #print('In else')
-        start = kinks[i]
+        start = kinks[i-1]
         end   = int(floor(thesteps[-1]/printevery))
     length = end-start
     steps_thisfit = []
@@ -209,7 +221,7 @@ else:
 
 outfile = open(outfilename, 'w')
 outfile.write('D, all: %.16f' % Ds[0])
-for i in range(len(kinks)):
+for i in range(len(kinks)+1):
     outfile.write('\nD, fit%i: %.16f' % ((i+1),Ds[i+1]))
 outfile.close()
 

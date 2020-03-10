@@ -14,17 +14,26 @@ import copy
 Nsteps = 20000
 Nreal  = 1000
 Nsect  = 5
-intd   = 10
-intsigma = 2
+beta   = 3
+intd   = 1
+intsigma = 10
 Nblocks  = 3
-sigma    = 2
+sigma    = intsigma
 power    = 6
 factor   = 1
+printevery = 100
+maxstartdist = 10
 
-randomwalk = False
-hardpot_rw = False
-hardpot_mc = False
-potential  = True
+randomwalk  = False
+hardpot_rw  = False
+hardpot_mc  = False
+potential   = False
+nearwall_rw = True
+nearwall_mc = False
+printall    = False
+
+# Save fig or show fig
+savefig = False
 
 ### Setting file names
 prefix = ''
@@ -35,19 +44,48 @@ elif hardpot_rw==True:
 elif hardpot_mc==True:
     prefix = 'hardpotmc_'
 elif potential==True:
-    prefix = 'pot_sigma%.3f_exp%.3f_factor%.3f_' % (sigma, power, factor) # I set it to three decimals. Maybe a bit much, but perhaps it is better to be careful.
+    prefix = 'pot_sigma%.3f_exp%.3f_factor%.3f_beta%.1f_' % (sigma, power, factor, beta) # I set it to three decimals. Maybe a bit much, but perhaps it is better to be careful.
 
 folder = 'PBC/sigma%i_d%i/Nblocks%i/' % (intsigma, intd, Nblocks)
 infilename_totwalk  = folder + prefix + 'R2_Nsteps%i_Nreal%i' % (Nsteps, Nreal)
 infilename_sections = folder + prefix + 'R2_Nsteps%i_Nreal%i_Npart%i' % (Nsteps, Nreal, Nsect)
+
 #infilename_totwalk  = 'Nsteps20000_Nreal1000_sigma2_d10_Nblocks3_randomwalk_PBC_R2_basic_mc' #'Nsteps20000_Nreal100_Nblocks3_intsigma2_intd10_pot_exp6.000000_sigma1.000000_factor1.000000_PBC_R2_basic_mc' #'Nsteps20000_Nreal100_hardpot_R2_basic_mc'
 #infilename_sections = 'Nsteps20000_Nreal1000_sigma2_d10_Nblocks3_Npart5_randomwalk_PBC_R2_basic_mc' #'Nsteps20000_Nreal100_Nblocks3_intsigma2_intd10_Npart5_pot_exp6.000000_sigma1.000000_factor1.000000_PBC_R2_basic_mc' #'Nsteps20000_Nreal100_Npart5_hardpot_R2_basic_mc'
 
-plotname_totwalk  = infilename_totwalk + '_step_vs_R2.png'
-plotname_sections = infilename_sections + '_step_vs_R2.png'
+plotname_totwalk  = infilename_totwalk + '_step_vs_R2' # '.png'
+plotname_sections = infilename_sections + '_step_vs_R2'
 
-plotname_totwalk_sparser  = infilename_totwalk + '_step_vs_R2_sparser.png'
-plotname_sections_sparser = infilename_sections + '_step_vs_R2_sparser.png'
+plotname_totwalk_sparser  = infilename_totwalk + '_step_vs_R2_sparser'
+plotname_sections_sparser = infilename_sections + '_step_vs_R2_sparser'
+
+if printall==False:
+    plotname_totwalk    = plotname_totwalk    + '_printevery%i.png' % printevery
+    plotname_sections   = plotname_sections   + '_printevery%i.png' % printevery
+    infilename_totwalk  = infilename_totwalk  + '_printevery%i' % printevery
+    infilename_sections = infilename_sections + '_printevery%i' % printevery
+    plotname_totwalk_sparser  = plotname_totwalk_sparser  +  '_printevery%i.png' % printevery # Not have sparser plots if we only print sometimes? Or nice to have the option?
+    plotname_sections_sparser = plotname_sections_sparser +  '_printevery%i.png' % printevery
+else:
+    plotname_totwalk    = plotname_totwalk   + '.png'
+    plotname_sections   = plotname_sections  + '.png'
+    plotname_totwalk_sparser  = plotname_totwalk_sparser  + '.png'
+    plotname_sections_sparser = plotname_sections_sparser + '.png'
+
+if nearwall_rw==True or nearwall_mc==True: # Totally different file convention for this one.
+    difftype = ''
+    if nearwall_rw==True:
+        difftype = 'rw'
+    else:
+        difftype = 'mc'
+    infilename_totwalk  = 'nearwall'+difftype + '_R2_Nsteps%i_Nreal%i_maxstartdist%i_printevery%i' % (Nsteps, Nreal, maxstartdist, printevery)
+    infilename_sections = 'nearwall'+difftype + '_R2_Nsteps%i_Nreal%i_maxstartdist%i_Npart%i_printevery%i' % (Nsteps, Nreal, maxstartdist, Nsect, printevery)
+    plotname_totwalk    = infilename_totwalk  + '.png'
+    plotname_sections   = infilename_sections + '.png'
+    plotname_totwalk_sparser  = infilename_totwalk + '_step_vs_R2_sparser.png'
+    plotname_sections_sparser = infilename_sections + '_step_vs_R2_sparser.png'
+
+
 
 ### Read file totwalk
 infile_totwalk = open(infilename_totwalk, 'r')
@@ -81,10 +119,16 @@ plt.ylabel(r'<$R^2$>', fontsize=16)
 plt.tight_layout(pad=3.0)#, w_pad=0.0, h_pad=0.5)
 #plt.legend(loc="upper right")
 plt.title(r'<$R^2$> vs step', fontsize=16) # (last chain)', fontsize=16)
-plt.savefig(plotname_totwalk)
+if savefig==True:
+    plt.savefig(plotname_totwalk)
+else:
+    plt.show()
+
 
 # Sparse plot (experiment with this)
 sparsity  = 250
+if printall==False:
+    sparsity = 3 # Lower if we don't have that many points written to file.
 step_sparse    = step[::sparsity]
 R2_sparse      = R2[::sparsity]
 R2_stdv_sparse = R2_stdv[::sparsity]
@@ -97,7 +141,10 @@ plt.ylabel(r'<$R^2$>', fontsize=16)
 plt.tight_layout(pad=3.0)#, w_pad=0.0, h_pad=0.5)
 #plt.legend(loc="upper right")
 plt.title(r'<$R^2$> vs step, every %i th value' % sparsity, fontsize=16) # (last chain)', fontsize=16)
-plt.savefig(plotname_totwalk_sparser)
+if savefig==True:
+    plt.savefig(plotname_totwalk_sparser)
+else:
+    plt.show()
 
 ### Read file sections
 infile_sections = open(infilename_sections, 'r')
@@ -145,9 +192,27 @@ plt.ylabel(r'<$R^2$>', fontsize=16)
 plt.tight_layout(pad=3.0)#, w_pad=0.0, h_pad=0.5)
 plt.legend(loc="lower right")
 plt.title(r'<$R^2$> vs step', fontsize=16) # (last chain)', fontsize=16)
-plt.savefig(plotname_sections)
+if savefig==True:
+    plt.savefig(plotname_sections)
+else:
+    plt.show()
 
-sparsity2 = 50
+
+plt.figure(figsize=(6,5))
+for i in range(Nsect):
+    plt.plot(step_all[i], R2_all[i], label='Section %i' % i)
+plt.xlabel(r'Step', fontsize=16)
+plt.ylabel(r'<$R^2$>', fontsize=16)
+plt.tight_layout(pad=3.0)#, w_pad=0.0, h_pad=0.5)
+plt.legend(loc="lower right")
+plt.title(r'<$R^2$> vs step', fontsize=16) # (last chain)', fontsize=16)
+if savefig==False:
+    plt.show()
+
+
+sparsity2 = 10
+if printall==False:
+    sparsity2 = 2 # Lower if we don't have that many points written to file.
 plt.figure(figsize=(6,5))
 for i in range(Nsect):
     step_this    = step_all[i]
@@ -162,7 +227,11 @@ plt.ylabel(r'<$R^2$>', fontsize=16)
 plt.tight_layout(pad=3.0)#, w_pad=0.0, h_pad=0.5)
 plt.legend(loc="lower right")
 plt.title(r'<$R^2$> vs step, every %i th value' % sparsity2, fontsize=16) # (last chain)', fontsize=16)
-plt.savefig(plotname_sections_sparser)
+if savefig==True:
+    plt.savefig(plotname_sections_sparser)
+else:
+    plt.show()
+
 
 
 
