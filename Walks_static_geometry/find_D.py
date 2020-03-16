@@ -28,8 +28,9 @@ randomwalk  = False
 hardpot_rw  = False
 hardpot_mc  = False
 potential   = False
-nearwall_rw = True
+nearwall_rw = False
 nearwall_mc = False
+onedim      = True
 printall    = False
 
 # Save fig or show fig
@@ -68,7 +69,7 @@ if printall==False:
 else:
     plotname_sections_wfit   = plotname_sections_wfit  + '.png'
 
-if nearwall_rw==True or nearwall_mc==True: # Totally different file convention for this one.
+if nearwall_rw==True or nearwall_mc==True or onedim==True: # Totally different file convention for these ones.
     difftype = ''
     if nearwall_rw==True:
         difftype = 'rw'
@@ -76,6 +77,9 @@ if nearwall_rw==True or nearwall_mc==True: # Totally different file convention f
         difftype = 'mc'
     infilename_totwalk     = 'nearwall'+difftype + '_R2_Nsteps%i_Nreal%i_maxstartdist%i_printevery%i' % (Nsteps, Nreal, maxstartdist, printevery)
     infilename_sections    = 'nearwall'+difftype + '_R2_Nsteps%i_Nreal%i_maxstartdist%i_Npart%i_printevery%i' % (Nsteps, Nreal, maxstartdist, Nsect, printevery)
+    if onedim==True:
+        infilename_totwalk  = 'rw1D_R2_Nsteps%i_Nreal%i_printevery%i' % (Nsteps, Nreal, printevery)
+        infilename_sections = 'rw1D_R2_Nsteps%i_Nreal%i_Npart%i_printevery%i' % (Nsteps, Nreal, Nsect, printevery)
     plotname_sections_wfit = infilename_sections + '.png'
     outfilename            = infilename_totwalk + '_D.txt'
 

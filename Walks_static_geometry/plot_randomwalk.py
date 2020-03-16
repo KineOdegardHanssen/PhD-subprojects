@@ -28,8 +28,9 @@ randomwalk  = False
 hardpot_rw  = False
 hardpot_mc  = False
 potential   = False
-nearwall_rw = True
+nearwall_rw = False
 nearwall_mc = False
+onedim      = True
 printall    = False
 
 # Save fig or show fig
@@ -72,7 +73,7 @@ else:
     plotname_totwalk_sparser  = plotname_totwalk_sparser  + '.png'
     plotname_sections_sparser = plotname_sections_sparser + '.png'
 
-if nearwall_rw==True or nearwall_mc==True: # Totally different file convention for this one.
+if nearwall_rw==True or nearwall_mc==True or onedim==True: # Totally different file convention for these ones.
     difftype = ''
     if nearwall_rw==True:
         difftype = 'rw'
@@ -80,6 +81,9 @@ if nearwall_rw==True or nearwall_mc==True: # Totally different file convention f
         difftype = 'mc'
     infilename_totwalk  = 'nearwall'+difftype + '_R2_Nsteps%i_Nreal%i_maxstartdist%i_printevery%i' % (Nsteps, Nreal, maxstartdist, printevery)
     infilename_sections = 'nearwall'+difftype + '_R2_Nsteps%i_Nreal%i_maxstartdist%i_Npart%i_printevery%i' % (Nsteps, Nreal, maxstartdist, Nsect, printevery)
+    if onedim==True:
+        infilename_totwalk  = 'rw1D_R2_Nsteps%i_Nreal%i_printevery%i' % (Nsteps, Nreal, printevery)
+        infilename_sections = 'rw1D_R2_Nsteps%i_Nreal%i_Npart%i_printevery%i' % (Nsteps, Nreal, Nsect, printevery)
     plotname_totwalk    = infilename_totwalk  + '.png'
     plotname_sections   = infilename_sections + '.png'
     plotname_totwalk_sparser  = infilename_totwalk + '_step_vs_R2_sparser.png'
