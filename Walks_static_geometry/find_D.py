@@ -6,6 +6,7 @@ import numpy as np
 import random
 import math
 import time
+from datetime import datetime
 import os
 import glob
 import copy
@@ -27,21 +28,24 @@ maxstartdist = 10
 randomwalk  = False
 hardpot_rw  = False
 hardpot_mc  = False
-potential   = False
+potential   = True
 nearwall_rw = False
 nearwall_mc = False
-onedim      = True
+onedim      = False
 printall    = False
 
 # Save fig or show fig
 savefig = True
 
 # Kinks?
-kinks_in = [1200, 2300, 3300] # nearwall_rw #[2000,3500] # potential, Nsteps20000, Nreal1000, Nsect5, sigma10, d=1
-kinks    = []
-for i in range(len(kinks_in)):
-    thiskink = int(floor(kinks_in[i]/printevery))
-    kinks.append(thiskink)
+kinks_in = [2000, 3500] # nearwall_rw #[2000,3500] # potential, Nsteps20000, Nreal1000, Nsect5, sigma10, d=1
+if printall==False:
+    kinks    = []
+    for i in range(len(kinks_in)):
+        thiskink = int(floor(kinks_in[i]/printevery))
+        kinks.append(thiskink)
+else:
+    kinks = kinks_in
 
 ### Setting file names
 prefix = ''
@@ -228,10 +232,16 @@ else:
 
 NDs = len(kinks)+1
 outfile = open(outfilename, 'w')
-outfile.write('NDs: %i' % NDs)
+outfile.write('NDs: %i\n' % NDs)
 outfile.write('D, all: %.16f' % Ds[0])
 for i in range(NDs):
     outfile.write('\nD, fit%i: %.16f' % ((i+1),Ds[i+1]))
+
+# datetime object containing current date and time
+now = datetime.now()
+# dd/mm/YY H:M:S
+dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+outfile.write('\n\ndate and time: %s' % dt_string)
 outfile.write('\n\nKinks')
 for i in range(len(kinks_in)):
     outfile.write(' %i' % kinks_in[i])
