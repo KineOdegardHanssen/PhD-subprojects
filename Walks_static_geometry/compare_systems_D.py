@@ -50,7 +50,9 @@ for i in range(Nfiles):
     Nlines = len(lines)
     
     # Extract second to last line and use that as D:
-    line = lines[-2]
+    firstline = lines[0]
+    NDs       = int(firstline.split()[1])
+    line = lines[NDs] # Extracting D from the last fit. The first line does not contain any Ds, so the Ds start at line number 1 (and not 0). Hence, this is the correct line.
     D    = float(line.split()[2])
     Ds[i] = D
     infile.close()

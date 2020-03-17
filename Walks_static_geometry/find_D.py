@@ -34,12 +34,14 @@ onedim      = True
 printall    = False
 
 # Save fig or show fig
-savefig = False
+savefig = True
 
 # Kinks?
-kinks = [500, 1700, 2800] # nearwall_rw #[2000,3500] # potential, Nsteps20000, Nreal1000, Nsect5, sigma10, d=1
-for i in range(len(kinks)):
-    kinks[i] = int(floor(kinks[i]/printevery))
+kinks_in = [1200, 2300, 3300] # nearwall_rw #[2000,3500] # potential, Nsteps20000, Nreal1000, Nsect5, sigma10, d=1
+kinks    = []
+for i in range(len(kinks_in)):
+    thiskink = int(floor(kinks_in[i]/printevery))
+    kinks.append(thiskink)
 
 ### Setting file names
 prefix = ''
@@ -63,11 +65,12 @@ outfilename          = infilename_totwalk + '_D.txt'
 plotname_sections_wfit = infilename_sections + '_step_vs_R2_wfit'
 
 if printall==False:
-    plotname_sections_wfit   = plotname_sections_wfit   + '_printevery%i.png' % printevery
-    infilename_sections = infilename_sections + '_printevery%i' % printevery
-    infilename_totwalk = infilename_totwalk + '_printevery%i' % printevery
+    plotname_sections_wfit = plotname_sections_wfit + '_printevery%i.png' % printevery
+    infilename_sections    = infilename_sections    + '_printevery%i' % printevery
+    infilename_totwalk     = infilename_totwalk     + '_printevery%i' % printevery
+    outfilename            = infilename_totwalk     + '_D.txt'
 else:
-    plotname_sections_wfit   = plotname_sections_wfit  + '.png'
+    plotname_sections_wfit = plotname_sections_wfit + '.png'
 
 if nearwall_rw==True or nearwall_mc==True or onedim==True: # Totally different file convention for these ones.
     difftype = ''
@@ -223,10 +226,15 @@ if savefig==True:
 else:
     plt.show()
 
+NDs = len(kinks)+1
 outfile = open(outfilename, 'w')
+outfile.write('NDs: %i' % NDs)
 outfile.write('D, all: %.16f' % Ds[0])
-for i in range(len(kinks)+1):
+for i in range(NDs):
     outfile.write('\nD, fit%i: %.16f' % ((i+1),Ds[i+1]))
+outfile.write('\n\nKinks')
+for i in range(len(kinks_in)):
+    outfile.write(' %i' % kinks_in[i])
 outfile.close()
 
 
