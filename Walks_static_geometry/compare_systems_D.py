@@ -24,7 +24,7 @@ factor   = 1
 printevery   = 100
 maxstartdist = 10
 
-printall    = False ### PRINTALL REQUIRES SOME CHANGE!!!
+printall    = False
 
 # Save fig or show fig
 savefig = False
@@ -32,7 +32,7 @@ savefig = False
 ### Setting file names
 folder        = 'PBC/sigma%i_d%i/Nblocks%i/' % (intsigma, intd, Nblocks)
 totwalk_end   = 'R2_Nsteps%i_Nreal%i' % (Nsteps, Nreal)
-if printevery==True:
+if printall==True:
     diffusion_end = '_D.txt'
 else:
     diffusion_end = '_printevery%i_D.txt' % printevery

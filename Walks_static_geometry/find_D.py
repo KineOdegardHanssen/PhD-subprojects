@@ -16,8 +16,8 @@ Nsteps = 20000
 Nreal  = 1000
 Nsect  = 5
 beta   = 3
-intd   = 1
-intsigma = 10
+intd   = 10
+intsigma = 2
 Nblocks  = 3
 sigma    = intsigma
 power    = 6
@@ -28,17 +28,17 @@ maxstartdist = 10
 randomwalk  = False
 hardpot_rw  = False
 hardpot_mc  = False
-potential   = True
+potential   = False
 nearwall_rw = False
 nearwall_mc = False
-onedim      = False
+onedim      = True
 printall    = False
 
 # Save fig or show fig
 savefig = True
 
 # Kinks?
-kinks_in = [2000, 3500] # nearwall_rw #[2000,3500] # potential, Nsteps20000, Nreal1000, Nsect5, sigma10, d=1
+kinks_in = [1060, 2300, 3250] # nearwall_rw #[2000,3500] # potential, Nsteps20000, Nreal1000, Nsect5, sigma10, d=1
 if printall==False:
     kinks    = []
     for i in range(len(kinks_in)):
@@ -90,7 +90,7 @@ if nearwall_rw==True or nearwall_mc==True or onedim==True: # Totally different f
     plotname_sections_wfit = infilename_sections + '.png'
     outfilename            = infilename_totwalk + '_D.txt'
 
-
+print('infilename_totwalk:', infilename_totwalk)
 ### Read file totwalk
 infile_totwalk = open(infilename_totwalk, 'r')
 
@@ -176,6 +176,8 @@ popt = np.polyfit(step_all_flat,R2_all_flat, 1)#, cov='unscaled')
 a = popt[0]
 b = popt[1]
 D = a/4.
+if onedim==True:
+    D = a/2.
 fit = a*step_all[0]+b
 Ds.append(D)
 a_array.append(a)
@@ -190,7 +192,9 @@ for i in range(len(kinks)+1):
     else:
         #print('In else')
         start = kinks[i-1]
-        end   = int(floor(thesteps[-1]/printevery))
+        end   = thesteps[-1]
+        if printall==False:
+            end   = int(floor(thesteps[-1]/printevery))
     length = end-start
     steps_thisfit = []
     R2s_thisfit   = []
@@ -200,10 +204,14 @@ for i in range(len(kinks)+1):
             #print('i =', i,' last step:', len(thesteps-1),'; start:', start, ', end:', end, 'start+k:', start+k)
             steps_thisfit.append(thesteps[start+k])
             R2s_thisfit.append(R2_these[start+k])
+    #print('steps_thisfit:', steps_thisfit)
+    #print('R2s_thisfit:', R2s_thisfit)
     popt = np.polyfit(steps_thisfit,R2s_thisfit, 1)#, cov='unscaled')
     a = popt[0]
     b = popt[1]
     D = a/4.
+    if onedim==True:
+        D = a/2.
     #fit = a*step_all[0]+b # Should save the parameters?
     Ds.append(D)
     a_array.append(a)
