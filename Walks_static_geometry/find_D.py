@@ -16,8 +16,8 @@ Nsteps = 20000
 Nreal  = 1000
 Nsect  = 5
 beta   = 3
-intd   = 10
-intsigma = 2
+intd   = 1
+intsigma = 10
 Nblocks  = 3
 sigma    = intsigma
 power    = 6
@@ -27,18 +27,18 @@ maxstartdist = 10
 
 randomwalk  = False
 hardpot_rw  = False
-hardpot_mc  = False
+hardpot_mc  = True
 potential   = False
 nearwall_rw = False
 nearwall_mc = False
-onedim      = True
+onedim      = False
 printall    = False
 
 # Save fig or show fig
 savefig = True
 
 # Kinks?
-kinks_in = [1060, 2300, 3250] # nearwall_rw #[2000,3500] # potential, Nsteps20000, Nreal1000, Nsect5, sigma10, d=1
+kinks_in = [1300, 1900, 2900, 3400] # nearwall_rw #[2000,3500] # potential, Nsteps20000, Nreal1000, Nsect5, sigma10, d=1
 if printall==False:
     kinks    = []
     for i in range(len(kinks_in)):
@@ -167,6 +167,7 @@ for i in range(Nsect):
         R2_all_flat.append(R2_this[j])
 # Polyfit
 Ds = []
+D_stdvs = []
 a_array = []
 b_array = []
 
@@ -183,6 +184,27 @@ Ds.append(D)
 a_array.append(a)
 b_array.append(b)
 
+# Obtaining the standard deviation
+Ds_temp = np.zeros(Nsect)
+for i in range(Nsect):
+    R2_these    = R2_all[i]
+    steps_these = step_all[i]
+    popt_this   = np.polyfit(steps_these,R2_these, 1)
+    a = popt_this[0]
+    b = popt_this[1]
+    Di = a/4.
+    if onedim==True:
+        Di = a/2.
+    Ds_temp[i] = Di
+
+Di_av = np.mean(Ds_temp) # Pretty sure this is the same as Ds[0], but...
+
+D_stdv_temp = 0
+for i in range(Nsect):
+    D_stdv_temp += (Di_av-Ds_temp[i])**2
+D_stdv_temp = np.sqrt(D_stdv_temp/(Nsect-1))
+D_stdvs.append(D_stdv_temp)
+
 # Fit of parts
 start = 0
 thesteps = step_all[0] # The steps are the same for all
@@ -198,12 +220,28 @@ for i in range(len(kinks)+1):
     length = end-start
     steps_thisfit = []
     R2s_thisfit   = []
+    Ds_temp = np.zeros(Nsect) # To find the rms value
     for j in range(Nsect):
-        R2_these = R2_all[j]
+        R2_these        = R2_all[j]
+        R2_singlefit    = []        # Storing results for different sections in order to find rms
+        steps_singlefit = []        # Storing results for different sections in order to find rms
         for k in range(end-start):
             #print('i =', i,' last step:', len(thesteps-1),'; start:', start, ', end:', end, 'start+k:', start+k)
+            # For total D
             steps_thisfit.append(thesteps[start+k])
             R2s_thisfit.append(R2_these[start+k])
+            # For calc of rms
+            steps_singlefit.append(thesteps[start+k])
+            R2_singlefit.append(R2_these[start+k])
+        # Take some fit here to find the average
+        popt_this   = np.polyfit(steps_singlefit,R2_singlefit, 1)
+        a = popt_this[0]
+        b = popt_this[1]
+        Di = a/4.
+        if onedim==True:
+           Di = a/2.
+        Ds_temp[j] = Di
+    # Finding the average
     #print('steps_thisfit:', steps_thisfit)
     #print('R2s_thisfit:', R2s_thisfit)
     popt = np.polyfit(steps_thisfit,R2s_thisfit, 1)#, cov='unscaled')
@@ -216,8 +254,19 @@ for i in range(len(kinks)+1):
     Ds.append(D)
     a_array.append(a)
     b_array.append(b)
+    
+    # Finding rms
+    Di_av = np.mean(Ds_temp) # Pretty sure this is the same as the value in Ds, but...
+    
+    D_stdv_temp = 0
+    for i in range(Nsect):
+        D_stdv_temp += (Di_av-Ds_temp[i])**2
+    D_stdv_temp = np.sqrt(D_stdv_temp/(Nsect-1))
+    D_stdvs.append(D_stdv_temp)
+    
     start = end
-
+    
+    print('Ds_temp:',Ds_temp)
 
 plt.figure(figsize=(6,5))
 for i in range(Nsect):
@@ -241,9 +290,9 @@ else:
 NDs = len(kinks)+1
 outfile = open(outfilename, 'w')
 outfile.write('NDs: %i\n' % NDs)
-outfile.write('D, all: %.16f' % Ds[0])
+outfile.write('D, all: %.16f %.16f' % (Ds[0], D_stdvs[0]))
 for i in range(NDs):
-    outfile.write('\nD, fit%i: %.16f' % ((i+1),Ds[i+1]))
+    outfile.write('\nD, fit%i: %.16f %.16f' % ((i+1),Ds[i+1],D_stdvs[i+1]))
 
 # datetime object containing current date and time
 now = datetime.now()
