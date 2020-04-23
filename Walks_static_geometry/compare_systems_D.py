@@ -43,7 +43,8 @@ filenames = [folder+'randomwalk_'+end_end, folder+'hardpotwalk_'+end_end, folder
 Nfiles      = len(filenames)
 dateandtime = []
 
-Ds = np.zeros(Nfiles)
+Ds    = np.zeros(Nfiles)
+D_rms = np.zeros(Nfiles)
 kinks = []
 
 for i in range(Nfiles):
@@ -57,9 +58,12 @@ for i in range(Nfiles):
     # Extract second to last line and use that as D:
     firstline = lines[0]
     NDs       = int(firstline.split()[1])
-    line = lines[NDs] # Extracting D from the last fit. The first line does not contain any Ds, so the Ds start at line number 1 (and not 0). Hence, this is the correct line.
-    D    = float(line.split()[2])
+    line  = lines[NDs] # Extracting D from the last fit. The first line does not contain any Ds, so the Ds start at line number 1 (and not 0). Hence, this is the correct line.
+    Dline = line.split()
+    D     = float(Dline[2])
+    Drms  = float(Dline[3])
     Ds[i] = D
+    D_rms[i] = Drms
     
     # Extract the time when the file was made:
     timeline   = lines[-3] # This should be the line with the time step
@@ -80,7 +84,7 @@ outfilename = folder+'/Compare/Ds_pot_sigma%.3f_exp%.3f_factor%.3f_beta%.1f_maxs
 outfile     = open(outfilename, 'w') 
 
 for i in range(Nfiles):
-    outfile.write('%s %.16f\n' % (types[i], Ds[i]))
+    outfile.write('%s %.16f %.16f\n' % (types[i], Ds[i], D_rms[i]))
 outfile.write('\nFiles used for reading:\n')
 for i in range(Nfiles):
     outfile.write('----------------------------------------------------\n')
