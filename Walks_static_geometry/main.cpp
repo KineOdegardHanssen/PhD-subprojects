@@ -31,7 +31,7 @@ void matrixmc_hard(int Nblocks, int blocksize, int Nrun, int Nrealizations, int 
 void matrixmc_potential(int Nblocks, int blocksize, int Nrun, int Nrealizations, int Nsections, double beta, double sigma, double power, double soften); // Power is expensive
 
 // Voxellation part
-void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, vector<vector<vector<double>>> voxmat);
+void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, bool printevery, bool pbc_codetesting, vector<vector<vector<double>>> voxmat);
 void voxellation_basic(int M, int N, int totframes, int Nvoxels, int Nout);
 vector<vector<vector<double>>> voxellation_basic_return_matrix(int M, int N, int totframes, int Nout, double lenvoxel);
 vector<vector<vector<double>>> voxellate_basic(int frame, int Nall, int Nx, int Ny, int Nz, vector<double> x_centres, vector<double> y_centres, vector<double> z_centres, vector<vector<double>> xes, vector<vector<double>> ys, vector<vector<double>> zs); // voxellate(Nx, Ny, Nz, x_centres, y_centres, z_centres, posvecs)
@@ -111,7 +111,7 @@ int main()
     */
 
     vector<vector<vector<double>>> voxmat = voxellation_basic_return_matrix(M, N, totframes, Nout, lenvoxel);//, xmax, xmin, ymax, ymin);
-    voxel_walk(Nrun, Nrealizations, Nsections, threshold, voxmat);
+    voxel_walk(Nrun, Nrealizations, Nsections, threshold, printevery, pbc_codetesting, voxmat);
     return 0;
 }
 
@@ -3985,7 +3985,7 @@ vector<vector<vector<double>>> voxellate_basic(int frame, int Nall, int Nx, int 
     return voxmat;
 }
 
-void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, vector<vector<vector<double>>> voxmat){
+void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, bool printevery, bool pbc_codetesting, vector<vector<vector<double>>> voxmat){
     cout << "Nrun: " << Nrun << endl;
     cout << "In voxel_walk" << endl;
     cout << "voxmat[0][2][1]: " << voxmat[0][2][1] << endl;
@@ -4025,12 +4025,12 @@ void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, ve
     std::uniform_int_distribution<int> distribution(0,Nx-1);
     std::uniform_int_distribution<int> distribution_z(1,5); // Start point for z (might very well change this)
     std::uniform_int_distribution<int> steps_distr(0,1); // Move: +/-1. Should I be able to keep still too?
-    std::uniform_int_distribution<int> dir_distr(0,1);
+    std::uniform_int_distribution<int> dir_distr(0,2);
 
     // Variables
     bool free;
     //double thisR2;    // Is this a conflict? Should this be an int?
-    int starti, startj, indi, indj, indk, indi_calc, indj_calc, indk_calc, nextindi, nextindj, nextindk, dir, step, thisR2, nx, ny, nz, accflagx, accflagy;
+    int starti, startj, startk, indi, indj, indk, indi_calc, indj_calc, indk_calc, nextindi, nextindj, nextindk, dir, step, thisR2, nx, ny, nz, accflagx, accflagy;
     vector<double> walk_R2(Nrun);                                           // Average R^2
     vector<double> walk_R2_rms(Nrun);                                       // RMS R^2
     vector<vector<double>> walk_R2_store(Nrealizations, vector<double>(Nrun)); // For calculation of the standard deviation
@@ -4043,9 +4043,10 @@ void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, ve
     vector<vector<double>> walk_R2_sections_rms(Nsections, vector<double>(len_sections));                                                  // Sections, rms
     vector<vector<vector<double>>> walk_R2_sections_store(Nrealizations, vector<vector<double>>(Nsections, vector<double>(len_sections))); // For calculation of the standard deviation
 
+    // Want non-periodic BCs in the z-direction. Will probably adjust the length of the walk.
 
     //---- Performing walk ----//
-    nx = 0; ny = 0;
+    nx = 0; ny = 0; nz = 0;
     for(int i=0; i<Nrealizations; i++){
         // Start the walk by placing the bead in a random position
         // and check that the position is not occupied
@@ -4053,12 +4054,13 @@ void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, ve
         while(!free){
             indi = distribution(generator); //location();//indi = rand() % Nmat; // Random numbers this way (from <random>) is a bit better than rand() from cstdlib, it seems.
             indj = distribution(generator); //location();//indj = rand() % Nmat;
-            indk = distribution_z()
+            indk = distribution_z(generator);
             //cout << "walkmat["<<indi<<"]["<<indj<< "]: " << walkmat[indi][indj] << endl;
-            if(walkmat[indi][indj]==0){free=true;} // Only place the bead on a free site
+            if(binmat[indi][indj]==0){free=true;} // Only place the bead on a free site
         }
         starti = indi;
         startj = indj;
+        startk = indk;
         //cout << "i = " << i << ", starti = " << starti << ", startj = " << startj << endl;
         accflagx = 0;
         accflagy = 0;
@@ -4074,68 +4076,129 @@ void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, ve
                 //cout << "dir x chosen" << endl;
                 nextindi = indi + step;
                 nextindj = indj;
-                if(nextindi>(Nmat-1)){
-                    nextindi = 0; // No test neccessary. The sites at the edges are filled.
-                    accflagx += Nmat;
-                    passing_x[i][j] = 1;
-                    nx++;
-                }
-                else if(nextindi<0){
-                    nextindi = Nmat-1;
-                    accflagx -= Nmat;
-                    passing_x[i][j] = -1;
-                    nx++;
-                }
-                else{  //if(nextindi<Nmat && nextindi>-1){ // I shouldn't need this test because of the other ones.
-                    if(walkmat[nextindi][nextindj]==0){
+                nextindk = indk;
+                if(nextindi>(Nx-1)){
+                    nextindi = 0; // Should test if site is available!
+                    if(binmat[nextindi][nextindj][nextindk]==0){
+                        accflagx += Nx;
+                        passing_x[i][j] = 1;
                         nx++;
                     }
                     else{
                         nextindi = indi;
                         nextindj = indj;
+                        nextindk = indk;
+                    }
+
+                }
+                else if(nextindi<0){
+                    if(binmat[nextindi][nextindj][nextindk]==0){
+                        nextindi = Nx-1;
+                        accflagx -= Nx;
+                        passing_x[i][j] = -1;
+                        nx++;
+                    }
+                    else{
+                        nextindi = indi;
+                        nextindj = indj;
+                        nextindk = indk;
+                    }
+
+                }
+                else{  //if(nextindi<Nmat && nextindi>-1){ // I shouldn't need this test because of the other ones.
+                    if(binmat[nextindi][nextindj][nextindk]==0){
+                        nx++;
+                    }
+                    else{
+                        nextindi = indi;
+                        nextindj = indj;
+                        nextindk = indk;
                     }
                 }
             }
-            else{
+            else if(dir==1){
                 //cout << "dir y chosen" << endl;
                 nextindi = indi;
                 nextindj = indj + step;
-                if(nextindj>(Nmat-1)){
+                if(nextindj>(Ny-1)){
                     nextindj = 0; // No test neccessary. The sites at the edges are filled.
-                    accflagy += Nmat;
-                    passing_y[i][j] = 1;
-                    ny++;
-                }
-                else if(nextindj<0){
-                    nextindj = Nmat-1;
-                    accflagy -= Nmat;
-                    passing_y[i][j] = -1;
-                    ny++;
-                }
-                else{  //if(nextindi<Nmat && nextindi>-1){ // I shouldn't need this test because of the other ones.
-                    if(walkmat[nextindi][nextindj]==0){
+                    if(binmat[nextindi][nextindj][nextindk]==0){
+                        accflagy += Ny;
+                        passing_y[i][j] = 1;
                         ny++;
                     }
                     else{
                         nextindi = indi;
                         nextindj = indj;
+                        nextindk = indk;
+                    }
+                }
+                else if(nextindj<0){
+                    nextindj = Ny-1;
+                    if(binmat[nextindi][nextindj][nextindk]==0){
+                        accflagy -= Ny;
+                        passing_y[i][j] = -1;
+                        ny++;
+                    }
+                    else{
+                        nextindi = indi;
+                        nextindj = indj;
+                        nextindk = indk;
+                    }
+                }
+                else{  //if(nextindi<Nmat && nextindi>-1){ // I shouldn't need this test because of the other ones.
+                    if(binmat[nextindi][nextindj][nextindk]==0){
+                        ny++;
+                    }
+                    else{
+                        nextindi = indi;
+                        nextindj = indj;
+                        nextindk = indk;
+                    }
+                }
+            }
+            else{
+                nextindi = indi;
+                nextindj = indj;
+                nextindk = indk + step;
+                if(nextindk>Nz-1){ // Don't move if you hit the boundary (or should I reflect?)
+                    nextindi = indi;
+                    nextindj = indj;
+                    nextindk = indk;
+                }
+                else if(nextindk<0){ // Don't move if you hit the boundary (or should I reflect?)
+                    nextindi = indi;
+                    nextindj = indj;
+                    nextindk = indk;
+                }
+
+                else{
+                    if(binmat[nextindi][nextindj][nextindk]==0){
+                        nz++;
+                    }
+                    else{
+                        nextindi = indi;
+                        nextindj = indj;
+                        nextindk = indk;
                     }
                 }
             }
             // Move the walker
             indi = nextindi;
             indj = nextindj;
+            indk = nextindk;
             // Boundary conditions
             indi_calc = indi + accflagx;
             indj_calc = indj + accflagy;
             // store data somewhere
             // Average moves
-            thisR2 = (indi_calc-starti)*(indi_calc-starti) + (indj_calc-startj)*(indj_calc-startj);
+            thisR2 = (indi_calc-starti)*(indi_calc-starti) + (indj_calc-startj)*(indj_calc-startj) + (indk-startk)*(indk-startk);
             walk_R2[j] += thisR2;
             walk_R2_store[i][j] = thisR2;
             // Saving coordinates
             walk_x[i][j] = indi;
             walk_y[i][j] = indj;
+            walk_z[i][j] = indk;
         }
         //cout << "indi: " << indi << ", indj: " << indj << endl;
         //cout << "i = " << i << ", starti = " << starti << ", startj = " << startj << endl << "-------------------------------------" << endl;
@@ -4168,25 +4231,28 @@ void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, ve
     //----- Partitioning -----//
 
     int startpoint, thispoint;
-    double startx, starty, currx, curry, dx, dy, dotprod;
+    double startx, starty, startz, currx, curry, currz, dx, dy, dz, dotprod;
     for(int i=0; i<Nrealizations; i++){
         for(int j=0; j<Nsections; j++){
             // Extract starting points
             startpoint = startpoints[j];
             startx = walk_x[i][startpoint];
             starty = walk_y[i][startpoint];
+            startz = walk_z[i][startpoint];
             // Reset accflags:
             accflagx = 0;
             accflagy = 0;
             for(int k=1; k<len_sections; k++){ // Start at 1 since first point in array will be 0 anyways
                 thispoint = startpoint+k;
-                if(passing_x[i][thispoint]!=0){accflagx += passing_x[i][thispoint]*Nmat;} // Add + or - Nmat if a border is crossed
-                if(passing_y[i][thispoint]!=0){accflagy += passing_y[i][thispoint]*Nmat;}
+                if(passing_x[i][thispoint]!=0){accflagx += passing_x[i][thispoint]*Nx;} // Add + or - Nmat if a border is crossed
+                if(passing_y[i][thispoint]!=0){accflagy += passing_y[i][thispoint]*Ny;}
                 currx   = walk_x[i][startpoint+k]+accflagx;
                 curry   = walk_y[i][startpoint+k]+accflagy;
+                currz   = walk_z[i][startpoint+k];
                 dx      = currx-startx;
                 dy      = curry-starty;
-                dotprod = dx*dx+dy*dy;
+                dz      = currz-startz;
+                dotprod = dx*dx+dy*dy+dz*dz;
                 walk_R2_sections[j][k]          += dotprod;
                 walk_R2_sections_store[i][j][k]  = dotprod;
             } // End loop over steps (len_sections)
@@ -4217,7 +4283,7 @@ void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, ve
 
     ofstream outFile;
     char *filename = new char[100000]; // Possibly a long file name
-    sprintf(filename, "Tests/R2_Nsteps%i", sigma, d, Nblocks, Nrun, Nrealizations, printevery);//Nrun, Nrealizations, sigma, d, Nblocks);
+    sprintf(filename, "Tests/R2_Nsteps%i", Nrun);//Nrun, Nrealizations, sigma, d, Nblocks);
     //sprintf(filename, "Nsteps%i_Nreal%i_sigma%i_d%i_Nblocks%i_hardpot_PBC_R2_basic", Nrun, Nrealizations, sigma, d, Nblocks);
     outFile.open(filename);
     delete filename;
@@ -4251,7 +4317,7 @@ void voxel_walk(int Nrun, int Nrealizations, int Nsections, double threshold, ve
     if(pbc_codetesting){
         ofstream coordFile;
         char *cfilename = new char[100000]; // Possibly a long file name
-        sprintf(cfilename, "Tests/coordfile", sigma, d, Nblocks, Nrun, Nrealizations);
+        sprintf(cfilename, "Tests/coordfile");
         coordFile.open(cfilename);
         delete cfilename;
 
