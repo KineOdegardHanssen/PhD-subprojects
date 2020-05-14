@@ -32,8 +32,8 @@ Nplacements = 10#10
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 5
-psigma  = 1#.5
+spacing = 1
+psigma  = 1   #.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
 print('spacing:', spacing)
@@ -70,7 +70,8 @@ print('timestepsize:', timestepsize)
 #foldername  = 'Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122'
 #endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/damp50_diffseedLgv'+'/Sigma_bead_'+str(psigma)+'/'
 basepath        = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/Spacing%i/' % spacing
-location_config = basepath + 'Initial_configs/Before_bead/'
+location_config = basepath + 'Radius1/Initial_configs/Before_bead/'
+basepath        = basepath + 'Radius' + str(psigma) + '/'
 endlocation     = basepath + 'Results/'
 #namebase_start = '_quadr_M9N101_ljunits_'
 #folderbase_mid = 'Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5'
@@ -84,7 +85,7 @@ filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_plac
 #outfilename          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'.txt' # This is redundant
 # Text files
 outfilename_ds       = endlocation+'av_ds_'+filestext+'.txt'                        #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_av_ds.txt'
-outfilename_gamma    = endlocation+'zimportance_'+filestext+'.txt'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.txt'
+#outfilename_gamma    = endlocation+'zimportance_'+filestext+'.txt'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.txt'
 outfilename_sections = endlocation+'sections_'+filestext+'.txt'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_sections.txt'
 outfilename_maxz     = endlocation+'maxz_az_'+filestext+'.txt'
 outfilename_dt       = endlocation+'dt.txt'
@@ -92,7 +93,7 @@ outfilename_dt       = endlocation+'dt.txt'
 # Plots
 plotname             = endlocation+filestext+'.png'                                 #'lammpsdiffusion_qdrgr_'+namebase+filestext+'.png'
 plotname_all         = endlocation+'all_'+filestext+'.png'                          #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_all.png'
-plotname_gamma       = endlocation+'zimportance_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.png'
+#plotname_gamma       = endlocation+'zimportance_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.png'
 plotname_SI          = endlocation+'SI_'+filestext+'.png'                           #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_SI.png'
 plotname_parallel_orthogonal = endlocation+'par_ort_'+filestext+'.png'              #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par_ort.png' 
 plotname_dx_dy_dz    = endlocation+'dx_dy_dz_'+filestext+'.png'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_dx_dy_dz.png' 
@@ -156,11 +157,11 @@ Rs_byseed    = []
 dxs_byseed   = []
 dys_byseed   = []
 dzs_byseed   = []
-gamma_byseed = []
+#gamma_byseed = []
 times_byseed = []
-gamma_avgs   = []
-single_slopes = []
-rmsds         = []
+#gamma_avgs   = []
+#single_slopes = []
+#rmsds         = []
 Nins          = []
 #
 sections_walk  = []
@@ -228,6 +229,7 @@ for confignr in confignrs:
     
     for beadplacement in beadplacements:
         #print('beadplacement:', beadplacement, ' of', Nplacements)
+        print('config nr', confignr,', beadplacement:', beadplacement, ' of', Nplacements)
         ## Find the position of the free bead:
         infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'.lammpstrj' #endlocation+'freeatom_density'+str(density)+'_confignr'+str(confignr)+'.lammpstrj'
         
@@ -345,7 +347,7 @@ for confignr in confignrs:
         dy_temp = []
         dz_temp = []
         step_temp = []
-        gamma_temp = []
+        #gamma_temp = []
         
         R_temp.append(0)
         dx_temp.append(0)
@@ -364,7 +366,7 @@ for confignr in confignrs:
             dx2  = dx*dx
             dy2  = dy*dy
             dz2  = dz*dz
-            gamma = (R2-dz2)/R2
+            #gamma = (R2-dz2)/R2
             # Velocity:
             vxi  = vx[i]
             vyi  = vy[i]
@@ -404,17 +406,18 @@ for confignr in confignrs:
             dx_temp.append(dx2)
             dy_temp.append(dy2)
             dz_temp.append(dz2)
-            gamma_temp.append(gamma)
+            #gamma_temp.append(gamma)
             step_temp.append(i)
         Rs_byseed.append(R_temp)   # Don't need these as of yet. Might use them later.
         dxs_byseed.append(dx_temp)
         dys_byseed.append(dy_temp)
         dzs_byseed.append(dz_temp)
-        gamma_byseed.append(gamma_temp)
         times_byseed.append(step_temp)
-        gamma_avg = np.mean(gamma_temp)
-        gamma_avgs.append(gamma_avg)
+        #gamma_byseed.append(gamma_temp)
+        #gamma_avg = np.mean(gamma_temp)
+        #gamma_avgs.append(gamma_avg)
         
+        '''
         coeffs = np.polyfit(step_temp,R_temp,1)
         a = coeffs[0]
         b = coeffs[1]
@@ -425,6 +428,7 @@ for confignr in confignrs:
         
         single_slopes.append(a)
         rmsds.append(rmsd_with_linefit)
+        '''
         Nins.append(Nin)
         
         if (Nfiles<11 and plotdirs==True): # Don't plot too many files
@@ -497,25 +501,27 @@ for confignr in confignrs:
 print('filescounter:', filescounter)
 maxz_av /= filescounter
 
-newlen = len(gamma_avgs)
+#newlen = len(gamma_avgs)
 
 allRs      = np.array(allRs)
 alltimes   = np.array(alltimes)
-gamma_avgs = np.array(gamma_avgs)
-single_slopes = np.array(single_slopes)
-rmsds         = np.array(rmsds)
+#gamma_avgs = np.array(gamma_avgs)
+#single_slopes = np.array(single_slopes)
+#rmsds         = np.array(rmsds)
 Nins          = np.array(Nins)
 
+'''
 # Sorted arrays:
 sorted_gamma_avgs = np.sort(gamma_avgs)
 plotgammaagainst  = np.arange(newlen)
 index_sorted      = np.argsort(gamma_avgs)
+'''
 
 # Making arrays
-rmsds_sorted         = np.zeros(newlen)
-seeds_sorted         = np.zeros(newlen)
-Nins_sorted          = np.zeros(newlen)
-single_slopes_sorted = np.zeros(newlen)
+#rmsds_sorted         = np.zeros(newlen)
+#seeds_sorted         = np.zeros(newlen)
+#Nins_sorted          = np.zeros(newlen)
+#single_slopes_sorted = np.zeros(newlen)
 
 # Calculating averages:
 #Know the velocity at t=0, same for all
@@ -593,7 +599,7 @@ for i in range(Npartitions):
             #print('Before division: Average_walks=', average_walks[i][j], '     average_counters=',average_counters[i][j])
             average_walks[i][j]/=average_counters[i][j]
             #print('After division: Average_walks=', average_walks[i][j], '     average_counters=',average_counters[i][j])
-
+'''
 if Nfiles<12:
     print('gamma_avgs:',gamma_avgs)
     print('index_sorted:',index_sorted)
@@ -608,7 +614,7 @@ for i in range(newlen):
     single_slopes_sorted[i] = single_slopes[index]
     outfile_gamma.write('%.16f %.16f %.16f %i %i\n' % (sorted_gamma_avgs[i], single_slopes_sorted[i], rmsds_sorted[i], Nins_sorted[i], seeds_sorted[i]))
 outfile_gamma.close()
-
+'''
 
 ## Finding the diffusion coefficient (in polymer)
 # Finding the last 25% of the data:               # Do this later! In loop! # But do now just for testing purposes.
@@ -921,6 +927,7 @@ plt.title(r'$<dx^2+dy^2>$ in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigm
 plt.tight_layout()
 plt.savefig(plotname_parallel)
 
+'''
 plt.figure(figsize=(6,5))
 plt.plot(plotgammaagainst, sorted_gamma_avgs)
 plt.xlabel(r'Different runs')
@@ -928,6 +935,7 @@ plt.ylabel(r'$\gamma = <\frac{R^2-dz^2}{R^2}>$')
 plt.title(r'Random walk in polymer brush, $\gamma$; d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.savefig(plotname_gamma)
+'''
 
 plt.figure(figsize=(6,5))
 plt.plot(times_single_real, averageR2s_SI, ',', label='Average, brush')

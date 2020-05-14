@@ -5,7 +5,6 @@ from scipy.optimize import curve_fit
 from pylab import *
 from scipy.ndimage import measurements, convolve    # Should have used the command below, but changing now will lead to confusion
 from scipy import ndimage                           # For Euclidean distance measurement
-import maintools_percolation as perctools
 import numpy as np
 import random
 import math
@@ -14,18 +13,17 @@ import os
 import glob
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-bulkdiffusion = True#False
+bulkdiffusion = False #False
 substrate     = False
-cutit         = True
-maxh          = 55.940983199999756
 
 #spacing = 7
-spacings = [10]#[3,4,5,7,10,15,25]
-psigma   = 1
+spacings = [3,5,8,10]#[3,4,5,7,10,15,25]
+psigma   = 1         # So far, we need to treat one and one sigma.
 damp     = 10
 
 Nsteps = 2001
-confignrs = np.arange(1,1001)
+confignrs = np.arange(1,101)
+placements = np.arange(1,11)
 
 # Make file names
 ## Weird cutoff (bead):
@@ -34,24 +32,18 @@ confignrs = np.arange(1,1001)
 # Usual cutoff (bead):
 
 for spacing in spacings:
-    if bulkdiffusion==True:
-        parentfolder = 'Pure_bulk/'
-        filestext     = '_seed'+str(confignrs[0])+'to'+str(confignrs[-1])
-        if substrate==True:
-            parentfolder = 'Bulk_substrate/'
-    else:
-        parentfolder = 'Brush/'
-        filestext     = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])
+    #foldertext = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placement'+str(placements[0])+'to'+str(placements[-1]) # This stems from finding necessary no. of files
+    filestext  = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(placements[0])+'to'+str(placements[-1])
     
-    endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder+ 'Sigma_bead_' +str(psigma) + '/'
-    if cutit==True:
-        endlocation = endlocation + 'maxh'+ str(maxh)+'/'
-    infilename    = endlocation+'av_ds'+filestext+'.txt'
-    outfilename   = endlocation+'diffusion'+filestext+'.txt'
-    metaname      = endlocation+'diffusion_metadata'+filestext+'.txt'
-    plotname_R    = endlocation+'diffusion_R'+filestext+'.png'
-    plotname_dz   = endlocation+'diffusion_dz'+filestext+'.png'
-    plotname_dpar = endlocation+'diffusion_dpar'+filestext+'.png'
+    endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/Spacing%i/Radius' % (spacing) + str(psigma) + '/Results/' 
+    #endlocation  = endlocation + foldertext+'/'
+    
+    infilename      = endlocation+'av_ds'+filestext+'.txt'
+    outfilename     = endlocation+'diffusion'+filestext+'.txt'
+    metaname        = endlocation+'diffusion_metadata'+filestext+'.txt'
+    plotname_R      = endlocation+'diffusion_R'+filestext+'.png'
+    plotname_dz     = endlocation+'diffusion_dz'+filestext+'.png'
+    plotname_dpar   = endlocation+'diffusion_dpar'+filestext+'.png'
     
     # Choosing which part to fit: in file
     rangefilename = endlocation+'indices_for_fit.txt'
@@ -107,7 +99,6 @@ for spacing in spacings:
 
     #    	0			1		2		3		4			5		6
     # (times_single[i], times_single_real[i], averageRs_SI[i], averagedxs_SI[i], averagedys_SI[i], averagedzs_SI[i], averagedparallel_SI[i]))
-    #Loop over sections
     for i in range(startindex,endindex):
         j     = i-startindex
         line  = lines[i]

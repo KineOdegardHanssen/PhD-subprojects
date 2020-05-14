@@ -26,15 +26,18 @@ def rmsd(x,y):
     return delta
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-psigma   = 1 # For instance 
-spacings = np.array([3,4,5,6,7,10,15,25,50,75,100])#np.array([5, 10]) # Will add d=100 to this list soon. Need even more points too.
-pmass    = 1 # I don't use this anymore, but it got stuck in the file names. Have constant mass density now.
-damp     = 10
-N        = len(spacings)
+spacings   = np.array([3,5,8,10])#np.array([3,4,5,6,7,10,15,25,50,75,100])#np.array([5, 10]) # Will add d=100 to this list soon. Need even more points too.
+sigmas     = np.array([1,1,1,1])
+N          = len(spacings)
+ddivsigmas = np.zeros(N)
+pmass      = 1 # I don't use this anymore, but it got stuck in the file names. Have constant mass density now.
+damp       = 10
+N          = len(spacings)
 # Input booleans for file selection:
 bulkdiffusion = False
 substrate     = False
-confignrs     = np.arange(1,1001)
+confignrs     = np.arange(1,101)
+bpl           = np.arange(1,11)
 
 # Ds
 DRs = np.zeros(N)
@@ -73,9 +76,10 @@ if bulkdiffusion==True:
 else:
     parentfolder = 'Brush/'
     systemtype   = 'brush'
-    filestext    = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])
+    filestext    = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(bpl[0])+'to'+str(bpl[-1])
 
-endlocation_out = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/'+parentfolder+'Sigma_bead_' +str(psigma) + '/'
+basepath_base   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/'
+endlocation_out = basepath_base+'D_vs_d/'
 outfilename  = endlocation_out+'D_vs_d.txt'
 plotname     = endlocation_out+'D_vs_d.png'
 plotname_fit = endlocation_out+'D_vs_d_fit.png'
@@ -88,8 +92,13 @@ indexfile = open(indfilename, 'w')
 indexfile.write('Start_index_R     end_index_R     Start_index_ort     end_index_ort     Start_index_par     end_index_par\n')
 
 for i in range(N):
-    spacing = spacings[i]
-    endlocation_in   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder+ 'Sigma_bead_' +str(psigma) + '/'
+    spacing        = spacings[i]
+    sigma          = sigmas[i]
+    ddivsigma      = spacing/float(sigma)
+    ddivsigmas[i]  = ddivsigma
+    basepath       = basepath_base+'Spacing%i/Radius' % spacing + str(sigma) +'/'
+    endlocation_in = basepath + 'Results/'
+    
     infilename = endlocation_in+'diffusion'+filestext+'.txt' #_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
     metaname   = endlocation_in+'diffusion_metadata'+filestext+'.txt' # In original file set as:  endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_metadata.txt'
 
@@ -129,7 +138,7 @@ for i in range(N):
     
     infile.close()
     
-    outfile.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e \n' % (spacing, DRs[i], DRs_stdv[i], bRs[i], bRs_stdv[i], Dzs[i], Dzs_stdv[i], bzs[i], bzs_stdv[i], Dparallel[i], Dparallel_stdv[i], bparallel[i], bparallel[i]))
+    outfile.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e %.5e \n' % (ddivsigma, DRs[i], DRs_stdv[i], bRs[i], bRs_stdv[i], Dzs[i], Dzs_stdv[i], bzs[i], bzs_stdv[i], Dparallel[i], Dparallel_stdv[i], bparallel[i], bparallel[i]))
     
     metafile = open(metaname, 'r')
     mlines   = metafile.readlines()
@@ -146,13 +155,12 @@ outfile.close()
 
     
 plt.figure(figsize=(6,5))
-#plt.errorbar(psigmas, DRs, yerr=DRs_stdv, capsize=2, fmt='none', label=r'$D_R$')
-plt.errorbar(spacings, DRs, yerr=DRs_stdv, capsize=2, label=r'$D_R$')
-plt.errorbar(spacings, Dzs, yerr=Dzs_stdv, capsize=2, label=r'$D_\perp$')
-plt.errorbar(spacings, Dparallel, yerr=Dparallel_stdv, capsize=2, label=r'$D_\parallel$')
-plt.xlabel(r'$d$')
+plt.errorbar(ddivsigmas, DRs, yerr=DRs_stdv, capsize=2, label=r'$D_R$')
+plt.errorbar(ddivsigmas, Dzs, yerr=Dzs_stdv, capsize=2, label=r'$D_\perp$')
+plt.errorbar(ddivsigmas, Dparallel, yerr=Dparallel_stdv, capsize=2, label=r'$D_\parallel$')
+plt.xlabel(r'$d/\sigma_b$')
 plt.ylabel(r'Diffusion constant $D$')
-plt.title('Diffusion constant $D$, d = %i nm, dynamic %s' % (spacing, systemtype))
+plt.title('Diffusion constant $D$, d = %i nm, static %s' % (spacing, systemtype))
 plt.tight_layout()
 plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 plt.legend(loc='upper left')
