@@ -32,11 +32,14 @@ damp     = 10
 # Input booleans for file selection:
 bulkdiffusion = False
 substrate     = False
-bulk_cut      = False
+bulk_cut      = True
 confignrs     = np.arange(1,1001)
 filestext     = '_seed'+str(confignrs[0])+'to'+str(confignrs[-1])
 
 endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/Brush/Sigma_bead_' +str(psigma) + '/'
+
+basepath_base      = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/'
+endlocation_static = basepath_base+'D_vs_d/'
 
 ## Files to read
 bulkfilename  = endlocation + 'diffusion_bulk'+filestext
@@ -45,17 +48,17 @@ if bulk_cut==True:
 else:
     bulkfilename = bulkfilename +'_uncut.txt'
 
-brushfilename = endlocation + 'D_vs_d.txt'
+brushfilename = endlocation_static + 'D_vs_d.txt'
 #
 bulkfile  = open(bulkfilename, 'r')
 brushfile = open(brushfilename, 'r')
 ## Files to write to
-outfilename  = endlocation+'Dd_div_Dbulk_vs_d'
-plotname     = endlocation+'Dd_div_Dbulk_vs_d'
-outfilename_2  = endlocation+'Dd_div_Dbulk_vs_d_2'
-plotname_2     = endlocation+'Dd_div_Dbulk_vs_d_2'
-outfilename_3  = endlocation+'D_vs_d_dynamic.txt'
-plotname_3     = endlocation+'D_vs_d_dynamic.png'
+outfilename  = endlocation_static+'Dd_div_Dbulk_vs_d_static'
+plotname     = endlocation_static+'Dd_div_Dbulk_vs_d_static'
+outfilename_2  = endlocation_static+'Dd_div_Dbulk_vs_d_static_2'
+plotname_2     = endlocation_static+'Dd_div_Dbulk_vs_d_static_2'
+outfilename_3  = endlocation_static+'D_vs_d_static.txt'
+plotname_3     = endlocation_static+'D_vs_d_static.png'
 if bulk_cut==True:
     outfilename   = outfilename   + '_cut.txt'
     outfilename_2 = outfilename_2 + '_cut.txt'
@@ -75,6 +78,7 @@ outfile_3 = open(outfilename_3, 'w')
 outfile.write('d   D_R2/DR_bulk   sigmaD_R2/DR_bulk; D_z2/Dz_Dbulk  sigmaD_z2/Dz_Dbulk  sigmaD_z2/Dz_Dbulk; D_par2/Dpar_bulk sigmaD_par2/Dpar_bulk\n')
 outfile_2.write('d   D_R2/Dbulk   sigmaD_R2/Dbulk; D_z2/Dbulk  sigmaD_z2/Dbulk  sigmaD_z2/Dbulk; D_par2/Dbulk sigmaD_par2/Dbulk\n')
 outfile_3.write('d   D_R2   sigmaD_R2; D_z2  sigmaD_z2  sigmaD_z2; D_par2 sigmaD_par2\n')
+
 
 # D_R2  sigmaD_R2 b_R2 sigmab_R2; D_z2  sigmaD_z2  b_z2  sigmaD_z2; D_par2 sigmaD_par2  b_par2  sigmab_par2
 bulklines = bulkfile.readlines()
@@ -124,6 +128,7 @@ Dys_stdv_v2 = np.zeros(N)
 Dzs_stdv_v2 = np.zeros(N)
 Dparallel_stdv_v2 = np.zeros(N)
 
+
 # Ds, undivided
 DRs_ud = np.zeros(N)
 Dxs_ud = np.zeros(N)
@@ -136,7 +141,6 @@ Dxs_stdv_ud = np.zeros(N)
 Dys_stdv_ud = np.zeros(N)
 Dzs_stdv_ud = np.zeros(N)
 Dparallel_stdv_ud = np.zeros(N)
-
 
 for i in range(1,N):
     words = lines[i].split()
