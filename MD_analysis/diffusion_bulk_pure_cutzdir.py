@@ -16,8 +16,8 @@ import glob
 import copy
 
 # Limiting the walk: Not interested in what happens when the bead has moved too far in the z-direction.
-maxh  = 1e7#100 # Height, box: 300 nm. Should maxh=300?
-testh = 78 # An 'arbitrary' value for now ## Print this part to file (i.e. testh_times)?
+maxh  = 55.940983199999756
+testh = 30 # An 'arbitrary' value for now ## Print this part to file (i.e. testh_times)?
 Nbins = 20 # Bins for plotting distribution of testh_times
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
@@ -29,12 +29,12 @@ damp    = 10
 # Should divide into folders in a more thorough manner?
 # Extracting the correct names (all of them)
 plotdirs = False
-startpart = '_withsubstrate_'
-parentfolder = 'Bulk_substrate/'
+startpart = '_'
+parentfolder = 'Pure_bulk/'
 test_sectioned = True
-seeds  = np.arange(1,1001)#(52,54)#(1,1001) # Old seeds: [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
+seeds  = np.arange(1,1001)#(1,1001)#(52,54)#(1,1001)#[23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 Nseeds = len(seeds)
-Nsteps = 2001
+Nsteps = 2001#20001
 testh_times  = np.zeros(Nseeds)
 Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
@@ -51,30 +51,31 @@ print('timestepsize:', timestepsize)
 #folderbase = 'Bulkdiffusion'+startpart+nextpart+namemid+nameend
 #namebase_short = namebase # In case I ever need to shorten it
 #namebase_out   = namebase_short+'_cut'
-endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp)+ parentfolder + '/Sigma_bead_' + str(psigma) + '/'
-filestext            = '_seed'+str(seeds[0])+'to'+str(seeds[-1])
+filestext      = '_seed'+str(seeds[0])+'to'+str(seeds[-1])
 #endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_' + str(psigma)+'/'
-outfilename          = endlocation+filestext+'.txt'
-outfilename_ds       = endlocation+'av_ds'+filestext+'.txt'
-outfilename_gamma    = endlocation+'zimportance'+filestext+'.txt'
-outfilename_sections = endlocation+'sections'+filestext+'.txt'
-plotname_dx_dy_dz    = endlocation+'dx_dy_dz'+filestext+'.png'
-outfilename_th       = endlocation+'th'+filestext+'.txt'
-plotname             = endlocation+filestext+'.png'
-plotname_gamma       = endlocation+'zimportance'+filestext+'.png'
-plotname_SI          = endlocation+'SI'+filestext+'.png'
-plotname_velocity    = endlocation+'velocity'+filestext+'.png'
-plotname_velocity_SI = endlocation+'velocity_SI'+filestext+'.png'
-plotname_velocity_sq = endlocation+'velocity_sq'+filestext+'.png'
-plotname_parallel_orthogonal = endlocation+'par_ort'+filestext+'.png'
-plotname_sectioned_average   = endlocation+'sections'+filestext+'.png'
-plotname_traj_xy = endlocation+'traj_xy'+filestext+'.png'
-plotname_traj_xz = endlocation+'traj_xz'+filestext+'.png'
-plotname_traj_yz = endlocation+'traj_yz'+filestext+'.png'
-plotname_traj_xt = endlocation+'traj_xt'+filestext+'.png'
-plotname_traj_yt = endlocation+'traj_yt'+filestext+'.png'
-plotname_traj_zt = endlocation+'traj_zt'+filestext+'.png'
-plotname_th_hist = endlocation+'th_hist'+filestext+'.png'
+inlocation           = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Pure_bulk/Sigma_bead_' % (spacing,damp)+str(psigma) + '/'
+endlocation          = inlocation + 'maxh'+str(maxh)+'/'
+outfilename          = endlocation+'all_'+filestext+'.txt'  #'lammpsdiffusion_'+namebase_out+filestext+'.txt'
+outfilename_ds       = endlocation+'av_ds'+filestext+'.txt'  #'lammpsdiffusion_'+namebase_out+filestext+'_av_ds.txt'
+outfilename_gamma    = endlocation+'zimportance'+filestext+'.txt' #'lammpsdiffusion_'+namebase_out+filestext+'_zimportance.txt'
+outfilename_sections = endlocation+'sections'+filestext+'.txt' #'lammpsdiffusion_'+namebase_out+filestext+'_sections.txt'
+plotname_dx_dy_dz    = endlocation+'dx_dy_dz'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_dx_dy_dz.png' 
+outfilename_th       = endlocation+'th'+filestext+'.txt' #'lammpsdiffusion_'+namebase_out+filestext+'_th.txt'
+plotname             = endlocation+'all_'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'.png'
+plotname_gamma       = endlocation+'zimportance'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_zimportance.png'
+plotname_SI          = endlocation+'SI'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_SI.png'
+plotname_velocity    = endlocation+'velocity'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_velocity.png'
+plotname_velocity_SI = endlocation+'velocity_SI'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_velocity_SI.png'
+plotname_velocity_sq = endlocation+'velocity_sq'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_velocity_sq.png'
+plotname_parallel_orthogonal = endlocation+'par_ort'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_par_ort.png'
+plotname_sectioned_average = endlocation+'sections'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_sections.png'
+plotname_traj_xy = endlocation+'traj_xy'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_traj_xy.png'
+plotname_traj_xz = endlocation+'traj_xz'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_traj_xz.png'
+plotname_traj_yz = endlocation+'traj_yz'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_traj_yz.png'
+plotname_traj_xt = endlocation+'traj_xt'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_traj_xy.png'
+plotname_traj_yt = endlocation+'traj_yt'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_traj_xz.png'
+plotname_traj_zt = endlocation+'traj_zt'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_traj_yz.png'
+plotname_th_hist = endlocation+'th_hist'+filestext+'.png' #'lammpsdiffusion_'+namebase_out+filestext+'_th_hist.png'
 # Setting arrays
 # Prepare for sectioning distance data:
 time_walks_SI, steps, partition_walks, numberofsamples, len_all, lengths, startpoints = datr.partition_holders_averaged(Nsteps,minlength)
@@ -151,9 +152,9 @@ for seed in seeds:
     print('On seed', seed)
     seedstr = str(seed)
     #infilename_free = endlocation+'pmass'+str(pmass)+'_seed'+seedstr+'.lammpstrj' # Old file name
-    infilename_free   = endlocation+'seed'+seedstr+'.lammpstrj'
-    plotname_dirs     = endlocation+'dxdydzR2_seed'+seedstr+'.png'
-    plotname_testsect = endlocation+'testsectioned_seed'+seedstr+'.png'
+    infilename_free   = inlocation+'seed'+seedstr+'.lammpstrj'
+    plotname_dirs     = inlocation+'dxdydzR2_seed'+seedstr+'.png'
+    plotname_testsect = inlocation+'testsectioned_seed'+seedstr+'.png'
     #print('infilename:',infilename_free)
     # Read in:
     #### Automatic part
@@ -206,8 +207,10 @@ for seed in seeds:
         else:
             #print('words:', words)
             # Find properties
-            # Order:  id  type xu  yu   zu  vx  vy  vz
+            # Order:  id  type xu  yu   zu  vx  vy  vz # I don't have mol anymore!!! #### IS THIS A PURE DIFFUSION THING, OR DOES IT HAPPEN FOR SUBSTRATE_BEAD TOO?????
             #         [0] [1]  [2] [3]  [4] [5] [6] [7]
+            # Order:  id  type mol ux  uy  uz  vx  vy   vz
+            #         [0] [1]  [2] [3] [4] [5] [6] [7]  [8]
             ind      = int(words[0])-1 # Atom ids go from zero to N-1.
             #atomtype = int(words[1]) 
             #molID    = int(words[2])
@@ -236,21 +239,22 @@ for seed in seeds:
     for i in range(counter):
         thesepos = positions[i]
         z        = thesepos[2]
-        if z>maxh: # If the polymer is in bulk # We don't want it to go back and forth between brush and bulk # That will cause discontinuities in our data
-            print('seed',seed,', z>maxh, breaking. z =', z,'. Nin=',Nin)
+        absz     = abs(z)
+        if absz>maxh: # To match the bulk diffusion with the brush one
+            #print('seed',seed,', z>maxh, breaking. z =', z,'. Nin=',Nin)
             break
         else:
             pos_inbulk.append(thesepos)
-            if z>maxzbulk:
-                maxzbulk = z
+            if absz>maxzbulk:
+                maxzbulk = absz
             Nin+=1
     
     # testh_times:
     for i in range(counter):
         thesepos = positions[i]
         z        = thesepos[2]
-        if z>testh: # If the polymer is in bulk # Measuring the time when is first reaches height h.
-            testh_times[seed] = i*dt
+        if abs(z)>testh: # If the polymer is in bulk # Measuring the time when is first reaches height h.
+            testh_times[seed-1] = i*dt
             break
     
     # I do not take into account that the free bead can enter the polymer grid and then exit again. If that happens, there might be discontinuities or weird kinks in the data (if you look at the graphs...) # I do not have this in my test-dataset. Maybe make the bead lighter and see what happens?
@@ -290,10 +294,6 @@ for seed in seeds:
         dx2  = dx*dx
         dy2  = dy*dy
         dz2  = dz*dz
-        if this_in[2]>maxh:
-            print('Wut?')
-        if np.sqrt(dz2)>maxh:
-            print('dz2 larger than it should. np.sqrt(dz2)=',np.sqrt(dz2),', position:', this_in)
         gamma = (R2-dz2)/R2
         # Velocity:
         vxi  = vx[i]
@@ -374,7 +374,7 @@ for seed in seeds:
         plt.plot(step_temp, dz_temp, label=r'$<dz^2>$')
         plt.xlabel(r'Step number')
         plt.ylabel(r'Distance$^2$ [in unit length]')
-        plt.title('RMSD near substr., seed %s, d = %i nm' % (seedstr,spacing))
+        plt.title('RMSD in bulk, seed %s, d = %i nm' % (seedstr,spacing))
         plt.tight_layout()
         plt.legend(loc='upper left')
         plt.savefig(plotname_dirs)
@@ -424,7 +424,7 @@ for seed in seeds:
             plt.plot(part_steps[i], part_walks[i], label='Section %i' % i)
         plt.xlabel(r'Step number')
         plt.ylabel(r'Distance$^2$ [in unit length]')
-        plt.title('RMSD near substr., seed %s, d = %i nm' % (seedstr,spacing))
+        plt.title('RMSD in bulk, seed %s, d = %i nm' % (seedstr,spacing))
         plt.tight_layout()
         plt.legend(loc='upper left')
         plt.savefig(plotname_testsect)
@@ -565,7 +565,7 @@ coeffs, covs = np.polyfit(insteps, indata, 1, full=False, cov=True) # Using all 
 fit_poly = a_poly*alltimes+b_poly
 
 # Line fit to averaged data:
-coeffs_poly, covs = polyfit(times_single, averageRs, 1, full=False, cov=True) # Using all the data in the fit # Should probably cut the first part, but I don't know how much to include
+coeffs_poly, covs = polyfit(times_single, averageR2s, 1, full=False, cov=True) # Using all the data in the fit # Should probably cut the first part, but I don't know how much to include
 a_poly_av = coeffs_poly[0]
 b_poly_av = coeffs_poly[1]
 rms_D_poly_av = np.sqrt(covs[0,0])/6.
@@ -619,7 +619,7 @@ outfile.close()
 outfile_ds = open(outfilename_ds,'w')
 outfile_ds.write('Time step; Time; <R^2>; <dx^2>; <dy^2>; <dz^2>; <dx^2+dy^2>\n')
 for i in range(len(averageRs)):
-    outfile_ds.write('%i %.2e %.5e %.5e %.5e %.5e %.5e\n' % (times_single[i], times_single_real[i], averageR2s_SI[i], averagedx2s_SI[i], averagedy2s_SI[i], averagedz2s_SI[i], averagedparallel2_SI[i]))
+    outfile_ds.write('%i %.16e %.16e %.16e %.16e %.16e %.16e\n' % (times_single[i], times_single_real[i], averageR2s_SI[i], averagedx2s_SI[i], averagedy2s_SI[i], averagedz2s_SI[i], averagedparallel2_SI[i]))
 outfile_ds.close()
 
 times_last = []
@@ -634,6 +634,19 @@ for i in range(Nin):
     zpos.append(pos[2])
     times_last.append(i)
 
+'''
+plt.figure(figsize=(6,5))
+plt.plot(alltimes, allRs, ',', label='Data, bulk')
+plt.plot(times_single, averageR2s, ',', label='Average, bulk')
+plt.plot(alltimes, fit_poly, '--', label='Fit, data, bulk')
+plt.plot(times_single, fit_poly_av, '--', label='Fit, average, bulk')
+plt.xlabel(r'Step number')
+plt.ylabel(r'Distance$^2$ [in unit length]')
+plt.title('RMSD in bulk, d = %i nm' % spacing)
+plt.tight_layout()
+plt.legend(loc='upper left')
+plt.show()
+'''
 
 plt.figure(figsize=(6,5))
 plt.plot(xpos, ypos, '.')
@@ -686,6 +699,7 @@ plt.tight_layout()
 plt.savefig(plotname_traj_zt)
 
 
+
 '''
 average_walks_SI = copy.copy(partition_walks)
 average_counters = copy.copy(partition_walks)
@@ -703,28 +717,28 @@ plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 outfile_sections.close()
 
 ## Making figures.
+
 plt.figure(figsize=(6,5))
-plt.plot(alltimes, allRs, ',', label='Data, substr.')
-plt.plot(times_single, averageRs, ',', label='Average, substr.')
-plt.plot(alltimes, fit_poly, '--', label='Fit, data, substr.')
-plt.plot(times_single, fit_poly_av, '--', label='Fit, average, substr.')
+plt.plot(alltimes, allRs, ',', label='Data, bulk')
+plt.plot(times_single, averageR2s, ',', label='Average, bulk')
+plt.plot(alltimes, fit_poly, '--', label='Fit, data, bulk')
+plt.plot(times_single, fit_poly_av, '--', label='Fit, average, bulk')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title('RMSD, substrate only, d = %i nm' % spacing)
+plt.title('RMSD in bulk, d = %i nm' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname)
-
 
 plt.figure(figsize=(6,5))
 plt.plot(times_single, averageR2s, label=r'$<dR^2>$') #label=r'$\braket{dR^2}$')
 plt.plot(times_single, averagedx2s, label=r'$<dx^2>$') #label=r'$\braket{dx^2}$')
 plt.plot(times_single, averagedy2s, label=r'$<dy^2>$')#label=r'$\braket{dy^2}$')
 plt.plot(times_single, averagedz2s, label=r'$<dz^2>$')#label=r'$\braket{dz^2}$')
-plt.plot(times_single, averagedparallel,label=r'$<dx^2+dy^2>') #label=r'$\braket{dx^2+dy^2}')
+plt.plot(times_single, averagedparallel2,label=r'$<dx^2+dy^2>$') #label=r'$\braket{dx^2+dy^2}')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title('Averaged RMSD, substrate only, d = %i nm' % spacing)
+plt.title('Averaged RMSD in bulk, d = %i nm' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_parallel_orthogonal)
@@ -735,7 +749,7 @@ plt.plot(times_single, averagedys, label=r'$<dy>$')
 plt.plot(times_single, averagedzs, label=r'$<dz>$')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Distance [in unit length]')
-plt.title(r'Averaged RMSD, substrate only, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.title(r'Averaged RMSD in bulk, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_dx_dy_dz)
@@ -744,22 +758,20 @@ plt.figure(figsize=(6,5))
 plt.plot(plotgammaagainst, sorted_gamma_avgs)
 plt.xlabel(r'Different runs')
 plt.ylabel(r'$\gamma = <\frac{R^2-dz^2}{R^2}>$')
-plt.title(r'RMSD, substrate only, $\gamma$; d = %i nm' % spacing)
+plt.title(r'RMSD in bulk, $\gamma$; d = %i nm' % spacing)
 plt.tight_layout()
 plt.savefig(plotname_gamma)
 
-
 plt.figure(figsize=(6,5))
-plt.plot(times_single_real, averageR2s_SI, ',', label='Average, substr.')
-plt.plot(times_single_real, fit_poly_SI, '--', label='Fit, average, substr.')
+plt.plot(times_single_real, averageR2s_SI, ',', label='Average, bulk')
+plt.plot(times_single_real, fit_poly_SI, '--', label='Fit, average, bulk')
 plt.xlabel(r'Time [s]')
 plt.ylabel(r'Distance$^2$ [m]')
-plt.title('RMSD, substrate only, d = %i nm, SI' % spacing)
+plt.title('RMSD in bulk, d = %i nm, SI' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.savefig(plotname_SI)
-
 
 plt.figure()
 plt.plot(times_single, averagevs, label=r'$<v>$')
@@ -770,21 +782,20 @@ plt.plot(times_single, averagevparallel, label=r'$<v_\parallel>$')
 plt.plot(times_single, averagevparallel_fake, label=r'$<v_x+v_y>$')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Velocity [in unit length/time]')
-plt.title('Averaged velocity, substrate only, system size by d = %i nm' % spacing)
+plt.title('Averaged velocity in bulk, system size by d = %i nm' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_velocity)
-
 
 plt.figure()
 plt.plot(times_single_real, averagevs_SI, label=r'$<v>$')
 plt.plot(times_single_real, averagevxs_SI, label=r'$<v_x>$')
 plt.plot(times_single_real, averagevys_SI, label=r'$<v_y>$')
 plt.plot(times_single_real, averagevzs_SI, label=r'$<v_z>$')
-plt.plot(times_single_real, averagevparallel_SI, label=r'$v_\parallel$')
+plt.plot(times_single_real, averagevparallel_SI, label=r'$<v_\parallel>$')
 plt.xlabel(r'Time [s]')
 plt.ylabel(r'Velocity [m/s]')
-plt.title('Averaged velocity, substrate only, system size by d = %i nm, SI' % spacing)
+plt.title('Averaged velocity in bulk, system size by d = %i nm, SI' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
@@ -798,7 +809,7 @@ plt.plot(times_single, averagevz2s, label=r'$<v_z^2>$')
 plt.plot(times_single, averagevparallel2, label=r'$<v_x^2+vy^2>$')
 plt.xlabel(r'Step number')
 plt.ylabel(r'Velocity [(length/time)$^2$]')
-plt.title('Averaged velocity with substr., d = %i nm' % spacing)
+plt.title('Averaged velocity in bulk, d = %i nm' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname_velocity_sq)
@@ -809,11 +820,12 @@ for i in range(Npartitions):
     plt.plot(time_walks_SI[i][:],average_walks_SI[i][:], label='Start at step %i' % startpoints[i])
 plt.xlabel(r'Time [s]')
 plt.ylabel(r'Distance$^2$ [m]')
-plt.title('RMSD, substrate only, system size by d = %i nm, SI, sectioning' % spacing)
+plt.title('RMSD in bulk, system size by d = %i nm, SI, sectioning' % spacing)
 plt.tight_layout()
 plt.legend(loc='upper left')
 plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.savefig(plotname_sectioned_average)
+
 
 print('averagedxs[-1]:',averagedxs[-1])
 print('averagedys[-1]:',averagedys[-1])
@@ -853,7 +865,7 @@ plt.figure()
 plt.plot(bincenters, bins_ht)
 plt.xlabel(r'$t_h$ [s]')
 plt.ylabel(r'Hits/$N_{sims}$')
-plt.title('$t_h$ in system size by d = %i nm, substrate only' % spacing)
+plt.title('$t_h$ in system size by d = %i nm' % spacing)
 plt.tight_layout()
 plt.savefig(plotname_th_hist)
 

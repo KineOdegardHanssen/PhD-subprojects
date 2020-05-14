@@ -23,7 +23,7 @@ Nbins = 20 # Bins for plotting distribution of testh_times
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 spacing = 10 #100
 psigma  = 1
-damp    = 20
+damp    = 10
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
 # Should divide into folders in a more thorough manner?
@@ -508,6 +508,12 @@ for i in range(Nsteps):
         averagedys[i]/=counter
         averagedzs[i]/=counter
         averagedparallel[i]/= counter
+        # Distance squared
+        averageR2s[i]/=counter
+        averagedx2s[i]/=counter
+        averagedy2s[i]/=counter
+        averagedz2s[i]/=counter
+        averagedparallel2[i]/= counter
         # Velocity
         averagevs[i]/=counter
         averagevxs[i]/=counter
@@ -515,6 +521,13 @@ for i in range(Nsteps):
         averagevzs[i]/=counter
         averagevparallel[i]/=counter
         averagevparallel_fake[i]/=counter
+        # Velocity squared
+        averagev2s[i]/=counter
+        averagevx2s[i]/=counter
+        averagevy2s[i]/=counter
+        averagevz2s[i]/=counter
+        averagevparallel2[i]/=counter
+
 
 # Sectioned walks
 for i in range(Npartitions):
