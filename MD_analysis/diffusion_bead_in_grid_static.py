@@ -32,7 +32,7 @@ Nplacements = 10#10
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 1
+spacing = 2
 psigma  = 1   #.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5

@@ -27,11 +27,11 @@ def rmsd(x,y):
     delta = np.sqrt(delta/(Nx-1))
     return delta
 #
-damp = 15
+damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 10
-psigma  = 1#.5
+spacing = 4
+psigma  = 3#.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
 print('spacing:', spacing)
@@ -140,7 +140,11 @@ averagedparallel2 = np.zeros(Nsteps) # Distances, squared
 average_counter   = np.zeros(Nsteps)
 average_walks     = copy.deepcopy(partition_walks)
 average_walks_SI  = copy.deepcopy(partition_walks)
-average_counters  = copy.deepcopy(partition_walks) # Okay, this name is confusing.
+average_walks_z2     = copy.deepcopy(partition_walks)
+average_walks_z2_SI  = copy.deepcopy(partition_walks)
+average_walks_p2     = copy.deepcopy(partition_walks)
+average_walks_p2_SI  = copy.deepcopy(partition_walks)
+average_counters     = copy.deepcopy(partition_walks) # Okay, this name is confusing.
 
 
 # Separated by seed:
@@ -292,7 +296,7 @@ for confignr in confignrs:
             y        = float(words[4])
             z        = float(words[5])
             positions.append(np.array([x,y,z]))
-            vx.append(float(words[6]))                       # Check the output format!!!!
+            vx.append(float(words[6]))
             vy.append(float(words[7]))
             vz.append(float(words[8]))
             counter+=1
@@ -456,6 +460,8 @@ for confignr in confignrs:
             rthis =  pos_inpolymer[part_start+j]
             drvec = rthis - rstart
             dr2   = np.dot(drvec,drvec)
+            dz2   = drvec[2]*drvec[2]
+            dpar2 = drvec[0]*drvec[0]+drvec[1]*drvec[1]
             '''
             print('part_start:',part_start, '; part_start+j:', part_start+j, ';   j:',j)
             print('rthis:',rthis)
@@ -464,6 +470,8 @@ for confignr in confignrs:
             print('dr2:', dr2)
             '''
             average_walks[i][j]    +=dr2#= average_walks[i][j] + dr2 # Notation? [i,j] or [i][j] # Ugh, and should I have one of these for R2, dx2, dy2 and dz2?
+            average_walks_z2[i][j] +=dz2
+            average_walks_p2[i][j] +=dpar2
             average_counters[i][j] +=1#= average_counters[i][j] + 1
             this_part.append(dr2)
             these_steps.append(j)
@@ -491,6 +499,8 @@ for confignr in confignrs:
 print('filescounter:', filescounter)
 maxz_av /= filescounter
 
+print('maxz_av:', maxz_av)
+
 newlen = len(gamma_avgs)
 
 allRs      = np.array(allRs)
@@ -516,10 +526,10 @@ single_slopes_sorted = np.zeros(newlen)
 vxi = vx[0]
 vyi = vy[0]
 vzi = vz[0]
-averagevs[0] = np.sqrt(vxi*vxi + vyi*vyi + vzi*vzi)
-averagevxs[0]= vxi
-averagevys[0]= vyi
-averagevzs[0]= vzi
+averagevs[0]  = np.sqrt(vxi*vxi + vyi*vyi + vzi*vzi)
+averagevxs[0] = vxi
+averagevys[0] = vyi
+averagevzs[0] = vzi
 averagevparallel[0] = np.sqrt(vxi*vxi+vyi*vyi)
 
 Ninbrush = Nsteps # Default, in case it does not exit the brush
@@ -585,7 +595,9 @@ for i in range(Npartitions):
     for j in range(lengths[i]):
         if average_counters[i][j]!=0:
             #print('Before division: Average_walks=', average_walks[i][j], '     average_counters=',average_counters[i][j])
-            average_walks[i][j]/=average_counters[i][j]
+            average_walks[i][j]   /=average_counters[i][j]
+            average_walks_z2[i][j]/=average_counters[i][j]
+            average_walks_p2[i][j]/=average_counters[i][j]
             #print('After division: Average_walks=', average_walks[i][j], '     average_counters=',average_counters[i][j])
 
 if Nseeds<12:
@@ -632,7 +644,7 @@ D_poly_av = a_poly_av/6.
  
 fit_poly_av = a_poly_av*times_single+b_poly_av
 
-
+'''
 print('Fit, all data:')
 print('b_poly (should be small):', b_poly)
 print('D_poly:', D_poly)
@@ -640,6 +652,7 @@ print('D_poly:', D_poly)
 print('Fit, average:')
 print('b_poly (should be small):', b_poly_av)
 print('D_poly:', D_poly_av)
+'''
 
 ## Average, SI units:
 # Distance:
@@ -655,8 +668,8 @@ averagevys_SI = averagevys*unitlength/timestepsize
 averagevzs_SI = averagevzs*unitlength/timestepsize
 averagevparallel_SI = averagevparallel*unitlength/timestepsize
 
-print('----------------------------------')
-print(' averageR2s_SI[2]:', averageR2s_SI[2])
+#print('----------------------------------')
+#print(' averageR2s_SI[2]:', averageR2s_SI[2])
 
 coeffs_poly, covs = polyfit(times_single_real, averageR2s_SI, 1, full=False, cov=True) # Using all the data in the fit # Should probably cut the first part, but I don't know how much to include
 a_poly_SI = coeffs_poly[0]
@@ -665,14 +678,14 @@ rms_D_poly_SI = np.sqrt(covs[0,0])/6.
 rms_b_poly_SI = np.sqrt(covs[1,1])
 D_poly_SI = a_poly_SI/6.
 
-print(' averageR2s_SI[2]:', averageR2s_SI[2])
+#print(' averageR2s_SI[2]:', averageR2s_SI[2])
 
-print('----------------------------------')
+#print('----------------------------------')
 fit_poly_SI = a_poly_SI*times_single_real+b_poly_SI
 
-print('Fit, average, SI:')
-print('b_poly (should be small):', b_poly_SI)
-print('D_poly:', D_poly_SI)
+#print('Fit, average, SI:')
+#print('b_poly (should be small):', b_poly_SI)
+#print('D_poly:', D_poly_SI)
 
 # Do not perform fit here:
 '''
@@ -692,11 +705,37 @@ xpos = []
 ypos = []
 zpos = []
 
-for i in range(Nin):
-    pos= positions[i]
-    xpos.append(pos[0])
-    ypos.append(pos[1])
-    zpos.append(pos[2])
+outfilename_xoft     = endlocation+'xoft_config%i.txt' % confignr
+outfilename_yoft     = endlocation+'yoft_config%i.txt' % confignr
+outfilename_zoft     = endlocation+'zoft_config%i.txt' % confignr
+
+
+outfile_xoft = open(outfilename_xoft,'w')
+outfile_yoft = open(outfilename_yoft,'w')
+outfile_zoft = open(outfilename_zoft,'w')
+
+print('len(positions):',len(positions))
+print('len(times_single):',len(times_single))
+'''# I still have some trouble when I don't have enough files (maybe when the last one is not made yet?)
+Nloop = len(positions)
+if len(times_single)<Nloop:
+    Nloop = len(times_single)
+'''
+for i in range(len(times_single)):
+    pos = positions[i]
+    xthis = pos[0]
+    ythis = pos[1]
+    zthis = pos[2]
+    xpos.append(xthis)
+    ypos.append(ythis)
+    zpos.append(zthis)
+    outfile_xoft.write('%i %.16f\n' % (times_single[i],xthis))
+    outfile_yoft.write('%i %.16f\n' % (times_single[i],ythis))
+    outfile_zoft.write('%i %.16f\n' % (times_single[i],zthis))
+outfile_xoft.close()
+outfile_yoft.close()
+outfile_zoft.close()
+
 
 
 # Trajectory in plane
@@ -754,10 +793,12 @@ outfile_sections = open(outfilename_sections, 'w')
 for i in range(Npartitions):
     outfile_sections.write('Section %i\n' % i) # When reading from the file afterwards, I can extract the section number by if words[0]=='Section' and use that to divide the data into sections
     for j in range(lengths[i]):
-        average_walks_SI[i][j] = average_walks[i][j]*unitlength 
-        time_walks_SI[i][j]    = steps[i][j]*timestepsize
+        average_walks_SI[i][j]    = average_walks[i][j]*unitlength 
+        average_walks_z2_SI[i][j] = average_walks_z2[i][j]*unitlength 
+        average_walks_p2_SI[i][j] = average_walks_p2[i][j]*unitlength 
+        time_walks_SI[i][j]       = steps[i][j]*timestepsize
         #print('time_walks_SI[i][j]:', time_walks_SI[i][j], ': steps[i][j]:',steps[i][j], ';   timestepsize:',timestepsize, '; steps[i][j]*timestepsize:', steps[i][j]*timestepsize)
-        outfile_sections.write('%.16f %16.f\n' % (time_walks_SI[i][j],average_walks_SI[i][j]))
+        outfile_sections.write('%.16f %.16f %.16f %.16f\n' % (time_walks_SI[i][j],average_walks_SI[i][j],average_walks_p2_SI[i][j],average_walks_z2_SI[i][j]))
 outfile_sections.close()
 
 
@@ -1002,9 +1043,9 @@ plt.legend(loc='upper left')
 plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.savefig(plotname_sectioned_average_vs_steps)
 
-plotname_sectioned_average_vs_steps
+#plotname_sectioned_average_vs_steps
 
-print('counters:',average_counter)
+#print('counters:',average_counter)
 
 print('spacing:', spacing)
 print('psigma:', psigma)

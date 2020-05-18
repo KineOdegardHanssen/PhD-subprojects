@@ -27,7 +27,7 @@ def rmsd(x,y):
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 psigma   = 1 # For instance 
-spacings = np.array([3,5,8,10])#np.array([3,4,5,6,7,10,15,25,50,75,100])#np.array([5, 10]) # Will add d=100 to this list soon. Need even more points too.
+spacings = np.array([1,2,3,5,8,10,100])#np.array([3,4,5,6,7,10,15,25,50,75,100])#np.array([5, 10]) # Will add d=100 to this list soon. Need even more points too.
 pmass    = 1 # I don't use this anymore, but it got stuck in the file names. Have constant mass density now.
 damp     = 10
 N        = len(spacings)
@@ -91,8 +91,8 @@ indexfile.write('Start_index_R     end_index_R     Start_index_ort     end_index
 
 for i in range(N):
     spacing = spacings[i]
-    basepath        = basepath_base+'Spacing%i/' % spacing
-    endlocation_in     = basepath + 'Results/'
+    basepath        = basepath_base+'Spacing%i/Radius' % spacing + str(psigma) + '/'
+    endlocation_in  = basepath + 'Results/'
     
     infilename = endlocation_in+'diffusion'+filestext+'.txt' #_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
     metaname   = endlocation_in+'diffusion_metadata'+filestext+'.txt' # In original file set as:  endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_metadata.txt'
@@ -150,7 +150,6 @@ outfile.close()
 
     
 plt.figure(figsize=(6,5))
-#plt.errorbar(psigmas, DRs, yerr=DRs_stdv, capsize=2, fmt='none', label=r'$D_R$')
 plt.errorbar(spacings, DRs, yerr=DRs_stdv, capsize=2, label=r'$D_R$')
 plt.errorbar(spacings, Dzs, yerr=Dzs_stdv, capsize=2, label=r'$D_\perp$')
 plt.errorbar(spacings, Dparallel, yerr=Dparallel_stdv, capsize=2, label=r'$D_\parallel$')

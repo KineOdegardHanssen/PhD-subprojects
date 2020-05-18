@@ -14,14 +14,14 @@ import os
 import glob
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-bulkdiffusion = True#False
+bulkdiffusion = False#False
 substrate     = False
-cutit         = True
+cutit         = False
 maxh          = 55.940983199999756
 
 #spacing = 7
-spacings = [10]#[3,4,5,7,10,15,25]
-psigma   = 1
+spacings = [4]#[3,4,5,7,10,15,25]
+psigma   = 3
 damp     = 10
 
 Nsteps = 2001

@@ -17,7 +17,7 @@ bulkdiffusion = False #False
 substrate     = False
 
 #spacing = 7
-spacings = [3,5,8,10]#[3,4,5,7,10,15,25]
+spacings = [1]#[3,5,8,10]#[3,4,5,7,10,15,25]
 psigma   = 1         # So far, we need to treat one and one sigma.
 damp     = 10
 

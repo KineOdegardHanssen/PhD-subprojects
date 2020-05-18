@@ -98,7 +98,7 @@ Dparallel_stdv_bulk = float(words[9])
 bulkfile.close()
 
 lines = brushfile.readlines()
-N = len(lines)
+N = len(lines)-1
 
 # ds
 spacings = np.zeros(N)
@@ -142,39 +142,40 @@ Dys_stdv_ud = np.zeros(N)
 Dzs_stdv_ud = np.zeros(N)
 Dparallel_stdv_ud = np.zeros(N)
 
-for i in range(1,N):
+for i in range(1,N+1):
     words = lines[i].split()
+    j = i-1
     
-    spacings[i] = float(words[0])
-    DRs[i] = float(words[1])/DRs_bulk
-    Dzs[i] = float(words[5])/Dzs_bulk
-    Dparallel[i] = float(words[9])/Dparallel_bulk
+    spacings[i-1] = float(words[0])
+    DRs[i-1] = float(words[1])/DRs_bulk
+    Dzs[i-1] = float(words[5])/Dzs_bulk
+    Dparallel[i-1] = float(words[9])/Dparallel_bulk
     # Ds, stdv
-    DRs_stdv[i] = abs(DRs_bulk)*np.sqrt((float(words[2])/DRs[i])**2+(DRs_stdv_bulk/DRs_bulk)**2)
-    Dzs_stdv[i] = abs(Dzs_bulk)*np.sqrt((float(words[6])/Dzs[i])**2+(Dzs_stdv_bulk/Dzs_bulk)**2)
-    Dparallel_stdv[i] = abs(Dparallel_bulk)*np.sqrt((float(words[10])/Dparallel[i])**2+(Dparallel_stdv_bulk/Dparallel_bulk)**2)
+    DRs_stdv[i-1] = abs(DRs_bulk)*np.sqrt((float(words[2])/DRs[i-1])**2+(DRs_stdv_bulk/DRs_bulk)**2)
+    Dzs_stdv[i-1] = abs(Dzs_bulk)*np.sqrt((float(words[6])/Dzs[i-1])**2+(Dzs_stdv_bulk/Dzs_bulk)**2)
+    Dparallel_stdv[i-1] = abs(Dparallel_bulk)*np.sqrt((float(words[10])/Dparallel[i-1])**2+(Dparallel_stdv_bulk/Dparallel_bulk)**2)
     
     # v2
-    DRs_v2[i] = float(words[1])/DRs_bulk
-    Dzs_v2[i] = float(words[5])/DRs_bulk
-    Dparallel_v2[i] = float(words[9])/DRs_bulk
+    DRs_v2[i-1] = float(words[1])/DRs_bulk
+    Dzs_v2[i-1] = float(words[5])/DRs_bulk
+    Dparallel_v2[i-1] = float(words[9])/DRs_bulk
     # Ds, stdv
-    DRs_stdv_v2[i] = abs(DRs_bulk)*np.sqrt((float(words[2])/DRs_v2[i])**2+(DRs_stdv_bulk/DRs_bulk)**2)
-    Dzs_stdv_v2[i] = abs(DRs_bulk)*np.sqrt((float(words[6])/Dzs_v2[i])**2+(DRs_stdv_bulk/DRs_bulk)**2)
-    Dparallel_stdv_v2[i] = abs(DRs_bulk)*np.sqrt((float(words[10])/Dparallel_v2[i])**2+(DRs_stdv_bulk/DRs_bulk)**2)
+    DRs_stdv_v2[i-1] = abs(DRs_bulk)*np.sqrt((float(words[2])/DRs_v2[i-1])**2+(DRs_stdv_bulk/DRs_bulk)**2)
+    Dzs_stdv_v2[i-1] = abs(DRs_bulk)*np.sqrt((float(words[6])/Dzs_v2[i-1])**2+(DRs_stdv_bulk/DRs_bulk)**2)
+    Dparallel_stdv_v2[i-1] = abs(DRs_bulk)*np.sqrt((float(words[10])/Dparallel_v2[i-1])**2+(DRs_stdv_bulk/DRs_bulk)**2)
     
     # Undivided
-    DRs_ud[i] = float(words[1])
-    Dzs_ud[i] = float(words[5])
-    Dparallel_ud[i] = float(words[9])
+    DRs_ud[i-1] = float(words[1])
+    Dzs_ud[i-1] = float(words[5])
+    Dparallel_ud[i-1] = float(words[9])
     # Ds, stdv
-    DRs_stdv_ud[i] = float(words[2])
-    Dzs_stdv_ud[i] = float(words[6])
-    Dparallel_stdv_ud[i] = float(words[10])
+    DRs_stdv_ud[i-1] = float(words[2])
+    Dzs_stdv_ud[i-1] = float(words[6])
+    Dparallel_stdv_ud[i-1] = float(words[10])
     
-    outfile.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacings[i], DRs[i], DRs_stdv[i], Dzs[i], Dzs_stdv[i], Dparallel[i], Dparallel_stdv[i]))
-    outfile_2.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacings[i], DRs_v2[i], DRs_stdv_v2[i], Dzs_v2[i], Dzs_stdv_v2[i], Dparallel_v2[i], Dparallel_stdv_v2[i]))
-    outfile_3.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacings[i], DRs_ud[i], DRs_stdv_ud[i], Dzs_ud[i], Dzs_stdv_ud[i], Dparallel_ud[i], Dparallel_stdv_ud[i]))
+    outfile.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacings[j], DRs[j], DRs_stdv[j], Dzs[j], Dzs_stdv[j], Dparallel[j], Dparallel_stdv[j]))
+    outfile_2.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacings[j], DRs_v2[j], DRs_stdv_v2[j], Dzs_v2[j], Dzs_stdv_v2[j], Dparallel_v2[j], Dparallel_stdv_v2[j]))
+    outfile_3.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacings[j], DRs_ud[j], DRs_stdv_ud[j], Dzs_ud[j], Dzs_stdv_ud[j], Dparallel_ud[j], Dparallel_stdv_ud[j]))
 
 
 outfile.close()

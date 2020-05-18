@@ -26,8 +26,8 @@ def rmsd(x,y):
     return delta
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacings   = np.array([3,5,8,10])#np.array([3,4,5,6,7,10,15,25,50,75,100])#np.array([5, 10]) # Will add d=100 to this list soon. Need even more points too.
-sigmas     = np.array([1,1,1,1])
+spacings   = np.array([1,2,3,5,8,10,100])#np.array([3,4,5,6,7,10,15,25,50,75,100])#np.array([5, 10]) # Will add d=100 to this list soon. Need even more points too.
+sigmas     = np.array([1,1,1,1,1,1,1])
 N          = len(spacings)
 ddivsigmas = np.zeros(N)
 pmass      = 1 # I don't use this anymore, but it got stuck in the file names. Have constant mass density now.
