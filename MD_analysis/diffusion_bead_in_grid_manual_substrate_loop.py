@@ -30,8 +30,8 @@ def rmsd(x,y):
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 4
-psigma  = 3#.5
+spacing = 10
+psigma  = 1#.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
 print('spacing:', spacing)
@@ -80,6 +80,8 @@ outfilename_gamma    = endlocation+'zimportance_'+filestext+'.txt'              
 outfilename_sections = endlocation+'sections_'+filestext+'.txt'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_sections.txt'
 outfilename_maxz     = endlocation+'maxz_az_'+filestext+'.txt'
 outfilename_dt       = endlocation+'dt.txt'
+outfilename_cuts     = endlocation+'cuts.txt'
+outfilename_skippedfiles = endlocation+'skippedfiles.txt'
 
 # Plots
 plotname             = endlocation+filestext+'.png'                                 #'lammpsdiffusion_qdrgr_'+namebase+filestext+'.png'
@@ -167,6 +169,11 @@ alltimes  = []
 
 skippedfiles = 0
 
+outfile_cuts = open(outfilename_cuts, 'w')
+outfile_cuts.write('confignr time_cut\n')
+
+outfile_skippedfiles = open(outfilename_skippedfiles, 'w')
+
 for confignr in confignrs:
     print('On config number:', confignr)
     infilename_all  = endlocation+'all_confignr'+str(confignr)+'.lammpstrj'      #endlocation+'all_density'+str(density)+'_confignr'+str(confignr)+'.lammpstrj'
@@ -183,6 +190,7 @@ for confignr in confignrs:
         infile_all = open(infilename_all, "r")
     except:
         print('Oh, lammpstrj-file! Where art thou?')
+        outfile_skippedfiles.write('%i\n' % confignr)
         skippedfiles += 1
         continue # Skipping this file if it does not exist
     # Moving on, if the file
@@ -322,6 +330,7 @@ for confignr in confignrs:
         thesepos = positions[i]
         z        = thesepos[2]
         if z>extent_polymers: # If the polymer is in bulk # We don't want it to go back and forth between brush and bulk # That will cause discontinuities in our data
+            outfile_cuts.write('%i %i\n' % (confignr, i))
             break
         else:
             pos_inpolymer.append(thesepos)
@@ -495,6 +504,9 @@ for confignr in confignrs:
     #partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
     #time_afterpartition = time.process_time()
     #print('Time, partitioning:',time_afterpartition-time_beforepartition)
+
+outfile_cuts.close()
+outfile_skippedfiles.close()
 
 print('filescounter:', filescounter)
 maxz_av /= filescounter
