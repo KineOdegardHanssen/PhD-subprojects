@@ -32,7 +32,8 @@ damp     = 10
 # Input booleans for file selection:
 bulkdiffusion = False
 substrate     = False
-moresigmas    = True
+moresigmas    = False
+big           = True
 confignrs     = np.arange(1,1001)
 filestext     = '_seed'+str(confignrs[0])+'to'+str(confignrs[-1])
 
@@ -47,9 +48,12 @@ endlocation_static = basepath_base+'D_vs_d/'
 brushfilename_dyn  = endlocation + 'D_vs_d.txt'
 brushfilename_stat = endlocation_static + 'D_vs_d_static.txt'
 ## Files to write to
-plotname     = endlocation_static+'Dd_dyn_vs_stat.png'
-plotname_cut = endlocation_static+'Dd_dyn_vs_stat_cut.png'
-
+if big==False:
+    plotname     = endlocation_static+'Dd_dyn_vs_stat.png'
+    plotname_cut = endlocation_static+'Dd_dyn_vs_stat_cut.png'
+else:
+    plotname     = endlocation_static+'Dd_dyn_vs_stat_big.png'
+    plotname_cut = endlocation_static+'Dd_dyn_vs_stat_cut_big.png'
 
 # Dynamic sims:
 brushfile_dyn = open(brushfilename_dyn, 'r')
@@ -125,49 +129,125 @@ for i in range(1,N_stat+1):
     
 brushfile_stat.close()
 
-
-plt.figure(figsize=(6,5))
-plt.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, capsize=2, label=r'$D_R$, dyn.')
-plt.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, capsize=2, label=r'$D_\perp$, dyn.')
-plt.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, capsize=2, label=r'$D_\parallel$, dyn.')
-plt.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, capsize=2, label=r'$D_R$, stat.')
-plt.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, capsize=2, label=r'$D_\perp$, stat.')
-plt.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, capsize=2, label=r'$D_\parallel$, stat.')
-if moresigmas==True:
-    plt.xlabel(r'$d/\sigma_b$')
+if big==False:
+    plt.figure(figsize=(8,5))
+    ax = plt.subplot(111)
+    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, capsize=2, label=r'$D_R$, dyn.')
+    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, capsize=2, label=r'$D_\perp$, dyn.')
+    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, capsize=2, label=r'$D_\parallel$, dyn.')
+    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, capsize=2, label=r'$D_R$, stat.')
+    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, capsize=2, label=r'$D_\perp$, stat.')
+    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, capsize=2, label=r'$D_\parallel$, stat.')
+    if moresigmas==True:
+        plt.xlabel(r'$d/\sigma_b$')
+    else:
+        plt.xlabel(r'$d$')
+    plt.ylabel(r'Diffusion constant $D$')
+    if moresigmas==True:
+        plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', y=1.03)
+    else:
+        plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', y=1.03)
+    #
+    ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+    #           ncol=2, mode="expand", borderaxespad=0.)
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    #plt.legend(loc='upper left')
+    #leg = plt.legend()
+    # get the individual lines inside legend and set line width
+    #for line in leg.get_lines():
+    #    line.set_linewidth(4)
 else:
-    plt.xlabel(r'$d$')
-plt.ylabel(r'Diffusion constant $D$')
-
-if moresigmas==True:
-    plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes')
-else:
-    plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes')
-plt.tight_layout()
-plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-plt.legend(loc='upper left')
+    plt.figure(figsize=(16,10))
+    plt.rc('xtick', labelsize=20) 
+    plt.rc('ytick', labelsize=20) 
+    ax = plt.subplot(111)
+    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_R$, dyn.')
+    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_\perp$, dyn.')
+    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
+    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_R$, stat.')
+    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_\perp$, stat.')
+    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_\parallel$, stat.')
+    if moresigmas==True:
+        plt.xlabel(r'$d/\sigma_b$', fontsize=20)
+    else:
+        plt.xlabel(r'$d$', fontsize=20)
+    plt.ylabel(r'Diffusion constant $D$', fontsize=20)
+    if moresigmas==True:
+        plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', fontsize=28, y=1.03)
+    else:
+        plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', fontsize=28, y=1.03)
+    #
+    ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+    #           ncol=2, mode="expand", borderaxespad=0.)
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0., prop={'size': 20})
+    #plt.legend(loc='upper left')
+    #leg = plt.legend()
+    # get the individual lines inside legend and set line width
+    #for line in leg.get_lines():
+    #    line.set_linewidth(4)
 plt.savefig(plotname)
 
-plt.figure(figsize=(6,5))
-plt.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, capsize=2, label=r'$D_R$, dyn.')
-plt.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, capsize=2, label=r'$D_\perp$, dyn.')
-plt.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, capsize=2, label=r'$D_\parallel$, dyn.')
-plt.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, capsize=2, label=r'$D_R$, stat.')
-plt.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, capsize=2, label=r'$D_\perp$, stat.')
-#plt.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, capsize=2, label=r'$D_\parallel$, stat.')
-if moresigmas==True:
-    plt.xlabel(r'$d/\sigma_b$')
+if big==False:
+    plt.figure(figsize=(6.4,5))
+    ax = plt.subplot(111)
+    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, capsize=2, label=r'$D_R$, dyn.')
+    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, capsize=2, label=r'$D_\perp$, dyn.')
+    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, capsize=2, label=r'$D_\parallel$, dyn.')
+    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, capsize=2, label=r'$D_R$, stat.')
+    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, capsize=2, label=r'$D_\perp$, stat.')
+    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, capsize=2, label=r'$D_\parallel$, stat.')
+    #plt.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, capsize=2, label=r'$D_\parallel$, stat.')
+    if moresigmas==True:
+        plt.xlabel(r'$d/\sigma_b$')
+    else:
+        plt.xlabel(r'$d$')
+    plt.ylabel(r'Diffusion constant $D$')
+    if moresigmas==True:
+        plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes',  y=1.03)
+    else:
+        plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', y=1.03)
+    ax.axis([0,10,0,6e-7])
+    #plt.tight_layout()
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+    #           ncol=2, mode="expand", borderaxespad=0.)
+    #box = ax.get_position()
+    #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    #ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    #plt.legend(loc='upper left')
 else:
-    plt.xlabel(r'$d$')
-plt.ylabel(r'Diffusion constant $D$')
-
-if moresigmas==True:
-    plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes')
-else:
-    plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes')
-plt.axis([0,10,0,6e-7])
-plt.tight_layout()
-plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-plt.legend(loc='upper left')
+    plt.figure(figsize=(12.8,10))
+    ax = plt.subplot(111)
+    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_R$, dyn.')
+    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_\perp$, dyn.')
+    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
+    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_R$, stat.')
+    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_\perp$, stat.')
+    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_\parallel$, stat.')
+    #plt.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, capsize=2, label=r'$D_\parallel$, stat.')
+    if moresigmas==True:
+        plt.xlabel(r'$d/\sigma_b$', fontsize=20)
+    else:
+        plt.xlabel(r'$d$', fontsize=20)
+    plt.ylabel(r'Diffusion constant $D$', fontsize=20)
+    if moresigmas==True:
+        plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', fontsize=28,  y=1.03)
+    else:
+        plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', fontsize=28, y=1.03)
+    ax.axis([0,10,0,6e-7])
+    #plt.tight_layout()
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+    #           ncol=2, mode="expand", borderaxespad=0.)
+    #box = ax.get_position()
+    #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    #ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    #plt.legend(loc='upper left')
 plt.savefig(plotname_cut)
 
