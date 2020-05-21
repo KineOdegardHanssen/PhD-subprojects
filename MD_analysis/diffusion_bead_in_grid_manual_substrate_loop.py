@@ -30,7 +30,7 @@ def rmsd(x,y):
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 10
+spacing = 100
 psigma  = 1#.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -81,6 +81,7 @@ outfilename_sections = endlocation+'sections_'+filestext+'.txt'                 
 outfilename_maxz     = endlocation+'maxz_az_'+filestext+'.txt'
 outfilename_dt       = endlocation+'dt.txt'
 outfilename_cuts     = endlocation+'cuts.txt'
+outfilename_noexit   = endlocation+'noexitzs.txt'
 outfilename_skippedfiles = endlocation+'skippedfiles.txt'
 
 # Plots
@@ -170,7 +171,10 @@ alltimes  = []
 skippedfiles = 0
 
 outfile_cuts = open(outfilename_cuts, 'w')
-outfile_cuts.write('confignr time_cut\n')
+outfile_cuts.write('confignr time_cut zs\n')
+
+outfile_noexit = open(outfilename_noexit,'w')
+outfile_noexit.write('confignr zs\n')
 
 outfile_skippedfiles = open(outfilename_skippedfiles, 'w')
 
@@ -326,18 +330,29 @@ for confignr in confignrs:
     
     Nin   = 0
     maxzpol = 0
+    brokenthis = 0
     for i in range(counter):
         thesepos = positions[i]
         z        = thesepos[2]
         if z>extent_polymers: # If the polymer is in bulk # We don't want it to go back and forth between brush and bulk # That will cause discontinuities in our data
-            outfile_cuts.write('%i %i\n' % (confignr, i))
+            brokenthis = 1
+            outfile_cuts.write('%i %i ' % (confignr, i)) # Jubileum
+            for iex in range(Nin): # Ugh, stupid loop structure... 
+                posnow = positions[iex] 
+                outfile_cuts.write('%.16e ' % posnow[2])
+            outfile_cuts.write('\n')
             break
         else:
             pos_inpolymer.append(thesepos)
             if z>maxzpol:
                 maxzpol = z
             Nin+=1
-    
+    if brokenthis==0:
+        outfile_noexit.write('%i ' % confignr) 
+        for inoex in range(Nin):
+            posnow = positions[inoex] 
+            outfile_noexit.write('%.16e ' % posnow[2])
+        outfile_noexit.write('\n')
     startpos_in   = pos_inpolymer[0]
     #######
     # Will divide into several walks with different starting points later on
@@ -506,6 +521,7 @@ for confignr in confignrs:
     #print('Time, partitioning:',time_afterpartition-time_beforepartition)
 
 outfile_cuts.close()
+outfile_noexit.close()
 outfile_skippedfiles.close()
 
 print('filescounter:', filescounter)
