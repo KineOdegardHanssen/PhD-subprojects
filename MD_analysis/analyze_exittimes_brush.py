@@ -5,7 +5,7 @@ import math
 
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 10
+spacing = 100
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)
@@ -30,6 +30,7 @@ filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 # Text files
 infilename_ds       = endlocation+'av_ds_'+filestext+'.txt'                        #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_av_ds.txt'
 infilename_cuts     = endlocation+'cuts.txt'
+infilename_noexits  = endlocation+'noexitzs.txt'
 
 # Plots
 plotname             = endlocation+'par_ort_beginning_'+filestext+'_wcuttimes.png'                                 #'lammpsdiffusion_qdrgr_'+namebase+filestext+'.png'
@@ -68,7 +69,16 @@ dy2       = np.array(dy2)
 dz2       = np.array(dz2)
 dpar2     = np.array(dpar2)
 
-#
+# For generating averages:
+# Accumulation
+averagez_noexit = np.zeros(Nsteps)
+averagez_exit   = np.zeros(Nsteps)
+averagez_all    = np.zeros(Nsteps)
+# Counter
+counter_noexit  = np.zeros(Nsteps)
+counter_exit    = np.zeros(Nsteps)
+
+# Data from cut trajectories
 infile_cuts = open(infilename_cuts, 'r')
 firstline   = infile_cuts.readline()
 
@@ -76,18 +86,82 @@ firstline   = infile_cuts.readline()
 #  [0]       [1]   [2]     [3]    [4]      [5]       [6]
 configs  = []
 cuttimes = []
+runtimes = []
+ztrajs   = []
+runtimes_flat = []
+ztrajs_flat   = []
 
 lines = infile_cuts.readlines()
 
 for line in lines:
     words = line.split()
+    lenwords = len(words)
     configs.append(int(words[0]))
     cuttimes.append(float(words[1]))
+    # z-coords.:
+    ztrajs_this   = []
+    runtimes_this = []
+    for i in range(2,len(words)):
+        zthis = float(words[i])
+        thisi = i-2
+        ztrajs_this.append(zthis)
+        runtimes_this.append(thisi)
+        ztrajs_flat.append(zthis)
+        runtimes_flat.append(thisi)
+        # For averages:
+        averagez_exit[thisi] += zthis
+        counter_exit[thisi]  += 1
+    runtimes.append(runtimes_this)
+    ztrajs.append(ztrajs_this)
 infile_cuts.close()
 
 configs  = np.array(configs)  # Do I even need the configs?
 cuttimes = np.array(cuttimes)
 
+## Data from uncut trajectories
+infile_noexits = open(infilename_noexits, 'r')
+firstline      = infile_noexits.readline()
+
+configs_noexit = []
+runtimes_noexit = []
+ztrajs_noexit   = []
+runtimes_flat_noexit = []
+ztrajs_flat_noexit   = []
+
+lines = infile_noexits.readlines()
+
+for line in lines:
+    words = line.split()
+    lenwords = len(words)
+    configs_noexit.append(int(words[0]))
+    # z-coords.:
+    ztrajs_this   = []
+    runtimes_this = []
+    for i in range(1,len(words)):
+        zthis = float(words[i])
+        thisi = i-1
+        ztrajs_this.append(zthis)
+        runtimes_this.append(thisi)
+        ztrajs_flat_noexit.append(zthis)
+        runtimes_flat_noexit.append(thisi)
+        # For averages:
+        averagez_noexit[thisi] += zthis
+        counter_noexit[thisi]  += 1      # Not sure I really need this, but...
+    runtimes_noexit.append(runtimes_this)
+    ztrajs_noexit.append(ztrajs_this)
+infile_cuts.close()
+
+configs_noexit  = np.array(configs_noexit)  # Do I even need the configs?
+
+# Generating averages
+
+
+for i in range(Nsteps):
+    averagez_all[i] = (averagez_exit[i]+averagez_noexit[i])/(counter_noexit[i]+counter_exit[i])
+    if counter_exit[i]!=0:
+        averagez_exit[i]   /= counter_exit[i]
+    if counter_noexit[i]!=0:
+        averagez_noexit[i] /= counter_noexit[i]
 
 ## To determine the range
 # Interactive
@@ -103,6 +177,36 @@ plt.title(r'RMSD in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 #plt.show()
+
+
+plt.figure(figsize=(6,5))
+plt.plot(runtimes_flat, ztrajs_flat, ',', label=r'Exits')
+plt.plot(runtimes_flat_noexit, ztrajs_flat_noexit, ',', label=r'Does not exit')
+plt.xlabel(r'Index (s)')
+plt.ylabel(r'$dz^2$ [in unit length]')
+plt.title(r'$dz^2$, exit vs no exit, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.tight_layout()
+plt.legend(loc='upper left')
+
+plt.figure(figsize=(6,5))
+plt.plot(timesteps, averagez_exit, label=r'Exits')
+plt.plot(timesteps, averagez_noexit, label=r'Does not exit')
+plt.plot(timesteps, averagez_all, label=r'All')
+plt.xlabel(r'Index (s)')
+plt.ylabel(r'$<dz^2>$ [in unit length]')
+plt.title(r'$<dz^2>$, exit vs no exit, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.tight_layout()
+plt.legend(loc='upper left')
+
+plt.figure(figsize=(6,5))
+plt.plot(timesteps, counter_exit, label=r'Exits')
+#plt.plot(timesteps, counter_noexit, label=r'Does not exit')
+plt.xlabel(r'Index (s)')
+plt.ylabel(r'Number of configs')
+plt.title(r'Configs exited, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.tight_layout()
+plt.legend(loc='upper left')
+
 
 # Saving
 '''
@@ -128,7 +232,6 @@ plt.xlabel(r'Exit time (Time of cut)')
 plt.ylabel(r'Number of exits')
 plt.title(r'Histogram of exit times, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
-plt.show()
 
 plt.figure(figsize=(6,5))
 plt.hist(cuttimes, bins=100, cumulative=True)
