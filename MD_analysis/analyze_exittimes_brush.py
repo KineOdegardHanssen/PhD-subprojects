@@ -28,21 +28,27 @@ minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 print('timestepsize:', timestepsize)
 
 endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Brush/Sigma_bead_' % (spacing,damp)+str(psigma) + '/'
+endlocation_nocuts   = endlocation + 'Nocut/'
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 storelocation        = endlocation + 'Exitanalysis/'
 
-# Plot names (in case we store the plots)
+## Plot names (in case we store the plots)
 plotname_d2s               = storelocation + 'd2s.png'
 plotname_ztrajs_exitvsnot  = storelocation + 'ztrajs_exitvsnot.png'
 plotname_ztrajs_average    = storelocation + 'ztrajs_average.png'
 plotname_counters          = storelocation + 'counters.png'
 plotname_histogram         = storelocation + 'histogram.png'
 plotname_histogram_cumul   = storelocation + 'histogram_cumul.png'
+# Plots from entire trajectories
+plotname_ztrajs_exitvsnot_all   = storelocation + 'ztrajs_exitvsnot_all.png'
+plotname_R2trajs_exitvsnot_all  = storelocation + 'R2trajs_exitvsnot_all.png'
 
-# Text files
+## Text files
 infilename_ds       = endlocation+'av_ds_'+filestext+'.txt'                        #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_av_ds.txt'
 infilename_cuts     = endlocation+'cuts.txt'
 infilename_noexits  = endlocation+'noexitzs.txt'
+infilename_allzs    = endlocation_nocuts + 'zs_all.txt'
+infilename_allR2s   = endlocation_nocuts + 'R2s_all.txt'
 
 # Plots
 plotname             = endlocation+'par_ort_beginning_'+filestext+'_wcuttimes.png'                                 #'lammpsdiffusion_qdrgr_'+namebase+filestext+'.png'
@@ -127,7 +133,7 @@ for line in lines:
     ztrajs.append(ztrajs_this)
 infile_cuts.close()
 
-configs  = np.array(configs)  # Do I even need the configs?
+#configs  = np.array(configs)  # Do I even need the configs?
 cuttimes = np.array(cuttimes)
 
 ## Data from uncut trajectories
@@ -163,7 +169,7 @@ for line in lines:
     ztrajs_noexit.append(ztrajs_this)
 infile_cuts.close()
 
-configs_noexit  = np.array(configs_noexit)  # Do I even need the configs?
+#configs_noexit  = np.array(configs_noexit)  # Do I even need the configs?
 
 # Generating averages
 
@@ -174,6 +180,51 @@ for i in range(Nsteps):
         averagez_exit[i]   /= counter_exit[i]
     if counter_noexit[i]!=0:
         averagez_noexit[i] /= counter_noexit[i]
+
+
+### No cuts:
+## z's:
+
+infile_allzs = open(infilename_allzs, 'r')
+lines = infile_allzs.readlines()
+
+# We have configs and configs_noexit
+fulltrajs_z_exits   = []
+fulltrajs_z_noexits = []
+fulltimes_exits     = []
+fulltimes_noexits   = []
+
+for line in lines:
+    words = line.split()
+    config = int(words[0])
+    if configs.count(config)>0:
+        for i in range(1,len(words)):
+            fulltrajs_z_exits.append(float(words[i]))
+            fulltimes_exits.append(i-1)
+    else:
+        for i in range(1,len(words)):
+            fulltrajs_z_noexits.append(float(words[i]))
+            fulltimes_noexits.append(i-1)
+
+infile_allzs.close()
+
+## R2's:
+infile_allR2s = open(infilename_allR2s, 'r')
+lines = infile_allR2s.readlines()
+
+fulltrajs_R2_exits   = []
+fulltrajs_R2_noexits = []
+
+for line in lines:
+    words = line.split()
+    config = int(words[0])
+    if configs.count(config)>0:
+        for i in range(1,len(words)):
+            fulltrajs_R2_exits.append(float(words[i]))
+    else:
+        for i in range(1,len(words)):
+            fulltrajs_R2_noexits.append(float(words[i]))
+infile_allR2s.close()
 
 ## To determine the range
 plt.figure(figsize=(6,5))
@@ -195,8 +246,8 @@ plt.figure(figsize=(6,5))
 plt.plot(runtimes_flat, ztrajs_flat, ',', label=r'Exits')
 plt.plot(runtimes_flat_noexit, ztrajs_flat_noexit, ',', label=r'Does not exit')
 plt.xlabel(r'Index (s)')
-plt.ylabel(r'$dz^2$ [in unit length]')
-plt.title(r'$dz^2$, exit vs no exit, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.ylabel(r'$dz$ [in unit length]')
+plt.title(r'$dz$, exit vs no exit, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 if savethefig==True:
@@ -207,8 +258,8 @@ plt.plot(timesteps, averagez_exit, label=r'Exits')
 plt.plot(timesteps, averagez_noexit, label=r'Does not exit')
 plt.plot(timesteps, averagez_all, label=r'All')
 plt.xlabel(r'Index (s)')
-plt.ylabel(r'$<dz^2>$ [in unit length]')
-plt.title(r'$<dz^2>$, exit vs no exit, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
+plt.ylabel(r'$<dz>$ [in unit length]')
+plt.title(r'$<dz>$, exit vs no exit, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
 if savethefig==True:
@@ -224,6 +275,30 @@ plt.tight_layout()
 plt.legend(loc='upper left')
 if savethefig==True:
     plt.savefig(plotname_counters)
+
+
+plt.figure(figsize=(6,5))
+plt.plot(fulltimes_exits, fulltrajs_z_exits, ',', label=r'Exits')
+plt.plot(fulltimes_noexits, fulltrajs_z_noexits, ',', label=r'Does not exit')
+plt.xlabel(r'Index (s)')
+plt.ylabel(r'$dz$ [in unit length]')
+plt.title(r'$dz$, exit vs no exit, d = %i nm, $\sigma_b=%.2f$. Full traj.' % (spacing,psigma))
+plt.tight_layout()
+plt.legend(loc='upper left')
+if savethefig==True:
+    plt.savefig(plotname_ztrajs_exitvsnot_all)
+
+plt.figure(figsize=(6,5))
+plt.plot(fulltimes_exits, fulltrajs_R2_exits, ',', label=r'Exits')
+plt.plot(fulltimes_noexits, fulltrajs_R2_noexits, ',', label=r'Does not exit')
+plt.xlabel(r'Index (s)')
+plt.ylabel(r'$dR^2$ [in unit length]')
+plt.title(r'$dR^2$, exit vs no exit, d = %i nm, $\sigma_b=%.2f$. Full traj.' % (spacing,psigma))
+plt.tight_layout()
+plt.legend(loc='upper left')
+if savethefig==True:
+    plt.savefig(plotname_R2trajs_exitvsnot_all)
+
 
 # Saving
 '''

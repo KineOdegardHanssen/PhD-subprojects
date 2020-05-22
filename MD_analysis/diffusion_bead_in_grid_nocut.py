@@ -30,7 +30,7 @@ def rmsd(x,y):
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 100
+spacing = 3
 psigma  = 1#.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -60,13 +60,15 @@ print('timestepsize:', timestepsize)
 
 endlocation_in           = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Brush/Sigma_bead_' % (spacing,damp)+str(psigma) + '/'
 endlocation              = endlocation_in +'Nocut/'
-filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
+filestext                = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 # Text files
-outfilename_ds       = endlocation+'av_ds_'+filestext+'_nocut.txt'                        
-outfilename_gamma    = endlocation+'zimportance_'+filestext+'_nocut.txt'                  
-outfilename_sections = endlocation+'sections_'+filestext+'_nocut.txt'                     
-outfilename_maxz     = endlocation+'maxz_az_'+filestext+'_nocut.txt'
-outfilename_dt       = endlocation+'dt_nocut.txt'
+outfilename_ds           = endlocation+'av_ds_'+filestext+'_nocut.txt'                        
+outfilename_gamma        = endlocation+'zimportance_'+filestext+'_nocut.txt'                  
+outfilename_sections     = endlocation+'sections_'+filestext+'_nocut.txt'                     
+outfilename_maxz         = endlocation+'maxz_az_'+filestext+'_nocut.txt'
+outfilename_dt           = endlocation+'dt_nocut.txt'
+outfilename_alltrajs_z   = endlocation+'zs_all.txt'
+outfilename_alltrajs_R2  = endlocation+'R2s_all.txt'
 outfilename_skippedfiles = endlocation+'skippedfiles.txt'
 
 # Plots
@@ -155,7 +157,8 @@ alltimes  = []
 
 skippedfiles = 0
 
-
+outfile_alltrajs_z   = open(outfilename_alltrajs_z, 'w')
+outfile_alltrajs_R2  = open(outfilename_alltrajs_R2, 'w')
 outfile_skippedfiles = open(outfilename_skippedfiles, 'w')
 
 for confignr in confignrs:
@@ -321,6 +324,10 @@ for confignr in confignrs:
     step_temp = []
     gamma_temp = []
     
+    # For analysis of exit times (a temporary feature, but it will probably remain)
+    outfile_alltrajs_z.write('%i ' % confignr)
+    outfile_alltrajs_R2.write('%i ' % confignr)
+            
     R_temp.append(0)
     dx_temp.append(0)
     dy_temp.append(0)
@@ -348,6 +355,9 @@ for confignr in confignrs:
         vy2i = vyi*vyi
         vz2i = vzi*vzi
         v2i  = vx2i + vy2i + vz2i
+        #
+        outfile_alltrajs_z.write('%.16e ' % dz)
+        outfile_alltrajs_R2.write('%.16e ' % R2)
         # All together:
         allRs.append(R2)
         alldxs.append(dx2)
@@ -389,6 +399,9 @@ for confignr in confignrs:
     times_byseed.append(step_temp)
     gamma_avg = np.mean(gamma_temp)
     gamma_avgs.append(gamma_avg)
+    outfile_alltrajs_z.write('\n')
+    outfile_alltrajs_R2.write('\n')
+    
     
     coeffs = np.polyfit(step_temp,R_temp,1)
     a = coeffs[0]
@@ -472,7 +485,8 @@ for confignr in confignrs:
     #partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
     #time_afterpartition = time.process_time()
     #print('Time, partitioning:',time_afterpartition-time_beforepartition)
-
+outfile_alltrajs_z.close()
+outfile_alltrajs_R2.close()
 outfile_skippedfiles.close()
 
 print('filescounter:', filescounter)
