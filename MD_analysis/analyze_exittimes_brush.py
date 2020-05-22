@@ -9,6 +9,9 @@ spacing = 100
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)
+
+savethefig = True
+
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
 # Should divide into folders in a more thorough manner?
@@ -26,6 +29,15 @@ print('timestepsize:', timestepsize)
 
 endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Brush/Sigma_bead_' % (spacing,damp)+str(psigma) + '/'
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
+storelocation        = endlocation + 'Exitanalysis/'
+
+# Plot names (in case we store the plots)
+plotname_d2s               = storelocation + 'd2s.png'
+plotname_ztrajs_exitvsnot  = storelocation + 'ztrajs_exitvsnot.png'
+plotname_ztrajs_average    = storelocation + 'ztrajs_average.png'
+plotname_counters          = storelocation + 'counters.png'
+plotname_histogram         = storelocation + 'histogram.png'
+plotname_histogram_cumul   = storelocation + 'histogram_cumul.png'
 
 # Text files
 infilename_ds       = endlocation+'av_ds_'+filestext+'.txt'                        #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_av_ds.txt'
@@ -164,7 +176,6 @@ for i in range(Nsteps):
         averagez_noexit[i] /= counter_noexit[i]
 
 ## To determine the range
-# Interactive
 plt.figure(figsize=(6,5))
 plt.plot(timesteps, dR2, label=r'$<R^2>$')
 plt.plot(timesteps, dx2, label=r'$<dx^2>$')
@@ -176,7 +187,8 @@ plt.ylabel(r'Distance$^2$ [in unit length]')
 plt.title(r'RMSD in brush, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
-#plt.show()
+if savethefig==True:
+    plt.savefig(plotname_d2s)
 
 
 plt.figure(figsize=(6,5))
@@ -187,6 +199,8 @@ plt.ylabel(r'$dz^2$ [in unit length]')
 plt.title(r'$dz^2$, exit vs no exit, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
+if savethefig==True:
+    plt.savefig(plotname_ztrajs_exitvsnot)
 
 plt.figure(figsize=(6,5))
 plt.plot(timesteps, averagez_exit, label=r'Exits')
@@ -197,6 +211,8 @@ plt.ylabel(r'$<dz^2>$ [in unit length]')
 plt.title(r'$<dz^2>$, exit vs no exit, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
+if savethefig==True:
+    plt.savefig(plotname_ztrajs_average)
 
 plt.figure(figsize=(6,5))
 plt.plot(timesteps, counter_exit, label=r'Exits')
@@ -206,7 +222,8 @@ plt.ylabel(r'Number of configs')
 plt.title(r'Configs exited, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
 plt.legend(loc='upper left')
-
+if savethefig==True:
+    plt.savefig(plotname_counters)
 
 # Saving
 '''
@@ -232,6 +249,8 @@ plt.xlabel(r'Exit time (Time of cut)')
 plt.ylabel(r'Number of exits')
 plt.title(r'Histogram of exit times, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
+if savethefig==True:
+    plt.savefig(plotname_histogram)
 
 plt.figure(figsize=(6,5))
 plt.hist(cuttimes, bins=100, cumulative=True)
@@ -239,7 +258,11 @@ plt.xlabel(r'Exit time (Time of cut)')
 plt.ylabel(r'Number of exits')
 plt.title(r'Cumulative histogram of exit times, d = %i nm, $\sigma_b=%.2f$' % (spacing,psigma))
 plt.tight_layout()
-plt.show()
+if savethefig==True:
+    plt.savefig(plotname_histogram_cumul)
+
+if savethefig==False:
+    plt.show()
 
 
 
