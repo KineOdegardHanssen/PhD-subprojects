@@ -15,10 +15,10 @@ phifilen_oc  = basepath + 'd_vs_phi_withoutsubstrate.txt'
 
 # Out-files
 outfile = mainlocation + 'D_vs_phi.txt'
-plotname_block_oc = mainlocation + 'D_vs_phi_donlychains_block'
-plotname_bead_oc = mainlocation + 'D_vs_phi_donlychains_bead'
-plotname_block_ws = mainlocation + 'D_vs_phi_withsubstrate_block'
-plotname_bead_ws = mainlocation + 'D_vs_phi_withsubstrate_bead'
+plotname_block_oc = mainlocation + 'D_vs_phi_dyn_nocut_donlychains_block'
+plotname_bead_oc = mainlocation + 'D_vs_phi_dyn_nocut_donlychains_bead'
+plotname_block_ws = mainlocation + 'D_vs_phi_dyn_nocut_withsubstrate_block'
+plotname_bead_ws = mainlocation + 'D_vs_phi_dyn_nocut_withsubstrate_bead'
 
 ## Read content of files
 # Diffusion constant
@@ -86,6 +86,7 @@ plt.ylabel(r'Diffusion constant $D$')
 plt.title(r'$D$ vs $\phi$, block, no substr.')
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 #plt.axis([0, xmax_plot, 0, max(dR2[0:xmax_plot])])
 plt.savefig(plotname_block_oc)
 
@@ -98,6 +99,7 @@ plt.ylabel(r'Diffusion constant $D$')
 plt.title(r'$D$ vs $\phi$, bead, no substr.')
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 #plt.axis([0, xmax_plot, 0, max(dR2[0:xmax_plot])])
 plt.savefig(plotname_bead_oc)
 
@@ -111,6 +113,7 @@ plt.ylabel(r'Diffusion constant $D$')
 plt.title(r'$D$ vs $\phi$, block, substr.')
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 #plt.axis([0, xmax_plot, 0, max(dR2[0:xmax_plot])])
 plt.savefig(plotname_block_ws)
 
@@ -123,6 +126,7 @@ plt.ylabel(r'Diffusion constant $D$')
 plt.title(r'$D$ vs $\phi$, bead, substr.')
 plt.tight_layout()
 plt.legend(loc='upper left')
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 #plt.axis([0, xmax_plot, 0, max(dR2[0:xmax_plot])])
 plt.savefig(plotname_bead_ws)
 
