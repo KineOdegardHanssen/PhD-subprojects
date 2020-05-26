@@ -5,8 +5,8 @@ import math
 
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 3
-psigma  = 2
+spacing = 1.25
+psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
@@ -24,7 +24,7 @@ Npartitions  = 5 # For extracting more walks from one file (but is it really suc
 minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 print('timestepsize:', timestepsize)
 
-endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Brush/Sigma_bead_' % (spacing,damp)+str(psigma) + '/Nocut/'
+endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp+str(psigma) + '/Nocut/'
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 
 # Text files
