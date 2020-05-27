@@ -20,8 +20,8 @@ cutit         = False
 maxh          = 55.940983199999756
 
 #spacing = 7
-spacings = [3]#3,4,5,6,7,10,15,25,50,75,100]
-psigma   = 2
+spacings = [1,1.25,1.5]#[1,1.25,1.5,2,3,4,5,6,7,10,15,25,50,75,100]#3,4,5,6,7,10,15,25,50,75,100]
+psigma   = 1
 damp     = 10
 
 Nsteps = 2001
@@ -43,7 +43,7 @@ for spacing in spacings:
         parentfolder = 'Brush/'
         filestext     = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])
     
-    endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder+ 'Sigma_bead_' +str(psigma) + '/Nocut/'
+    endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/' % damp +parentfolder+ 'Sigma_bead_' +str(psigma) + '/Nocut/'
     infilename    = endlocation+'av_ds'+filestext+'_nocut.txt'
     outfilename   = endlocation+'diffusion'+filestext+'_nocut.txt'
     metaname      = endlocation+'diffusion_metadata'+filestext+'_nocut.txt'
@@ -82,8 +82,7 @@ for spacing in spacings:
     timestepsize = 0.00045*unittime
     print('timestepsize:', timestepsize)
     Npartitions = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
-
-
+    
     # Set up arrays
     Nsteps_R   = endindex_R-startindex_R
     Nsteps_ort = endindex_ort-startindex_ort 
@@ -94,7 +93,7 @@ for spacing in spacings:
     dR2s   = np.zeros(Nsteps_R) 
     dz2s   = np.zeros(Nsteps_ort) 
     dpar2s = np.zeros(Nsteps_par)
-
+    
     # Read file
     infile = open(infilename,'r')
     lines = infile.readlines()
