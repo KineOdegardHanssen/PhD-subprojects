@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt                     # To plot
 import numpy as np
 import math
 
+
+def Deff_theory(Dbulk, phi):
+    return phi**(3./2)*Dbulk
+
 psigma = 1
 
 ## Filenames
@@ -76,9 +80,18 @@ for i in range(N):
     phi_bead_ws[i]  = float(words[2])
 phifile.close()
 
+
+#
+Dbulk = DRs[-1]
+theory_block_oc = Deff_theory(Dbulk, phi_block_oc)
+theory_bead_oc = Deff_theory(Dbulk, phi_bead_oc)
+theory_block_ws = Deff_theory(Dbulk, phi_block_ws)
+theory_bead_ws = Deff_theory(Dbulk, phi_bead_ws)
+
 # Only chains in phi
 plt.figure(figsize=(6,5))
 plt.plot(phi_block_oc, DRs, label=r'$D$')
+plt.plot(phi_block_oc, theory_block_oc, '--', label=r'$D$, theory')
 plt.plot(phi_block_oc, Dzs, label=r'$D_\perp$')
 plt.plot(phi_block_oc, Dparallel, label=r'$D_\parallel$')
 plt.xlabel(r'Porosity $\phi$ (block, no substr.)')
@@ -92,6 +105,7 @@ plt.savefig(plotname_block_oc)
 
 plt.figure(figsize=(6,5))
 plt.plot(phi_bead_oc, DRs, label=r'$D$')
+plt.plot(phi_bead_oc, theory_bead_oc, '--', label=r'$D$, theory')
 plt.plot(phi_bead_oc, Dzs, label=r'$D_\perp$')
 plt.plot(phi_bead_oc, Dparallel, label=r'$D_\parallel$')
 plt.xlabel(r'Porosity $\phi$ (bead, no substr.)')
@@ -106,6 +120,7 @@ plt.savefig(plotname_bead_oc)
 # Substrate and chains in phi
 plt.figure(figsize=(6,5))
 plt.plot(phi_block_ws, DRs, label=r'$D$')
+plt.plot(phi_block_ws, theory_block_ws, '--', label=r'$D$, theory')
 plt.plot(phi_block_ws, Dzs, label=r'$D_\perp$')
 plt.plot(phi_block_ws, Dparallel, label=r'$D_\parallel$')
 plt.xlabel(r'Porosity $\phi$ (block, substr.)')
@@ -119,6 +134,7 @@ plt.savefig(plotname_block_ws)
 
 plt.figure(figsize=(6,5))
 plt.plot(phi_bead_ws, DRs, label=r'$D$')
+plt.plot(phi_bead_ws, theory_bead_ws, '--', label=r'$D$, theory')
 plt.plot(phi_bead_ws, Dzs, label=r'$D_\perp$')
 plt.plot(phi_bead_ws, Dparallel, label=r'$D_\parallel$')
 plt.xlabel(r'Porosity $\phi$ (bead, substr.)')
