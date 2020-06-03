@@ -63,55 +63,43 @@ Npartitions    = 5 # For extracting more walks from one file (but is it really s
 minlength      = int(floor(Nsteps/Npartitions)) # For sectioning the data
 gatheredconfignrs = np.arange(1,Nfiles+1) # For some old printing
 print('timestepsize:', timestepsize)
-## Weird cutoff (bead):
-#namebase    = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122' %spacing
-#folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
-# Usual cutoff (bead):
-#foldername  = 'Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122'
-#endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/damp50_diffseedLgv'+'/Sigma_bead_'+str(psigma)+'/'
-basepath        = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/Spacing%i/' % spacing
+
+basepath        = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/Spacing'+str(spacing)+'/'
 location_config = basepath + 'Radius1/Initial_configs/Before_bead/'
 basepath        = basepath + 'Radius' + str(psigma) + '/'
 endlocation     = basepath + 'Results/'
-#namebase_start = '_quadr_M9N101_ljunits_'
-#folderbase_mid = 'Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5'
-#folderbase_end = '_ljcut1p122'
-#namebase = namebase_start+'spacing%i_' % spacing + folderbase_mid + '_psigma' +str(psigma)+'_sect_placeexact_ljcut1p122'
-#namebase = 'spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5_psigma' % spacing +str(psigma)+'_pstdcutoff_sect_placeexact_ljcut1p122'
-#folderbase = 'Part_in_chgr_subst'+namebase_start+folderbase_mid+folderbase_end
 
-#endlocation       = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(beadplacements[0])+'to'+str(beadplacements[-1])
-#outfilename          = endlocation+'lammpsdiffusion_qdrgr_'+namebase+filestext+'.txt' # This is redundant
 # Text files
-outfilename_ds       = endlocation+'av_ds_'+filestext+'.txt'                        #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_av_ds.txt'
-#outfilename_gamma    = endlocation+'zimportance_'+filestext+'.txt'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.txt'
-outfilename_sections = endlocation+'sections_'+filestext+'.txt'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_sections.txt'
+outfilename_ds       = endlocation+'av_ds_'+filestext+'.txt'
+outfilename_sections = endlocation+'sections_'+filestext+'.txt'
 outfilename_maxz     = endlocation+'maxz_az_'+filestext+'.txt'
 outfilename_dt       = endlocation+'dt.txt'
+outfilename_cuts     = endlocation+'cuts.txt'
+outfilename_noexit   = endlocation+'noexitzs.txt'
+outfilename_skippedfiles = endlocation+'skippedfiles.txt'
 
 # Plots
-plotname             = endlocation+filestext+'.png'                                 #'lammpsdiffusion_qdrgr_'+namebase+filestext+'.png'
-plotname_all         = endlocation+'all_'+filestext+'.png'                          #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_all.png'
-#plotname_gamma       = endlocation+'zimportance_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.png'
-plotname_SI          = endlocation+'SI_'+filestext+'.png'                           #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_SI.png'
-plotname_parallel_orthogonal = endlocation+'par_ort_'+filestext+'.png'              #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par_ort.png' 
-plotname_dx_dy_dz    = endlocation+'dx_dy_dz_'+filestext+'.png'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_dx_dy_dz.png' 
-plotname_parallel    = endlocation+'par_'+filestext+'.png'                          #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par.png' 
-plotname_orthogonal  = endlocation+'ort_'+filestext+'.png'                          #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_ort.png'
-plotname_short_all   = endlocation+'short_all_'+filestext+'.png'                    #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_short_all.png'
-plotname_velocity    = endlocation+'velocity_'+filestext+'.png'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity.png'
-plotname_velocity_SI = endlocation+'velocity_SI_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity_SI.png'
-plotname_velocity_sq = endlocation+'velocity_sq_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity_sq.png'
-plotname_sectioned_average = endlocation+'sections_'+filestext+'.png'               #'lammpsdiffusion_'+namebase+filestext+'_sections.png'
-plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext+'.png'#'lammpsdiffusion_'+namebase+filestext+'_sections_steps.png'
-plotname_traj_xy = endlocation+'traj_xy_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_xy.png'
-plotname_traj_xz = endlocation+'traj_xz_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_xz.png'
-plotname_traj_yz = endlocation+'traj_yz_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_yz.png'
-plotname_traj_xt = endlocation+'traj_xt_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_xt.png'
-plotname_traj_yt = endlocation+'traj_yt_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_yt.png'
-plotname_traj_zt = endlocation+'traj_zt_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_zt.png'
-plotname_th_hist = endlocation+'th_hist_'+filestext+'.png'                          #'lammpsdiffusion_'+namebase+filestext+'_th_hist.png'
+plotname             = endlocation+filestext+'.png'
+plotname_all         = endlocation+'all_'+filestext+'.png'
+plotname_SI          = endlocation+'SI_'+filestext+'.png'
+plotname_parallel_orthogonal = endlocation+'par_ort_'+filestext+'.png' 
+plotname_dx_dy_dz    = endlocation+'dx_dy_dz_'+filestext+'.png' 
+plotname_parallel    = endlocation+'par_'+filestext+'.png'
+plotname_orthogonal  = endlocation+'ort_'+filestext+'.png'
+plotname_short_all   = endlocation+'short_all_'+filestext+'.png'
+plotname_velocity    = endlocation+'velocity_'+filestext+'.png'
+plotname_velocity_SI = endlocation+'velocity_SI_'+filestext+'.png'
+plotname_velocity_sq = endlocation+'velocity_sq_'+filestext+'.png'
+plotname_sectioned_average = endlocation+'sections_'+filestext+'.png'
+plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext+'.png'
+plotname_traj_xy = endlocation+'traj_xy_config'+str(confignrs[-1])+'.png'
+plotname_traj_xz = endlocation+'traj_xz_config'+str(confignrs[-1])+'.png'
+plotname_traj_yz = endlocation+'traj_yz_config'+str(confignrs[-1])+'.png'
+plotname_traj_xt = endlocation+'traj_xt_config'+str(confignrs[-1])+'.png'
+plotname_traj_yt = endlocation+'traj_yt_config'+str(confignrs[-1])+'.png'
+plotname_traj_zt = endlocation+'traj_zt_config'+str(confignrs[-1])+'.png'
+plotname_th_hist = endlocation+'th_hist_'+filestext+'.png'
 
 
 ## Setting arrays
@@ -172,6 +160,14 @@ alltimes  = []
 linestart_data = 22
 skippedfiles = 0
 
+outfile_cuts = open(outfilename_cuts, 'w')
+outfile_cuts.write('confignr time_cut zs\n')
+
+outfile_noexit = open(outfilename_noexit,'w')
+outfile_noexit.write('confignr zs\n')
+
+outfile_skippedfiles = open(outfilename_skippedfiles, 'w')
+
 for confignr in confignrs:
     print('On config number:', confignr)
     infilename_config  = location_config+'data.config'+str(confignr)
@@ -186,6 +182,7 @@ for confignr in confignrs:
         infile_config = open(infilename_config, "r")
     except:
         print('Oh, data-file! Where art thou?')
+        outfile_skippedfiles.write('%i\n' % confignr)
         print('file name that failed:', infilename_config)
         skippedfiles += Nplacements
         continue # Skipping this file if it does not exist
@@ -228,7 +225,6 @@ for confignr in confignrs:
     infile_config.close()
     
     for beadplacement in beadplacements:
-        #print('beadplacement:', beadplacement, ' of', Nplacements)
         print('config nr', confignr,', beadplacement:', beadplacement, ' of', Nplacements)
         ## Find the position of the free bead:
         infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'.lammpstrj' #endlocation+'freeatom_density'+str(density)+'_confignr'+str(confignr)+'.lammpstrj'
@@ -322,16 +318,29 @@ for confignr in confignrs:
          
         Nin   = 0
         maxzpol = 0
+        brokenthis = 0
         for i in range(counter):
             thesepos = positions[i]
             z        = thesepos[2]
             if z>extent_polymers: # If the polymer is in bulk # We don't want it to go back and forth between brush and bulk # That will cause discontinuities in our data
+                brokenthis = 1
+                outfile_cuts.write('%i %i ' % (confignr, i)) # Jubileum
+                for iex in range(Nin): # Ugh, stupid loop structure... 
+                    posnow = positions[iex] 
+                    outfile_cuts.write('%.16e ' % posnow[2])
+                outfile_cuts.write('\n')
                 break
             else:
                 pos_inpolymer.append(thesepos)
                 if z>maxzpol:
                     maxzpol = z
                 Nin+=1
+        if brokenthis==0:
+            outfile_noexit.write('%i ' % confignr) 
+            for inoex in range(Nin):
+                posnow = positions[inoex] 
+                outfile_noexit.write('%.16e ' % posnow[2])
+            outfile_noexit.write('\n')
         
         startpos_in   = pos_inpolymer[0]
         #######
@@ -497,6 +506,10 @@ for confignr in confignrs:
         #partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
         #time_afterpartition = time.process_time()
         #print('Time, partitioning:',time_afterpartition-time_beforepartition)
+
+outfile_cuts.close()
+outfile_noexit.close()
+outfile_skippedfiles.close()
     
 print('filescounter:', filescounter)
 maxz_av /= filescounter

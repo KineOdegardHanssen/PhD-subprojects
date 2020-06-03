@@ -1,27 +1,9 @@
-label nloop
-variable confignr loop 91 100#100
-label bloop
-variable bnr loop 1 10
-
-variable dampfac equal 10#15
-variable spacing equal 100
-variable sigma_atom equal 1 # Vary this?   # FOR FRIGG'S SAKE, REMEMBER TO MAKE THE FOLDER FIRST!!!!
-#variable pmass equal 1.5#1.5  # Mass of the particle # Is this reasonable?
-variable density equal 3/(4*PI)
-variable volfac equal 4*PI/3
-variable test equal ${density}*${volfac}
-variable r3 equal ${sigma_atom}^3
-print 'variable: ${density}'
-print 'Volume factor: ${density}*${volfac}'
-print 'dens*volfac ${test}'
-print 'sigma_atom^3: ${r3}'
-variable pmass equal 4*PI*${sigma_atom}^3/3*${density}
-
-print 'pmass: ${pmass}'
+variable spacing equal 1.5
+variable sigma_atom equal 0.5 # Just a random constant to get the simulation going
 
 ######################### Setting the sytem ####################################
 ## Getting conversion factors and constructing the dielectric
-# Neccessary quantities in lj units:-
+# Neccessary quantities in lj units:
 variable T equal 3      # The temperature in LJ units
 # Our length unit (set):
 variable lengthunit equal 1e-9   # In SI
@@ -41,10 +23,9 @@ variable qratio equal 12.719558614248152
 variable conversionfactor equal 0.008818190747174473 #0.006180959786301432 (forgot to divide by E)
 variable ljepsilon_standard equal 1.042
 variable ljepsilon equal ${ljepsilon_standard}/${energyunit_ljinnano}
-variable ljcutoff equal 1.122 # Vary this?
-variable ljsigma equal 1.0 # What should this be?
+variable ljcutoff equal 1.122
+variable ljsigma equal 1.0
 variable atomcutoff equal 1.122*${sigma_atom}
-
 
 print 'energyunit_ljinnano: ${energyunit_ljinnano}'
 
@@ -58,8 +39,8 @@ variable charge equal -1                  # The dielectric will be changed to se
 variable dt equal 0.00045                 # This timestep seems to work well for our simulations (standard ljunits timestep is too big)
 variable M equal 9
 variable N equal 101
-#variable vzmin equal -0.01
-#variable vzmax equal -0.00000001
+variable vzmin equal -0.01
+variable vzmax equal -0.00000001
 
 # Setting system properties
 units lj
@@ -70,10 +51,11 @@ pair_style lj/cut/coul/debye ${kappa} ${debyecutoff} #
 bond_style harmonic
 angle_style harmonic
 
-# Importing the system:
-read_data C:\Users\Kine\Documents\Projects_PhD\P2_PolymerMD\Planar_brush\Diffusion_staticbrush\Spacing${spacing}\Initial_configs\data.config${confignr}_beadplacement${bnr}
+# Making the atoms:
+read_data data.chaingrids_substrate_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge}_mass1
+# Do I even use the log-file anymore?
 
-print 'pmass: ${pmass}'
+velocity all create $T 87287 # I can reset the velocities.
 
 variable sigma_inter equal (${sigma_atom}+${ljsigma})/2
 variable cutoff_inter equal 1.122*${sigma_inter}
@@ -88,42 +70,22 @@ angle_coeff * ${Kangle} ${theta0}
 
 ############################ Prepare simulation #####################################
 
+# Minimize really messes up the structure
+#minimize 1.0e-4 1.0e-6 100 1000
+
+group movingmonomers type 2
+
 neighbor 1.0 bin
 #neigh_modify once no every 1 delay 0 check yes
 
 dielectric ${conversionfactor}
 timestep ${dt}
 
-########################### Add atom info ##############################################
+fix lgvfix movingmonomers langevin $T $T 100.0 699483
+fix 1 movingmonomers nve
 
-mass 3 ${pmass}
+############################ Equilibrate ##############################################
+run 200000 # I only need to do this once for each d, so I can afford to make the simulation pretty long.
 
-group freeatom type 3
-group movingatoms type 3 # Not moving the chains
-
-variable scalefac equal ${pmass}/${sigma_atom}
-
-#fix lgvfix movingatoms langevin $T $T ${dampfac} 699483 scale 3 ${scalefac} # Had this before...
-fix lgvfix movingatoms langevin $T $T ${dampfac} ${confignr} scale 3 ${scalefac}
-fix 1 movingatoms nve
-
-velocity freeatom set 0 0 0 #${vcomp} ${vcomp} ${vcomp} # starting with zero velocity
-
-compute pefree freeatom pe/atom
-compute peprint freeatom reduce sum c_pefree
-
-############################ Run ##############################################
-log C:\Users\Kine\Documents\Projects_PhD\P2_PolymerMD\Planar_brush\Diffusion_staticbrush\Spacing${spacing}\log-files\log.confignr${confignr}_printevery10 # Print logfiles too?
-
-dump walltest freeatom custom 100 C:\Users\Kine\Documents\Projects_PhD\P2_PolymerMD\Planar_brush\Diffusion_staticbrush\Spacing${spacing}\freeatom_confignr${confignr}_beadplacement${bnr}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
-
-thermo 10
-thermo_style custom step c_peprint
-
-run 200000
-
-clear
-next bnr
-jump SELF bloop
-next confignr
-jump SELF nloop
+# write_data?
+write_data data.chaingrids_substrate_N909_Nchains9_Ly3_gridspacing${spacing}_twofixed_charge${charge}_mass1_equilibrated nocoeff

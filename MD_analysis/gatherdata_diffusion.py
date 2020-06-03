@@ -26,16 +26,15 @@ def rmsd(x,y):
     return delta
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-damp    = 10
-spacing = 10
+spacing = 5
 if spacing==10:
-    psigmas = [0.25, 0.5, 1, 1.5, 2, 3, 5, 10, 25]
+    psigmas = [0.25, 0.5, 1, 1.5, 2, 3]
 elif spacing==5:
     psigmas = [0.25, 0.5, 1, 1.5, 2]
 pmass   = 1.5
 N          = len(psigmas)
 # Input booleans for file selection:
-bulkdiffusion = True
+bulkdiffusion = False
 substrate     = False
 
 # Ds
@@ -73,18 +72,29 @@ if bulkdiffusion==True:
     parentfolder = 'Pure_bulk/'
     if substrate==True:
         systemtype = 'substrate'
+        startpart = '_withsubstrate_'
         parentfolder = 'Bulk_substrate/'
     namebase = 'bulkdiffusion'+startpart+'ljunits_spacing%i_Langevin_scaled_T3_pmass' % spacing
+    name_end  = '_sect_placeexact_ljepsilon0.730372054992096_ljcut1p122'
+    folderbase = 'Bulkdiffusion'+startpart+'ljunits_Langevin_scaled_T3_pmass1.5_sect_placeexact_ljepsilon0.730372054992096_ljcut1p122'
+    namebase_short = namebase # In case I ever need to shorten it
+    
+    name_start = 'lammpsdiffusion_'
+    
 else:
     systemtype = 'brush'
     parentfolder = 'Brush/'
+    #namebase = '_quadr_M9N101_ljunits_spacing%i_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass'% spacing + str(pmass)
+    namebase = '_quadr_M9N101_ljunits_spacing%i_Langevin_scaled_Kangle14_Kbond140_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass'% spacing + str(pmass)
+    folderbase  = 'Quadr_M9N101_ljunits_Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_ljcut1p122'    
+    name_start = 'lammpsdiffusion_qdrgr'
+    name_end   = '_sect_placeexact_ljcut1p122'
 
-endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder
-
-outfilename  = endlocation+'D_vs_psigma.txt'
-plotname     = endlocation+'D_vs_psigma.png'
-plotname_fit = endlocation+'D_vs_psigma_fit.png'
-indfilename  = endlocation+'D_vs_psigma_fitindices.txt'
+endlocation_gathered = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/'
+outfilename  = endlocation_gathered+'D_vs_psigma_'+name_start+namebase+name_end+'.txt'
+plotname     = endlocation_gathered+'D_vs_psigma_'+name_start+namebase+name_end+'.png'
+plotname_fit = endlocation_gathered+'D_vs_psigma_'+name_start+namebase+name_end+'_fit.png'
+indfilename  = endlocation_gathered+'D_vs_psigma_'+name_start+namebase+name_end+'_fitindices.txt'
 
 outfile = open(outfilename, 'w')
 outfile.write('psigma   D_R2   sigmaD_R2  b_R2 sigmab_R2; D_z2  sigmaD_z2 b_z2  sigmaD_z2; D_par2 sigmaD_par2  b_par2  sigmab_par2\n')
@@ -94,9 +104,12 @@ indexfile.write('Start_index_R     end_index_R     Start_index_ort     end_index
 
 for i in range(N):
     psigma = psigmas[i]
-    endlocation_in = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder+ 'Sigma_bead_' +str(psigma) + '/'
-    infilename = endlocation_in+'diffusion_seed1to1000.txt' #_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
-    metaname   = endlocation_in+'diffusion_metadata_seed1to1000.txt' # In original file set as:  endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_metadata.txt'
+    endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)+'/'
+    namebase_start = '_quadr_M9N101_ljunits_'
+    folderbase_mid = 'Langevin_scaled_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_pmass1.5'
+    namebase_short = namebase+'_psigma'+str(psigma)+name_end
+    infilename = endlocation+name_start+namebase_short+'_diffusion.txt' #_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
+    metaname   = endlocation+name_start+namebase_short+'_metadata.txt' # In original file set as:  endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_metadata.txt'
 
     #print('infilename_all:',infilename_all)
     
@@ -160,6 +173,6 @@ plt.ylabel(r'Diffusion constant $D$')
 plt.title('Diffusion constant $D$, d = %i nm, system %s' % (spacing, systemtype))
 plt.tight_layout()
 plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-plt.legend(loc='upper right')
+plt.legend(loc='upper left')
 plt.savefig(plotname)
-#plt.show()
+

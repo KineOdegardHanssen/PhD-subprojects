@@ -77,7 +77,7 @@ else:
     systemtype   = 'brush'
     filestext    = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])
 
-endlocation_out = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/'+parentfolder+'Moresigmas/'
+endlocation_out = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/'+parentfolder+'Moresigmas/'
 outfilename  = endlocation_out+'D_vs_d.txt'
 plotname     = endlocation_out+'D_vs_d.png'
 plotname_fit = endlocation_out+'D_vs_d_fit.png'
@@ -94,7 +94,7 @@ for i in range(N):
     sigma         = sigmas[i]
     ddivsigma     = spacing/float(sigma)
     ddivsigmas[i] = ddivsigma
-    endlocation_in   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder+ 'Sigma_bead_' +str(sigma) + '/'
+    endlocation_in   = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder+ 'Sigma_bead_' +str(sigma) + '/'
     infilename = endlocation_in+'diffusion'+filestext+'.txt' #_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
     metaname   = endlocation_in+'diffusion_metadata'+filestext+'.txt' # In original file set as:  endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_metadata.txt'
 

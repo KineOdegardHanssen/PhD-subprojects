@@ -76,7 +76,7 @@ else:
     systemtype   = 'brush'
     filestext    = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(bpl[0])+'to'+str(bpl[-1])
 
-basepath_base   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/'
+basepath_base   = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/'
 endlocation_out = basepath_base+'D_vs_d/'
 outfilename  = endlocation_out+'D_vs_d.txt'
 plotname     = endlocation_out+'D_vs_d.png'
@@ -91,7 +91,7 @@ indexfile.write('Start_index_R     end_index_R     Start_index_ort     end_index
 
 for i in range(N):
     spacing = spacings[i]
-    basepath        = basepath_base+'Spacing%i/Radius' % spacing + str(psigma) + '/'
+    basepath        = basepath_base+'Spacing'+str(spacing)+'/Radius' + str(psigma) + '/'
     endlocation_in  = basepath + 'Results/'
     
     infilename = endlocation_in+'diffusion'+filestext+'.txt' #_timestep'+str(startindex)+'to'+str(endindex)+'.txt'

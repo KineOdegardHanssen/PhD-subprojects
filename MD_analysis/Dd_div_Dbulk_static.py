@@ -36,9 +36,9 @@ bulk_cut      = True
 confignrs     = np.arange(1,1001)
 filestext     = '_seed'+str(confignrs[0])+'to'+str(confignrs[-1])
 
-endlocation = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/Brush/Sigma_bead_' +str(psigma) + '/'
+endlocation = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/Brush/Sigma_bead_' +str(psigma) + '/'
 
-basepath_base      = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/'
+basepath_base      = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/'
 endlocation_static = basepath_base+'D_vs_d/'
 
 ## Files to read

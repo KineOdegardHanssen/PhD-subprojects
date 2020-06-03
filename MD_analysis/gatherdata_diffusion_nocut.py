@@ -87,7 +87,7 @@ else:
     systemtype = 'brush'
     parentfolder = 'Brush/'
 
-endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder
+endlocation   = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder
 
 outfilename  = endlocation+'D_vs_psigma.txt'
 plotname     = endlocation+'D_vs_psigma.png'

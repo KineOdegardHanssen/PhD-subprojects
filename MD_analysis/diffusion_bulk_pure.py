@@ -53,7 +53,7 @@ print('timestepsize:', timestepsize)
 #namebase_out   = namebase_short+'_cut'
 filestext      = '_seed'+str(seeds[0])+'to'+str(seeds[-1])
 #endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_' + str(psigma)+'/'
-endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Pure_bulk/Sigma_bead_' % (spacing,damp)+str(psigma) + '/'
+endlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/Pure_bulk/Sigma_bead_' % (spacing,damp)+str(psigma) + '/'
 outfilename          = endlocation+filestext+'.txt'  #'lammpsdiffusion_'+namebase_out+filestext+'.txt'
 outfilename_ds       = endlocation+'av_ds'+filestext+'.txt'  #'lammpsdiffusion_'+namebase_out+filestext+'_av_ds.txt'
 outfilename_gamma    = endlocation+'zimportance'+filestext+'.txt' #'lammpsdiffusion_'+namebase_out+filestext+'_zimportance.txt'

@@ -1,0 +1,130 @@
+label nloop
+variable confignr loop 81 100
+
+variable dampfac equal 10#15
+variable spacing equal 1.5
+variable sigma_atom equal 1 # Vary this?   # FOR FRIGG'S SAKE, REMEMBER TO MAKE THE FOLDER FIRST!!!!
+#variable pmass equal 1.5#1.5  # Mass of the particle # Is this reasonable?
+variable density equal 3/(4*PI)
+variable volfac equal 4*PI/3
+variable test equal ${density}*${volfac}
+variable r3 equal ${sigma_atom}^3
+print 'variable: ${density}'
+print 'Volume factor: ${density}*${volfac}'
+print 'dens*volfac ${test}'
+print 'sigma_atom^3: ${r3}'
+variable pmass equal 4*PI*${sigma_atom}^3/3*${density}
+
+print 'pmass: ${pmass}'
+
+######################### Setting the sytem ####################################
+## Getting conversion factors and constructing the dielectric
+# Neccessary quantities in lj units:-
+variable T equal 3      # The temperature in LJ units
+# Our length unit (set):
+variable lengthunit equal 1e-9   # In SI
+variable convert_energy_nanounits_to_ljunits equal 1e21
+# Physical constants in SI:
+variable kb equal 1.38064852e-23
+variable epsilon0 equal 8.85e-12
+variable elementalcharge equal 1.602176634e-19
+variable T0 equal 310.0 # The temperature we want in K  # We will use this to find the energy unit, which we in turn will use to find the dielectric correction
+# Converting
+variable energyunit equal ${T0}/T*${kb}
+#variable energyunit_ljinnano equal ${convert_energy_nanounits_to_ljunits}*${energyunit} # For conversion from units nano to units lj
+variable energyunit_ljinnano equal 1.426670137333333  #### TRIED TO CALCULATE IN LAMMPS, BUT IT DIDN'T WORK ## For T = 3, T0 = 310
+variable qratio equal 12.719558614248152
+#variable qratio equal ${elementalcharge}/sqrt(4*PI*${epsilon0}*${lengthunit}*${energyunit})
+#variable conversionfactor equal 1.0/${qratio}^2
+variable conversionfactor equal 0.008818190747174473 #0.006180959786301432 (forgot to divide by E)
+variable ljepsilon_standard equal 1.042
+variable ljepsilon equal ${ljepsilon_standard}/${energyunit_ljinnano}
+variable ljcutoff equal 1.122 # Vary this?
+variable ljsigma equal 1.0 # What should this be?
+variable atomcutoff equal 1.122*${sigma_atom}
+
+
+print 'energyunit_ljinnano: ${energyunit_ljinnano}'
+
+## Set variables
+variable theta0 equal 180.0
+variable Kangle equal 20.0/${energyunit_ljinnano}
+variable Kbond equal 200.0/${energyunit_ljinnano}
+variable kappa equal 1.0
+variable debyecutoff equal 3.0
+variable charge equal -1                  # The dielectric will be changed to set the Debye interaction to the correct value
+variable dt equal 0.00045                 # This timestep seems to work well for our simulations (standard ljunits timestep is too big)
+variable M equal 9
+variable N equal 101
+#variable vzmin equal -0.01
+#variable vzmax equal -0.00000001
+
+# Setting system properties
+units lj
+dimension 3
+boundary p p p
+atom_style full
+pair_style lj/cut/coul/debye ${kappa} ${debyecutoff} # 
+bond_style harmonic
+angle_style harmonic
+
+
+# Importing the system:
+read_data C:\Users\Kine\Documents\Projects_PhD\P2_PolymerMD\Planar_brush\Diffusion_bead_near_grid\Initial_configurations\Spacing${spacing}\Sigma_bead_${sigma_atom}\data.bead_wsubstr_eq_N909_d${spacing}_charge${charge}_mass1_file${confignr}
+
+print 'pmass: ${pmass}'
+
+variable sigma_inter equal (${sigma_atom}+${ljsigma})/2
+variable cutoff_inter equal 1.122*${sigma_inter}
+
+pair_coeff 1 1 ${ljepsilon} ${ljsigma} ${ljcutoff} ${debyecutoff}
+pair_coeff 1 2 ${ljepsilon} ${ljsigma} ${ljcutoff} ${debyecutoff}
+pair_coeff 2 2 ${ljepsilon} ${ljsigma} ${ljcutoff} ${debyecutoff}
+pair_coeff * 4 ${ljepsilon} ${ljsigma} ${ljcutoff} 0               # Er det greit å sette disse generelt her? Kan vel resette etterpå?
+pair_coeff * 3 ${ljepsilon} ${sigma_inter} ${cutoff_inter} 0
+bond_coeff * ${Kbond} 1.0
+angle_coeff * ${Kangle} ${theta0}
+
+############################ Prepare simulation #####################################
+
+neighbor 1.0 bin
+#neigh_modify once no every 1 delay 0 check yes
+
+dielectric ${conversionfactor}
+timestep ${dt}
+
+########################### Add atom info ##############################################
+
+mass 3 ${pmass}
+
+group freeatom type 3
+group movingatoms type 2 3
+
+variable scalefac equal ${pmass}/${sigma_atom}
+
+#fix lgvfix movingatoms langevin $T $T ${dampfac} 699483 scale 3 ${scalefac} # Had this before...
+fix lgvfix movingatoms langevin $T $T ${dampfac} ${confignr} scale 3 ${scalefac}
+fix 1 movingatoms nve
+
+velocity freeatom set 0 0 0 #${vcomp} ${vcomp} ${vcomp} # starting with zero velocity
+
+compute pefree freeatom pe/atom
+compute peprint freeatom reduce sum c_pefree
+
+############################ Run ##############################################
+
+log C:\Users\Kine\Documents\Projects_PhD\P2_PolymerMD\Planar_brush\Diffusion_bead_near_grid\Spacing${spacing}\damp${dampfac}_diffseedLgv\Brush\Sigma_bead_${sigma_atom}\log-files\log.confignr${confignr}_printevery10
+#print 'log file not to blame'
+
+dump walltest freeatom custom 100 C:\Users\kine\Documents\Projects_PhD\P2_PolymerMD\Planar_brush\Diffusion_bead_near_grid\Spacing${spacing}\damp${dampfac}_diffseedLgv\Brush\Sigma_bead_${sigma_atom}\freeatom_confignr${confignr}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
+print 'YO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Spacing: ${spacing}; density: ${density}; psigma: ${sigma_atom}; pmass: ${pmass}; confignr${confignr}'
+dump walltest_all all custom 200000 C:\Users\kine\Documents\Projects_PhD\P2_PolymerMD\Planar_brush\Diffusion_bead_near_grid\Spacing${spacing}\damp${dampfac}_diffseedLgv\Brush\Sigma_bead_${sigma_atom}\all_confignr${confignr}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
+
+thermo 10
+thermo_style custom step c_peprint
+
+run 200000
+
+clear
+next confignr
+jump SELF nloop

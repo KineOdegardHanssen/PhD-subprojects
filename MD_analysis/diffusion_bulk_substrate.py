@@ -51,7 +51,7 @@ print('timestepsize:', timestepsize)
 #folderbase = 'Bulkdiffusion'+startpart+nextpart+namemid+nameend
 #namebase_short = namebase # In case I ever need to shorten it
 #namebase_out   = namebase_short+'_cut'
-endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp)+ parentfolder + '/Sigma_bead_' + str(psigma) + '/'
+endlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp)+ parentfolder + '/Sigma_bead_' + str(psigma) + '/'
 filestext            = '_seed'+str(seeds[0])+'to'+str(seeds[-1])
 #endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_' + str(psigma)+'/'
 outfilename          = endlocation+filestext+'.txt'
