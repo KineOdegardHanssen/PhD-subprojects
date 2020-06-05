@@ -32,7 +32,7 @@ Nplacements = 10#10
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 2
+spacing = 8
 psigma  = 1   #.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -45,6 +45,8 @@ print('psigma:', psigma)
 T        = 3
 plotseed = 0
 plotdirs = False
+zhigh          = 250
+zlow           = -50
 test_sectioned = False
 #seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 confignrs      = np.arange(1,Nconfigs+1)#300)#20)#101)#1001)#22)
@@ -269,6 +271,7 @@ for confignr in confignrs:
         
         time_start = time.process_time()
         counter = 0
+        zs_fortesting = []
         while i<totlines:
             words = lines[i].split()
             if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
@@ -299,6 +302,7 @@ for confignr in confignrs:
                 vx.append(float(words[6]))
                 vy.append(float(words[7]))
                 vz.append(float(words[8]))
+                zs_fortesting.append(z)
                 counter+=1
                 i+=1
         infile_free.close()
@@ -309,6 +313,11 @@ for confignr in confignrs:
         times_single_real = np.arange(Nsteps)*dt
         
         time_end = time.process_time()
+
+        if max(zs_fortesting)>zhigh:
+            continue
+        if min(zs_fortesting)<zlow:
+            continue
         
         pos_inpolymer = []
         

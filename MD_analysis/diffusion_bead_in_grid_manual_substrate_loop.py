@@ -5,7 +5,6 @@ from scipy.optimize import curve_fit
 from pylab import *
 from scipy.ndimage import measurements, convolve    # Should have used the command below, but changing now will lead to confusion
 from scipy import ndimage                           # For Euclidean distance measurement
-import maintools_percolation as perctools
 import data_treatment as datr
 import numpy as np
 import random
@@ -30,7 +29,7 @@ def rmsd(x,y):
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 3
+spacing = 75
 psigma  = 1#.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -44,6 +43,8 @@ T        = 3
 plotseed = 0
 plotdirs = False
 test_sectioned = False
+zhigh          = 250
+zlow           = -50
 #seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 confignrs    = np.arange(1,1001)#300)#20)#101)#1001)#22) 
 Nseeds       = len(confignrs)      # So that I don't have to change that much
@@ -58,8 +59,7 @@ Npartitions  = 5 # For extracting more walks from one file (but is it really suc
 minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 print('timestepsize:', timestepsize)
 
-#endlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % (spacing,damp)+str(psigma) + '/'
-endlocation       = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Brush/'+foldername+'/Spacing'+str(spacing)+'/Sigma_bead_'+str(psigma)
+endlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp + str(psigma) + '/'
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 # Text files
 outfilename_ds       = endlocation+'av_ds_'+filestext+'.txt'                        #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_av_ds.txt'
@@ -268,6 +268,7 @@ for confignr in confignrs:
     
     time_start = time.process_time()
     counter = 0
+    zs_fortesting = []
     while i<totlines:
         words = lines[i].split()
         if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
@@ -298,6 +299,7 @@ for confignr in confignrs:
             vx.append(float(words[6]))
             vy.append(float(words[7]))
             vz.append(float(words[8]))
+            zs_fortesting.append(z)
             counter+=1
             i+=1
     infile_free.close()
@@ -308,6 +310,11 @@ for confignr in confignrs:
     times_single_real = np.arange(Nsteps)*dt
     
     time_end = time.process_time()
+    
+    if max(zs_fortesting)>zhigh:
+        continue
+    if min(zs_fortesting)<zlow:
+        continue
     
     pos_inpolymer = []
     
