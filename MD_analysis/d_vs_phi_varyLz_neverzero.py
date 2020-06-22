@@ -6,7 +6,7 @@ Nchains = 9
 Nbeads  = 100
 hsub    = 1
 hcyl    = 100
-r       = 0.5
+r       = 1 #0.5
 psigma  = 1
 
 # Find Lz
@@ -26,16 +26,37 @@ d   = np.array(d)
 Lzs = np.array(Lzs)
 
 def give_phiblock_wsubstr(d,Lz):
-    return 1 - (pi*r**2*hcyl+d**2*hsub)/(d**2*Lz)
+    porosity = 1 - (pi*r**2*hcyl+d**2*hsub)/(d**2*Lz)
+    Np = len(porosity)
+    for i in range(Np):
+        if porosity[i]<0:
+            porosity[i] = 0
+    return porosity
+
 
 def give_phibead_wsubstr(d,Lz):
-    return 1 - (4./3*pi*r**3*(Nbeads+0.5*d**2))/(d**2*Lz)
+    porosity = 1 - (4./3*pi*r**3*(Nbeads+0.5*d**2))/(d**2*Lz)
+    Np = len(porosity)
+    for i in range(Np):
+        if porosity[i]<0:
+            porosity[i] = 0
+    return porosity
 
 def give_phiblock_chainsonly(d,Lz):
-    return 1 - (pi*r**2*hcyl)/(d**2*Lz)
+    porosity = 1 - (pi*r**2*hcyl)/(d**2*Lz)
+    Np = len(porosity)
+    for i in range(Np):
+        if porosity[i]<0:
+            porosity[i] = 0
+    return porosity
 
 def give_phibead_chainsonly(d,Lz):
-    return 1 - (4./3*pi*r**3*Nbeads)/(d**2*Lz)
+    porosity = 1 - (4./3*pi*r**3*Nbeads)/(d**2*Lz)
+    Np = len(porosity)
+    for i in range(Np):
+        if porosity[i]<0:
+            porosity[i] = 0
+    return porosity
 
 
 ### Plotting:
@@ -43,14 +64,14 @@ phi_block_ws = give_phiblock_wsubstr(d,Lzs)
 phi_bead_ws  = give_phibead_wsubstr(d,Lzs)
 phi_block_co = give_phiblock_chainsonly(d,Lzs)
 phi_bead_co  = give_phibead_chainsonly(d,Lzs)
-filename_ws = 'd_vs_phi_wsubstrate_varyLz.txt'
+filename_ws = 'd_vs_phi_wsubstrate_varyLz_r%.1f_neverzero.txt' % r
 file_ws = open(filename_ws, 'w')
 file_ws.write('d phi(blockmodel) phi(beadmodel)\n')
 for i in range(len(d)):
     file_ws.write('%.2f %.16f %.16f\n' % (d[i], phi_block_ws[i], phi_bead_ws[i]))
 file_ws.close()
 
-filename_wos = 'd_vs_phi_withoutsubstrate_varyLz.txt'
+filename_wos = 'd_vs_phi_withoutsubstrate_varyLz_r%.1f_neverzero.txt' % r
 file_wos = open(filename_wos, 'w')
 file_wos.write('d phi(blockmodel) phi(beadmodel)\n')
 for i in range(len(d)):
