@@ -1,11 +1,6 @@
-from skimage import morphology, measure, io, util   # For performing morphology operations (should maybe import more from skimage...)
-from mpl_toolkits.mplot3d import Axes3D             # Plotting in 3D
 import matplotlib.pyplot as plt                     # To plot
 from scipy.optimize import curve_fit
 from pylab import *
-from scipy.ndimage import measurements, convolve    # Should have used the command below, but changing now will lead to confusion
-from scipy import ndimage                           # For Euclidean distance measurement
-import maintools_percolation as perctools
 import numpy as np
 import random
 import math
@@ -27,7 +22,7 @@ def rmsd(x,y):
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 psigma   = 1 # For instance 
-spacings = np.array([1,1.25,1.5,2,3,4,5,6,7,10,15,25,50,75,100])#np.array([5, 10]) # Will add d=100 to this list soon. Need even more points too.
+spacings = [1,1.25,1.5,2,3,4,5,6,7,10,15,25,50,75,100] #np.array([5, 10]) # Will add d=100 to this list soon. Need even more points too.
 pmass    = 1 # I don't use this anymore, but it got stuck in the file names. Have constant mass density now.
 damp     = 10
 N        = len(spacings)
@@ -89,7 +84,7 @@ indexfile.write('Start_index_R     end_index_R     Start_index_ort     end_index
 
 for i in range(N):
     spacing = spacings[i]
-    endlocation_in   = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder+ 'Sigma_bead_' +str(psigma) + '/Nocut/'
+    endlocation_in   = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/' % damp +parentfolder+ 'Sigma_bead_' +str(psigma) + '/Nocut/'
     infilename = endlocation_in+'diffusion'+filestext+'_nocut.txt' #_timestep'+str(startindex)+'to'+str(endindex)+'.txt'
     metaname   = endlocation_in+'diffusion_metadata'+filestext+'_nocut.txt' # In original file set as:  endlocation+'lammpsdiffusion_qdrgr'+namebase_short+'_metadata.txt'
 
@@ -144,6 +139,7 @@ for i in range(N):
 
 outfile.close()
 
+spacings = np.array(spacings)
     
 plt.figure(figsize=(6,5))
 #plt.errorbar(psigmas, DRs, yerr=DRs_stdv, capsize=2, fmt='none', label=r'$D_R$')
