@@ -47,7 +47,7 @@ def return_allen_cell_model(model_folder):
             if sec_dict["section"] == sectype:
                 #print(sectype, sec_dict)
                 if not sec_dict["mechanism"] == "":
-                    print(sectype, sec_dict)
+                    #print(sectype, sec_dict)
                     sec.insert(sec_dict["mechanism"])
                 exec("sec.{} = {}".format(sec_dict["name"], sec_dict["value"]))
 
@@ -88,13 +88,16 @@ for model_idx in range(len(all_models)):
             'idx': 0,
             'record_current': True,
             'pptype': 'IClamp',
-            'amp': 0.8,
+            'amp': 0.5,
             'dur': 100,
             'delay': 1,
         }
+    #print('cai before:', neuron.h.axon[0](1).cai) # Probably a clumsy way to do this
     stimulus = LFPy.StimIntElectrode(cell,**pointprocess)
     cell.simulate(rec_vmem=True)
-
+    
+    idxs = cell.get_idx(section="axon")
+    
     plt.close("all")
     fig = plt.figure(figsize=[12, 8])
     fig.subplots_adjust(wspace=0.5)
@@ -114,4 +117,22 @@ for model_idx in range(len(all_models)):
     ax4.plot(cell.tvec, stimulus.i)
 
     fig.savefig(join("figures", '{}_{}.png'.format(model_idx, model_name)))
+    
+    #for idx in idxs:
+    #    print('idx:',idx)
+    
+    # print out section information: # Works even though I do everything through LFPy
+    #for sec in neuron.h.allsec():
+    #    neuron.h.psection()
+
+    fig = plt.figure(figsize=[12, 8])
+    [plt.plot(cell.tvec, cell.vmem[idx, :], label='%i' % idx) for idx in idxs]
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Potential (mV)')
+    plt.title('Membrane potential along axon')
+    plt.legend(loc='upper right')
+    fig.savefig(join("figures", "axon", '{}_{}_axon.png'.format(model_idx, model_name)))
+    
+    #print('cai after:', neuron.h.axon[0](1).cai) # Probably a clumsy way to do this.
+    
     sys.exit()
