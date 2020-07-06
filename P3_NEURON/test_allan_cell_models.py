@@ -73,14 +73,10 @@ if "win64" in sys.platform:
         neuron.h.nrn_load_dll(mod_folder+"/nrnmech.dll")
     neuron.nrn_dll_loaded.append(mod_folder)
 
-####neuron.load_mechanisms(mod_folder)#('Allen_test')#(mod_folder) #("modfiles")#mod_folder)
-
-
 for model_idx in range(len(all_models)):
     model_name = all_models[model_idx]
     #print(model_idx, model_name)
     model_folder = join("cell_models", model_name)
-    #model_folder = join("cell_models_Arkhipov_et_al", model_name)#("all_cell_models", model_name)
 
     cell = return_allen_cell_model(model_folder)
 
@@ -92,9 +88,8 @@ for model_idx in range(len(all_models)):
             'dur': 100,
             'delay': 1,
         }
-    #print('cai before:', neuron.h.axon[0](1).cai) # Probably a clumsy way to do this
     stimulus = LFPy.StimIntElectrode(cell,**pointprocess)
-    cell.simulate(rec_vmem=True)
+    cell.simulate(rec_vmem=True, rec_variables=['cai'])
     
     idxs = cell.get_idx(section="axon")
     
@@ -118,9 +113,6 @@ for model_idx in range(len(all_models)):
 
     fig.savefig(join("figures", '{}_{}.png'.format(model_idx, model_name)))
     
-    #for idx in idxs:
-    #    print('idx:',idx)
-    
     # print out section information: # Works even though I do everything through LFPy
     #for sec in neuron.h.allsec():
     #    neuron.h.psection()
@@ -133,6 +125,20 @@ for model_idx in range(len(all_models)):
     plt.legend(loc='upper right')
     fig.savefig(join("figures", "axon", '{}_{}_axon.png'.format(model_idx, model_name)))
     
-    #print('cai after:', neuron.h.axon[0](1).cai) # Probably a clumsy way to do this.
+    fig = plt.figure(figsize=[12, 8])
+    #plt.plot(cell.tvec, cell.rec_variables['cai'][0, :], label='Soma') # Soma is high
+    [plt.plot(cell.tvec, cell.rec_variables['cai'][idx, :], label='Axon seg. %i' % idx) for idx in idxs] # Worth a shot # Is this even the axon? Should it not be the soma?
+    plt.xlabel('Time (ms)')
+    plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
+    plt.title('Ca$^{2+}$-concentration along axon')
+    plt.legend(loc='lower right')
+    fig.savefig(join("figures", "axon", '{}_{}_axon_Ca.png'.format(model_idx, model_name)))
+    
+    fig = plt.figure(figsize=[12, 8])
+    plt.plot(cell.tvec, cell.rec_variables['cai'][0, :])
+    plt.xlabel('Time (ms)')
+    plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
+    plt.title('Ca$^{2+}$-concentration in soma')
+    fig.savefig(join("figures", '{}_{}_Ca.png'.format(model_idx, model_name)))
     
     sys.exit()
