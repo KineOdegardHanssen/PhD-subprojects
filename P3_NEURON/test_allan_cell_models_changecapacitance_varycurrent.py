@@ -26,6 +26,9 @@ cm_axon = 10.0
 idur = 100 # ms
 iamp = 0.5 # nA
 
+#
+tstop_i = idur+20.
+
 def return_allen_cell_model(model_folder):
 
     params = json.load(open(join(model_folder, "fit_parameters.json"), 'r'))
@@ -49,7 +52,7 @@ def return_allen_cell_model(model_folder):
         'lambda_f' : 200.,           # frequency where length constants are computed
         'dt' : 2.**-5,      # simulation time step size
         'tstart' : -100.,      # start time of simulation, recorders start at t=0
-        'tstop' : 120.,     # stop simulation at 100 ms.
+        'tstop' : tstop_i,     # stop simulation at idur+20 ms.
         # 'custom_code': ['remove_axon.hoc']
     }
 
