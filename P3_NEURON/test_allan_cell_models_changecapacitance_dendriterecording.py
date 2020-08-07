@@ -22,6 +22,13 @@ cm_soma = 0.01
 cm_dend = 0.01
 cm_axon = 10.0
 
+# Change current:
+idur = 100 # ms
+iamp = 0.5 # nA
+
+#
+tstop_i = idur+20.
+
 def return_allen_cell_model(model_folder):
 
     params = json.load(open(join(model_folder, "fit_parameters.json"), 'r'))
@@ -45,7 +52,7 @@ def return_allen_cell_model(model_folder):
         'lambda_f' : 200.,           # frequency where length constants are computed
         'dt' : 2.**-5,      # simulation time step size
         'tstart' : -100.,      # start time of simulation, recorders start at t=0
-        'tstop' : 120.,     # stop simulation at 100 ms.
+        'tstop' : tstop_i,     # stop simulation at 100 ms.
         # 'custom_code': ['remove_axon.hoc']
     }
 
@@ -62,10 +69,10 @@ def return_allen_cell_model(model_folder):
                     #print('sectype==soma')
                     sec.cm = cm_soma
                 if sectype=="dend": # Works
-                    print('sectype==dend')
+                    #print('sectype==dend')
                     sec.cm = cm_dend
                 if sectype=="axon": # Works
-                    print('sectype==axon')
+                    #print('sectype==axon')
                     sec.cm = cm_axon
                 if not sec_dict["mechanism"] == "":
                     #print(sectype, sec_dict)
@@ -111,8 +118,8 @@ for model_idx in range(len(all_models)): # Change this?
             'idx': 0,
             'record_current': True,
             'pptype': 'IClamp',
-            'amp': 0.5,
-            'dur': 100,
+            'amp': iamp,
+            'dur': idur,
             'delay': 1,
         }
     stimulus = LFPy.StimIntElectrode(cell,**pointprocess)
@@ -126,16 +133,17 @@ for model_idx in range(len(all_models)): # Change this?
         [plt.plot(cell.tvec, cell.vmem[idx, :], label='%i' % idx) for idx in idxs]
         plt.xlabel('Time (ms)')
         plt.ylabel('Potential (mV)')
-        plt.title('Membrane potential along axon')
+        plt.title('Membrane potential along dendrite %i' % this_dendrite_id)
         plt.legend(loc='upper right')
-       fig.savefig(join("figures", "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
-    
-       fig = plt.figure(figsize=[12, 8])
-       [plt.plot(cell.tvec, cell.rec_variables['cai'][idx, :], label='Axon seg. %i' % idx) for idx in idxs]
-       plt.xlabel('Time (ms)')
-       plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
-       plt.title('Ca$^{2+}$-concentration along axon')
-       plt.legend(loc='lower right')
-       fig.savefig(join("figures", "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
+        fig.savefig(join("figures", "dend", '{}_{}_idur{}_iamp{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}.png'.format(model_idx, model_name,idur,iamp,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
+        
+        # NB! No [Ca2+]-recording (no cai) in dendrites for cell with cell-id 496497595
+        fig = plt.figure(figsize=[12, 8])
+        [plt.plot(cell.tvec, cell.rec_variables['cai'][idx, :], label='Dendrite seg. %i' % idx) for idx in idxs]
+        plt.xlabel('Time (ms)')
+        plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
+        plt.title('Ca$^{2+}$-concentration along dendrite %i' % this_dendrite_id)
+        plt.legend(loc='lower right')
+        fig.savefig(join("figures", "dend", '{}_{}_idur{}_iamp{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}_Ca.png'.format(model_idx, model_name,idur,iamp,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
     
     sys.exit()
