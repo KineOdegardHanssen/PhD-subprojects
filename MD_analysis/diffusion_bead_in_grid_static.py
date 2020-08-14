@@ -32,7 +32,7 @@ Nplacements = 10#10
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 8
+spacing = 3
 psigma  = 1   #.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -67,19 +67,20 @@ gatheredconfignrs = np.arange(1,Nfiles+1) # For some old printing
 print('timestepsize:', timestepsize)
 
 basepath        = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/Spacing'+str(spacing)+'/'
-location_config = basepath + 'Radius1/Initial_configs/Before_bead/'
 basepath        = basepath + 'Radius' + str(psigma) + '/'
+location_config = basepath +'Initial_configs/Before_bead/'
 endlocation     = basepath + 'Results/'
 
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(beadplacements[0])+'to'+str(beadplacements[-1])
 # Text files
-outfilename_ds       = endlocation+'av_ds_'+filestext+'.txt'
-outfilename_sections = endlocation+'sections_'+filestext+'.txt'
-outfilename_maxz     = endlocation+'maxz_az_'+filestext+'.txt'
-outfilename_dt       = endlocation+'dt.txt'
-outfilename_cuts     = endlocation+'cuts.txt'
-outfilename_noexit   = endlocation+'noexitzs.txt'
+outfilename_ds           = endlocation+'av_ds_'+filestext+'.txt'
+outfilename_sections     = endlocation+'sections_'+filestext+'.txt'
+outfilename_maxz         = endlocation+'maxz_az_'+filestext+'.txt'
+outfilename_dt           = endlocation+'dt.txt'
+outfilename_cuts         = endlocation+'cuts.txt'
+outfilename_noexit       = endlocation+'noexitzs.txt'
 outfilename_skippedfiles = endlocation+'skippedfiles.txt'
+outfilename_exittimes    = endlocation+'exittimes.txt'
 
 # Plots
 plotname             = endlocation+filestext+'.png'
@@ -95,13 +96,15 @@ plotname_velocity_SI = endlocation+'velocity_SI_'+filestext+'.png'
 plotname_velocity_sq = endlocation+'velocity_sq_'+filestext+'.png'
 plotname_sectioned_average = endlocation+'sections_'+filestext+'.png'
 plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext+'.png'
-plotname_traj_xy = endlocation+'traj_xy_config'+str(confignrs[-1])+'.png'
-plotname_traj_xz = endlocation+'traj_xz_config'+str(confignrs[-1])+'.png'
-plotname_traj_yz = endlocation+'traj_yz_config'+str(confignrs[-1])+'.png'
-plotname_traj_xt = endlocation+'traj_xt_config'+str(confignrs[-1])+'.png'
-plotname_traj_yt = endlocation+'traj_yt_config'+str(confignrs[-1])+'.png'
-plotname_traj_zt = endlocation+'traj_zt_config'+str(confignrs[-1])+'.png'
-plotname_th_hist = endlocation+'th_hist_'+filestext+'.png'
+plotname_traj_xy    = endlocation+'traj_xy_config'+str(confignrs[-1])+'.png'
+plotname_traj_xz    = endlocation+'traj_xz_config'+str(confignrs[-1])+'.png'
+plotname_traj_yz    = endlocation+'traj_yz_config'+str(confignrs[-1])+'.png'
+plotname_traj_xt    = endlocation+'traj_xt_config'+str(confignrs[-1])+'.png'
+plotname_traj_yt    = endlocation+'traj_yt_config'+str(confignrs[-1])+'.png'
+plotname_traj_zt    = endlocation+'traj_zt_config'+str(confignrs[-1])+'.png'
+plotname_th_hist    = endlocation+'th_hist_'+filestext+'.png'
+plotname_exittimes  = endlocation+'exittimes_'+filestext+'.png'
+plotname_exittimes_binned = endlocation+'exittimes_hist_'+filestext+'.png'
 
 
 ## Setting arrays
@@ -158,6 +161,8 @@ sections_walk  = []
 sections_steps = []
 # This is not squared, obviously:
 alltimes  = []
+exittimes = []
+exitzs    = [] # A safeguard
 
 linestart_data = 22
 skippedfiles = 0
@@ -182,6 +187,7 @@ for confignr in confignrs:
     ## Find the extent of the polymers: Max z-coord of beads in the chains
     try:
         infile_config = open(infilename_config, "r")
+        print('config%i' % confignr)
     except:
         print('Oh, data-file! Where art thou?')
         outfile_skippedfiles.write('%i\n' % confignr)
@@ -233,9 +239,10 @@ for confignr in confignrs:
         
         try:
             infile_free = open(infilename_free, "r")
+            #print('file name that WORKED:', infilename_config)
         except:
             print('Oh, data-file! Where art thou?')
-            print('file name that failed:', infilename_config)
+            print('file name that failed:', infilename_free)
             skippedfiles += 1
             continue # Skipping this file if it does not exist
         filescounter += 1
@@ -313,10 +320,13 @@ for confignr in confignrs:
         times_single_real = np.arange(Nsteps)*dt
         
         time_end = time.process_time()
-
+        
         if max(zs_fortesting)>zhigh:
+            print('Unphysical trajectory for config %i beadplacement %i' % (confignr,beadplacement))
             continue
         if min(zs_fortesting)<zlow:
+            print('Unphysical trajectory for config %i beadplacement %i' % (confignr,beadplacement))
+            continue
             continue
         
         pos_inpolymer = []
@@ -338,6 +348,9 @@ for confignr in confignrs:
                     posnow = positions[iex] 
                     outfile_cuts.write('%.16e ' % posnow[2])
                 outfile_cuts.write('\n')
+                # Saving info on exit times:
+                exittimes.append(i*dt) # Change to time step
+                exitzs.append(z)
                 break
             else:
                 pos_inpolymer.append(thesepos)
@@ -1070,3 +1083,36 @@ print('counters:',average_counter)
 
 print('spacing:', spacing)
 print('psigma:', psigma)
+
+#    = endlocation+'exittimes.txt'
+outfile_exittimes = open(outfilename_exittimes,'w')
+outfile_exittimes.write('Exit time | Value of z at exit time\n')
+for i in range(len(exittimes)):
+    outfile_exittimes.write('%.16e %.16e\n' % (exittimes[i],exitzs[i]))
+outfile_exittimes.close()
+
+
+plt.figure()
+plt.plot(np.sort(exittimes), 'o') # I'll see how this works, if not I can always replot
+plt.ylabel(r'Exit time [s]')
+plt.title('Exit time for brush, d = %i nm' % spacing)
+plt.tight_layout()
+#plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+plt.savefig(plotname_exittimes)
+
+Nexits = len(exittimes)
+Nbins  = int(Nexits/10)      # Don't know if this is the best solution...
+hist, bin_edges = np.histogram(exittimes, bins=20)
+
+
+# Creating histogram 
+fig, axs = plt.subplots(1, 1, 
+                        figsize =(10, 7),  
+                        tight_layout = True) 
+  
+axs.hist(exittimes, bins = 20) 
+plt.xlabel(r'Exit time [s]',fontsize=15)
+plt.ylabel('Number of exits',fontsize=15)
+plt.title('Exit time for brush, d = %i nm, histogram' % spacing,fontsize=15)
+plt.savefig(plotname_exittimes_binned)
+
