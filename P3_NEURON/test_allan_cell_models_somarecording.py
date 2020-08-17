@@ -10,18 +10,6 @@ import numpy as np
 
 import LFPy
 
-# Defaulting to original values:
-# DO NOT TOUCH THESE!
-# SET THEM BELOW INSTEAD!
-cm_soma = 1.14805
-cm_dend = 9.98231
-cm_axon = 3.00603
-
-# Changing values of membrane capacitance:
-cm_soma = 0.01
-cm_dend = 0.01
-cm_axon = 10.0
-
 def return_allen_cell_model(model_folder):
 
     params = json.load(open(join(model_folder, "fit_parameters.json"), 'r'))
@@ -58,17 +46,8 @@ def return_allen_cell_model(model_folder):
         for sec_dict in active_mechs:
             if sec_dict["section"] == sectype:
                 #print(sectype, sec_dict)
-                if sectype=="soma": # Works
-                    #print('sectype==soma')
-                    sec.cm = cm_soma
-                if sectype=="dend": # Works
-                    #print('sectype==dend')
-                    sec.cm = cm_dend
-                if sectype=="axon": # Works
-                    #print('sectype==axon')
-                    sec.cm = cm_axon
                 if not sec_dict["mechanism"] == "":
-                    #print(sectype, sec_dict)
+                    print(sectype, sec_dict)
                     sec.insert(sec_dict["mechanism"])
                 exec("sec.{} = {}".format(sec_dict["name"], sec_dict["value"]))
 
@@ -94,10 +73,14 @@ if "win64" in sys.platform:
         neuron.h.nrn_load_dll(mod_folder+"/nrnmech.dll")
     neuron.nrn_dll_loaded.append(mod_folder)
 
+####neuron.load_mechanisms(mod_folder)#('Allen_test')#(mod_folder) #("modfiles")#mod_folder)
+
+
 for model_idx in range(len(all_models)):
     model_name = all_models[model_idx]
     #print(model_idx, model_name)
     model_folder = join("cell_models", model_name)
+    #model_folder = join("cell_models_Arkhipov_et_al", model_name)#("all_cell_models", model_name)
 
     cell = return_allen_cell_model(model_folder)
 
@@ -105,15 +88,13 @@ for model_idx in range(len(all_models)):
             'idx': 0,
             'record_current': True,
             'pptype': 'IClamp',
-            'amp': 0.5,
+            'amp': 0.8,
             'dur': 100,
             'delay': 1,
         }
     stimulus = LFPy.StimIntElectrode(cell,**pointprocess)
-    cell.simulate(rec_vmem=True, rec_variables=['cai'])
-    
-    idxs = cell.get_idx(section="axon")
-    
+    cell.simulate(rec_vmem=True)
+
     plt.close("all")
     fig = plt.figure(figsize=[12, 8])
     fig.subplots_adjust(wspace=0.5)
@@ -132,34 +113,5 @@ for model_idx in range(len(all_models)):
 
     ax4.plot(cell.tvec, stimulus.i)
 
-    fig.savefig(join("figures", "%s" % model_name, '{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
-    
-    # print out section information: # Works even though I do everything through LFPy
-    for sec in neuron.h.allsec():
-        neuron.h.psection()
-
-    fig = plt.figure(figsize=[12, 8])
-    [plt.plot(cell.tvec, cell.vmem[idx, :], label='%i' % idx) for idx in idxs]
-    plt.xlabel('Time (ms)')
-    plt.ylabel('Potential (mV)')
-    plt.title('Membrane potential along axon')
-    plt.legend(loc='upper right')
-    fig.savefig(join("figures", "%s" % model_name, "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
-    
-    fig = plt.figure(figsize=[12, 8])
-    #plt.plot(cell.tvec, cell.rec_variables['cai'][0, :], label='Soma') # Soma is high
-    [plt.plot(cell.tvec, cell.rec_variables['cai'][idx, :], label='Axon seg. %i' % idx) for idx in idxs] # Worth a shot # Is this even the axon? Should it not be the soma?
-    plt.xlabel('Time (ms)')
-    plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
-    plt.title('Ca$^{2+}$-concentration along axon')
-    plt.legend(loc='lower right')
-    fig.savefig(join("figures", "%s" % model_name, "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
-    
-    fig = plt.figure(figsize=[12, 8])
-    plt.plot(cell.tvec, cell.rec_variables['cai'][0, :])
-    plt.xlabel('Time (ms)')
-    plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
-    plt.title('Ca$^{2+}$-concentration in soma')
-    fig.savefig(join("figures", "%s" % model_name, '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
-    
+    fig.savefig(join("figures", "%s" % model_name, '{}_{}.png'.format(model_idx, model_name)))
     sys.exit()

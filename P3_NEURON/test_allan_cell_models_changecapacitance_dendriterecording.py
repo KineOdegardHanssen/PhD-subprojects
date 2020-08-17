@@ -20,7 +20,7 @@ cm_axon = 3.00603
 # Changing values of membrane capacitance:
 cm_soma = 0.01
 cm_dend = 0.01
-cm_axon = 10.0
+cm_axon = 0.01
 
 # Change current:
 idur = 100 # ms
@@ -28,6 +28,8 @@ iamp = 0.5 # nA
 
 #
 tstop_i = idur+20.
+
+ca_on = False # Switch to not generate unneccessary plots
 
 def return_allen_cell_model(model_folder):
 
@@ -102,9 +104,9 @@ if "win64" in sys.platform:
     neuron.nrn_dll_loaded.append(mod_folder)
 
 ############## Only holds for cell-id 496497595 #############
-N_plotdendrites = 4
-dendrite_id     = [4,5,11,13]
-dendrite_idxs   = [[4,22,28,35],[4,40,46],[4,6,84,87],[4,6,99]]
+N_plotdendrites = 5
+dendrite_id     = ['A','D','E','K','M']
+dendrite_idxs   = [[0,4,6,8,11],[0,21,23,29,35],[0,36,41,46],[0,84,87],[0,99]]
 #############################################################
 
 for model_idx in range(len(all_models)): # Change this?
@@ -133,17 +135,18 @@ for model_idx in range(len(all_models)): # Change this?
         [plt.plot(cell.tvec, cell.vmem[idx, :], label='%i' % idx) for idx in idxs]
         plt.xlabel('Time (ms)')
         plt.ylabel('Potential (mV)')
-        plt.title('Membrane potential along dendrite %i' % this_dendrite_id)
+        plt.title('Membrane potential along dendrite %s' % this_dendrite_id)
         plt.legend(loc='upper right')
-        fig.savefig(join("figures", "dend", '{}_{}_idur{}_iamp{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}.png'.format(model_idx, model_name,idur,iamp,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
+        fig.savefig(join("figures", "%s" % model_name, "dend", "dend%s" % this_dendrite_id, '{}_{}_idur{}_iamp{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}.png'.format(model_idx, model_name,idur,iamp,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
         
         # NB! No [Ca2+]-recording (no cai) in dendrites for cell with cell-id 496497595
-        fig = plt.figure(figsize=[12, 8])
-        [plt.plot(cell.tvec, cell.rec_variables['cai'][idx, :], label='Dendrite seg. %i' % idx) for idx in idxs]
-        plt.xlabel('Time (ms)')
-        plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
-        plt.title('Ca$^{2+}$-concentration along dendrite %i' % this_dendrite_id)
-        plt.legend(loc='lower right')
-        fig.savefig(join("figures", "dend", '{}_{}_idur{}_iamp{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}_Ca.png'.format(model_idx, model_name,idur,iamp,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
+        if ca_on==True:
+            fig = plt.figure(figsize=[12, 8])
+            [plt.plot(cell.tvec, cell.rec_variables['cai'][idx, :], label='Dendrite seg. %i' % idx) for idx in idxs]
+            plt.xlabel('Time (ms)')
+            plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
+            plt.title('Ca$^{2+}$-concentration along dendrite %s' % this_dendrite_id)
+            plt.legend(loc='lower right')
+            fig.savefig(join("figures", "%s" % model_name, "dend", "dend%s" % this_dendrite_id, '{}_{}_idur{}_iamp{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}_Ca.png'.format(model_idx, model_name,idur,iamp,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
     
     sys.exit()

@@ -11,9 +11,10 @@ import numpy as np
 import LFPy
 
 ## Choose model(s) to test:
-testmodel = 515175347 #Axonabundance (Hundreds of axon sections, branched dends, at least one part of the neuron is not connected to the rest)
-#testmodel = 501282059 #Originalplayer (Not everything is connected to the rest. 156 axon sec., 35 dend. sec.)
+#testmodel = 515175347 #Axonabundance (Hundreds of axon sections, branched dends, at least one part of the neuron is not connected to the rest) # AXON CONNECTED TO DENDRITE!!!
+#testmodel = 501282059 #Originalplayer (Not everything is connected to the rest. 156 axon sec., 35 dend. sec.) # AXON CONNECTED TO DENDRITE!!!
 #testmodel = 496497595 #Developmentcell (One short axon, branched dendrites, everything seems to be connected, no errors)
+testmodel = 497232392
 testmodel = 'neur_%i' % testmodel
 all_models = [testmodel]
 

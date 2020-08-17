@@ -10,6 +10,17 @@ import numpy as np
 
 import LFPy
 
+## Choose model(s) to test:
+#testmodel = 515175347 #Axonabundance (Hundreds of axon sections, branched dends, at least one part of the neuron is not connected to the rest) # AXON CONNECTED TO DENDRITE!!!
+#testmodel = 501282059 #Originalplayer (Not everything is connected to the rest. 156 axon sec., 35 dend. sec.) # AXON CONNECTED TO DENDRITE!!!
+#testmodel = 496497595 #Developmentcell (One short axon, branched dendrites, everything seems to be connected, no errors)
+testmodel = 497232392
+testmodel = 'neur_%i' % testmodel
+all_models = [testmodel]
+
+# Change this! Or come up with some automated solution.
+idxs = [0,6,25,39,58]
+
 # Defaulting to original values:
 # DO NOT TOUCH THESE!
 # SET THEM BELOW INSTEAD!
@@ -18,9 +29,16 @@ cm_dend = 9.98231
 cm_axon = 3.00603
 
 # Changing values of membrane capacitance:
-cm_soma = 0.01
-cm_dend = 0.01
-cm_axon = 10.0
+#cm_soma = 0.01
+#cm_dend = 0.01
+#cm_axon = 10.0
+
+# Change current:
+idur = 2 # ms
+iamp = 10.00 # nA
+
+#
+tstop_i = idur+20.
 
 def return_allen_cell_model(model_folder):
 
@@ -45,7 +63,7 @@ def return_allen_cell_model(model_folder):
         'lambda_f' : 200.,           # frequency where length constants are computed
         'dt' : 2.**-5,      # simulation time step size
         'tstart' : -100.,      # start time of simulation, recorders start at t=0
-        'tstop' : 120.,     # stop simulation at 100 ms.
+        'tstop' : tstop_i,     # stop simulation at idur+20 ms.
         # 'custom_code': ['remove_axon.hoc']
     }
 
@@ -82,10 +100,9 @@ def return_allen_cell_model(model_folder):
 
 cell_models_folder = "cell_models" #"cell_models_Arkhipov_et_al" #"all_cell_models"
 
-all_models = [f for f in os.listdir(cell_models_folder) if f.startswith("neur")
-              and os.path.isdir(join(cell_models_folder, f))]
-mod_folder = "Allen_test" #"modfiles" #"Allen_test/modfiles" #"all_mods"
-print("mod_folder:", mod_folder)
+#all_models = [f for f in os.listdir(cell_models_folder) if f.startswith("neur")
+#              and os.path.isdir(join(cell_models_folder, f))]
+mod_folder = "Allen_test_changecapacitance/cell_models/"+testmodel+"/modfiles"
 if "win64" in sys.platform:
     print('Detected sys.platform as win64')
     warn("no autompile of NMODL (.mod) files on Windows. " 
@@ -105,14 +122,14 @@ for model_idx in range(len(all_models)):
             'idx': 0,
             'record_current': True,
             'pptype': 'IClamp',
-            'amp': 0.5,
-            'dur': 100,
+            'amp': iamp,
+            'dur': idur,
             'delay': 1,
         }
     stimulus = LFPy.StimIntElectrode(cell,**pointprocess)
     cell.simulate(rec_vmem=True, rec_variables=['cai'])
     
-    idxs = cell.get_idx(section="axon")
+    #idxs = cell.get_idx(section="axon")
     
     plt.close("all")
     fig = plt.figure(figsize=[12, 8])
@@ -132,11 +149,11 @@ for model_idx in range(len(all_models)):
 
     ax4.plot(cell.tvec, stimulus.i)
 
-    fig.savefig(join("figures", "%s" % model_name, '{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%s" % model_name,"current_idur%i_iamp%.2f" % (idur,iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     # print out section information: # Works even though I do everything through LFPy
-    for sec in neuron.h.allsec():
-        neuron.h.psection()
+    #for sec in neuron.h.allsec():
+    #    neuron.h.psection()
 
     fig = plt.figure(figsize=[12, 8])
     [plt.plot(cell.tvec, cell.vmem[idx, :], label='%i' % idx) for idx in idxs]
@@ -144,7 +161,7 @@ for model_idx in range(len(all_models)):
     plt.ylabel('Potential (mV)')
     plt.title('Membrane potential along axon')
     plt.legend(loc='upper right')
-    fig.savefig(join("figures", "%s" % model_name, "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%s" % model_name,"current_idur%i_iamp%.2f" % (idur,iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     fig = plt.figure(figsize=[12, 8])
     #plt.plot(cell.tvec, cell.rec_variables['cai'][0, :], label='Soma') # Soma is high
@@ -153,13 +170,13 @@ for model_idx in range(len(all_models)):
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration along axon')
     plt.legend(loc='lower right')
-    fig.savefig(join("figures", "%s" % model_name, "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%s" % model_name, "current_idur%i_iamp%.2f" % (idur,iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     fig = plt.figure(figsize=[12, 8])
     plt.plot(cell.tvec, cell.rec_variables['cai'][0, :])
     plt.xlabel('Time (ms)')
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration in soma')
-    fig.savefig(join("figures", "%s" % model_name, '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%s" % model_name,"current_idur%i_iamp%.2f" % (idur,iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     sys.exit()

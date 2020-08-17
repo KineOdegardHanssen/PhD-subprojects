@@ -10,6 +10,18 @@ import numpy as np
 
 import LFPy
 
+cm_soma_original = 1.14805
+cm_dend_original = 9.98231
+cm_axon_original = 3.00603
+
+# Defaulting to original values
+cm_soma = cm_soma_original
+cm_dend = cm_dend_original
+cm_axon = cm_axon_original
+
+# Changing values of membrane capacitance:
+cm_soma = 0.5
+
 def return_allen_cell_model(model_folder):
 
     params = json.load(open(join(model_folder, "fit_parameters.json"), 'r'))
@@ -46,6 +58,15 @@ def return_allen_cell_model(model_folder):
         for sec_dict in active_mechs:
             if sec_dict["section"] == sectype:
                 #print(sectype, sec_dict)
+                if sectype=="soma": # Works
+                    #print('sectype==soma')
+                    sec.cm = cm_soma
+                if sectype=="dend": # Works
+                    print('sectype==dend')
+                    sec.cm = cm_dend
+                if sectype=="axon": # Works
+                    print('sectype==axon')
+                    sec.cm = cm_axon
                 if not sec_dict["mechanism"] == "":
                     #print(sectype, sec_dict)
                     sec.insert(sec_dict["mechanism"])
@@ -111,7 +132,7 @@ for model_idx in range(len(all_models)):
 
     ax4.plot(cell.tvec, stimulus.i)
 
-    fig.savefig(join("figures", '{}_{}.png'.format(model_idx, model_name)))
+    fig.savefig(join("figures", "%s" % model_name, '{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     # print out section information: # Works even though I do everything through LFPy
     #for sec in neuron.h.allsec():
@@ -123,7 +144,7 @@ for model_idx in range(len(all_models)):
     plt.ylabel('Potential (mV)')
     plt.title('Membrane potential along axon')
     plt.legend(loc='upper right')
-    fig.savefig(join("figures", "axon", '{}_{}_axon.png'.format(model_idx, model_name)))
+    fig.savefig(join("figures", "%s" % model_name, "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     fig = plt.figure(figsize=[12, 8])
     #plt.plot(cell.tvec, cell.rec_variables['cai'][0, :], label='Soma') # Soma is high
@@ -132,13 +153,13 @@ for model_idx in range(len(all_models)):
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration along axon')
     plt.legend(loc='lower right')
-    fig.savefig(join("figures", "axon", '{}_{}_axon_Ca.png'.format(model_idx, model_name)))
+    fig.savefig(join("figures", "%s" % model_name, "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     fig = plt.figure(figsize=[12, 8])
     plt.plot(cell.tvec, cell.rec_variables['cai'][0, :])
     plt.xlabel('Time (ms)')
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration in soma')
-    fig.savefig(join("figures", '{}_{}_Ca.png'.format(model_idx, model_name)))
+    fig.savefig(join("figures", "%s" % model_name, '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     sys.exit()

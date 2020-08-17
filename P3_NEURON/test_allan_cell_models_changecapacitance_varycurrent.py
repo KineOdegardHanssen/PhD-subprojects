@@ -18,12 +18,12 @@ cm_dend = 9.98231
 cm_axon = 3.00603
 
 # Changing values of membrane capacitance:
-cm_soma = 0.01
-cm_dend = 0.01
-cm_axon = 10.0
+#cm_soma = 0.01
+#cm_dend = 0.01
+#cm_axon = 10.0
 
 # Change current:
-idur = 100 # ms
+idur = 30 # ms
 iamp = 0.5 # nA
 
 #
@@ -139,7 +139,7 @@ for model_idx in range(len(all_models)):
 
     ax4.plot(cell.tvec, stimulus.i)
 
-    fig.savefig(join("figures","current_idur%i_iamp%.1f" % (idur,iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%s" % model_name,"current_idur%i_iamp%.1f" % (idur,iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     # print out section information: # Works even though I do everything through LFPy
     #for sec in neuron.h.allsec():
@@ -151,7 +151,7 @@ for model_idx in range(len(all_models)):
     plt.ylabel('Potential (mV)')
     plt.title('Membrane potential along axon')
     plt.legend(loc='upper right')
-    fig.savefig(join("figures","current_idur%i_iamp%.1f" % (idur,iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%s" % model_name,"current_idur%i_iamp%.1f" % (idur,iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     fig = plt.figure(figsize=[12, 8])
     #plt.plot(cell.tvec, cell.rec_variables['cai'][0, :], label='Soma') # Soma is high
@@ -160,13 +160,13 @@ for model_idx in range(len(all_models)):
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration along axon')
     plt.legend(loc='lower right')
-    fig.savefig(join("figures","current_idur%i_iamp%.1f" % (idur,iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%s" % model_name,"current_idur%i_iamp%.1f" % (idur,iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     fig = plt.figure(figsize=[12, 8])
     plt.plot(cell.tvec, cell.rec_variables['cai'][0, :])
     plt.xlabel('Time (ms)')
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration in soma')
-    fig.savefig(join("figures","current_idur%i_iamp%.1f" % (idur,iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%s" % model_name,"current_idur%i_iamp%.1f" % (idur,iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     sys.exit()
