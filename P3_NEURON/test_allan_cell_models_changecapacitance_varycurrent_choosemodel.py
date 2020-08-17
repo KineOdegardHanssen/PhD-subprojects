@@ -15,8 +15,8 @@ import LFPy
 #testmodel = 501282059 #Originalplayer (Not everything is connected to the rest. 156 axon sec., 35 dend. sec.) # AXON CONNECTED TO DENDRITE!!!
 #testmodel = 496497595 #Developmentcell (One short axon, branched dendrites, everything seems to be connected, no errors)
 testmodel = 497232392
-testmodel = 'neur_%i' % testmodel
-all_models = [testmodel]
+testmodelname = 'neur_%i' % testmodel
+all_models    = [testmodelname]
 
 # Change this! Or come up with some automated solution.
 idxs = [0,6,25,39,58]
@@ -149,7 +149,7 @@ for model_idx in range(len(all_models)):
 
     ax4.plot(cell.tvec, stimulus.i)
 
-    fig.savefig(join("figures", "%s" % model_name,"current_idur%i_iamp%.2f" % (idur,iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp%.2f" % (idur,iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     # print out section information: # Works even though I do everything through LFPy
     #for sec in neuron.h.allsec():
@@ -161,7 +161,7 @@ for model_idx in range(len(all_models)):
     plt.ylabel('Potential (mV)')
     plt.title('Membrane potential along axon')
     plt.legend(loc='upper right')
-    fig.savefig(join("figures", "%s" % model_name,"current_idur%i_iamp%.2f" % (idur,iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp%.2f" % (idur,iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     fig = plt.figure(figsize=[12, 8])
     #plt.plot(cell.tvec, cell.rec_variables['cai'][0, :], label='Soma') # Soma is high
@@ -170,13 +170,26 @@ for model_idx in range(len(all_models)):
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration along axon')
     plt.legend(loc='lower right')
-    fig.savefig(join("figures", "%s" % model_name, "current_idur%i_iamp%.2f" % (idur,iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel, "current_idur%i_iamp%.2f" % (idur,iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     fig = plt.figure(figsize=[12, 8])
     plt.plot(cell.tvec, cell.rec_variables['cai'][0, :])
     plt.xlabel('Time (ms)')
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration in soma')
-    fig.savefig(join("figures", "%s" % model_name,"current_idur%i_iamp%.2f" % (idur,iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp%.2f" % (idur,iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    
+    outfilename = "figures/%i/current_idur%i_iamp%.2f/idur%i_iamp%.2f_cmsoma" % (testmodel,idur,iamp,idur,iamp) + str(cm_soma) + "_cmdend" + str(cm_dend) + "_cmaxon"+ str(cm_axon) + ".txt"
+    outfile.open(outfilename,'w')
+    vmem_soma = cell.vmem[0,:]#[idx, :] # Have time array too...
+    Ca_soma   = cell.rec_variables['cai'][0, :] # Don't know if I need this...
+    print('vmem_soma:',vmem_soma)
+    
+    time = cell.tvec # time
+    Nt   = len(time)
+    
+    for i in range(Nt):
+        outfile.write('%.16f %.16f %.16f\n' % (time[i],vmem_soma[i],Ca_soma[i]))
+    outfile.close()    
     
     sys.exit()

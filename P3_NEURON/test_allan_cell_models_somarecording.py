@@ -81,6 +81,7 @@ for model_idx in range(len(all_models)):
     #print(model_idx, model_name)
     model_folder = join("cell_models", model_name)
     #model_folder = join("cell_models_Arkhipov_et_al", model_name)#("all_cell_models", model_name)
+    testmodel    = int("".join(filter(str.isdigit, model_name))) ###int(list(filter(str.isdigit, model_name))[0])
 
     cell = return_allen_cell_model(model_folder)
 
@@ -113,5 +114,5 @@ for model_idx in range(len(all_models)):
 
     ax4.plot(cell.tvec, stimulus.i)
 
-    fig.savefig(join("figures", "%s" % model_name, '{}_{}.png'.format(model_idx, model_name)))
+    fig.savefig(join("figures", , "%i" % testmodel, '{}_{}.png'.format(model_idx, model_name)))
     sys.exit()

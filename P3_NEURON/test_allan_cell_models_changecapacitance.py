@@ -98,6 +98,7 @@ for model_idx in range(len(all_models)):
     model_name = all_models[model_idx]
     #print(model_idx, model_name)
     model_folder = join("cell_models", model_name)
+    testmodel    = int("".join(filter(str.isdigit, model_name))) ###int(list(filter(str.isdigit, model_name))[0])
 
     cell = return_allen_cell_model(model_folder)
 
@@ -132,7 +133,7 @@ for model_idx in range(len(all_models)):
 
     ax4.plot(cell.tvec, stimulus.i)
 
-    fig.savefig(join("figures", "%s" % model_name, '{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel, '{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     # print out section information: # Works even though I do everything through LFPy
     for sec in neuron.h.allsec():
@@ -144,7 +145,7 @@ for model_idx in range(len(all_models)):
     plt.ylabel('Potential (mV)')
     plt.title('Membrane potential along axon')
     plt.legend(loc='upper right')
-    fig.savefig(join("figures", "%s" % model_name, "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel, "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     fig = plt.figure(figsize=[12, 8])
     #plt.plot(cell.tvec, cell.rec_variables['cai'][0, :], label='Soma') # Soma is high
@@ -153,13 +154,13 @@ for model_idx in range(len(all_models)):
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration along axon')
     plt.legend(loc='lower right')
-    fig.savefig(join("figures", "%s" % model_name, "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel, "axon", '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     fig = plt.figure(figsize=[12, 8])
     plt.plot(cell.tvec, cell.rec_variables['cai'][0, :])
     plt.xlabel('Time (ms)')
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration in soma')
-    fig.savefig(join("figures", "%s" % model_name, '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel, '{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(model_idx, model_name,cm_soma,cm_dend,cm_axon)))
     
     sys.exit()

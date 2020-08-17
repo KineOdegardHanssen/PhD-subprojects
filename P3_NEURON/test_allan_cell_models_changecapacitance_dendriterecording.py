@@ -113,6 +113,7 @@ for model_idx in range(len(all_models)): # Change this?
     model_name = all_models[model_idx]
     #print(model_idx, model_name)
     model_folder = join("cell_models", model_name)
+    testmodel    = int("".join(filter(str.isdigit, model_name))) ###int(list(filter(str.isdigit, model_name))[0])
 
     cell = return_allen_cell_model(model_folder)
 
@@ -137,7 +138,7 @@ for model_idx in range(len(all_models)): # Change this?
         plt.ylabel('Potential (mV)')
         plt.title('Membrane potential along dendrite %s' % this_dendrite_id)
         plt.legend(loc='upper right')
-        fig.savefig(join("figures", "%s" % model_name, "dend", "dend%s" % this_dendrite_id, '{}_{}_idur{}_iamp{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}.png'.format(model_idx, model_name,idur,iamp,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
+        fig.savefig(join("figures", "%i" % testmodel, "dend", "dend%s" % this_dendrite_id, '{}_{}_idur{}_iamp{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}.png'.format(model_idx, model_name,idur,iamp,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
         
         # NB! No [Ca2+]-recording (no cai) in dendrites for cell with cell-id 496497595
         if ca_on==True:
@@ -147,6 +148,6 @@ for model_idx in range(len(all_models)): # Change this?
             plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
             plt.title('Ca$^{2+}$-concentration along dendrite %s' % this_dendrite_id)
             plt.legend(loc='lower right')
-            fig.savefig(join("figures", "%s" % model_name, "dend", "dend%s" % this_dendrite_id, '{}_{}_idur{}_iamp{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}_Ca.png'.format(model_idx, model_name,idur,iamp,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
+            fig.savefig(join("figures", "%i" % testmodel, "dend", "dend%s" % this_dendrite_id, '{}_{}_idur{}_iamp{}_cmsoma{}_cmdend{}_cmaxon{}_dend{}_Ca.png'.format(model_idx, model_name,idur,iamp,cm_soma,cm_dend,cm_axon,this_dendrite_id)))
     
     sys.exit()
