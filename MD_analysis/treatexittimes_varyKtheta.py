@@ -15,18 +15,19 @@ Nplacements = 10#10
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacings = [1, 1.25, 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 15, 25, 50, 75, 100]
+spacing = 3
+Kthetas = [0.1, 1, 14, 100, 1000]
 psigma  = 1
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 print('spacing:', spacing)
 print('psigma:', psigma)
-N = len(spacings) # ... I don't use this (yet)
+N = len(Kthetas) # ... I don't use this (yet)
 
-outpath = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/'
+outpath = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Exittime_vs_Ktheta/Spacing'+str(spacing)+'/Sigma_bead_1/'
 outfilename = outpath + 'exittimes_av_rms_range.txt'
-nofilename  = outpath + 'Nexits_vs_d.txt'
+nofilename  = outpath + 'Nexits_vs_Ktheta.txt'
 plotname    = outpath + 'exittimes_av_rms_range_dynamic.png'
-noplotname  = outpath + 'Nexits_vs_d_dynamic.png'
+noplotname  = outpath + 'Nexits_vs_Ktheta.png'
 
 
 outfile = open(outfilename,'w')
@@ -40,8 +41,8 @@ min_exittimes = []
 max_exittimes = []
 Nexits_list   = []
 
-for spacing in spacings:
-    basepath        = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp+str(psigma) + '/'
+for Ktheta in Kthetas:
+    basepath        = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/' % damp + 'Sigma_bead_' +str(psigma) + '/VaryKtheta/Ktheta'+str(Ktheta)+'/'
     endlocation     = basepath
     
     infilename = endlocation+'exittimes.txt'
@@ -73,8 +74,8 @@ for spacing in spacings:
         min_exittime = min(exittimes)
         max_exittime = max(exittimes)
     
-    outfile.write('%.2f %.6e %.6e %.6e %.6e\n' % (spacing, av_exittime,rms_exittime,min_exittime,max_exittime))
-    nofile.write('%.2f %i\n' % (spacing,Nexits))
+    outfile.write('%.2f %.6e %.6e %.6e %.6e\n' % (Ktheta, av_exittime,rms_exittime,min_exittime,max_exittime)) # Resolution on this thing?
+    nofile.write('%.2f %i\n' % (Ktheta,Nexits))
     
     av_exittimes.append(av_exittime)
     rms_exittimes.append(rms_exittime)
@@ -86,27 +87,28 @@ nofile.close()
 
 '''
 for i in range(N):
-    print('spacing:',spacings[i], '; av_exittimes:', av_exittimes[i], '; rms_exittimes:', rms_exittimes[i],  '; min_exittimes:', min_exittimes[i],  '; max_exittimes:', max_exittimes[i] )
+    print('Ktheta:',Kthetas[i], '; av_exittimes:', av_exittimes[i], '; rms_exittimes:', rms_exittimes[i],  '; min_exittimes:', min_exittimes[i],  '; max_exittimes:', max_exittimes[i] )
 '''
 
 plt.figure(figsize=[10,8])
-plt.errorbar(spacings, av_exittimes, yerr=rms_exittimes, fmt="none", capsize=2)
-plt.plot(spacings,av_exittimes, '.', color='tab:blue')
-plt.fill_between(spacings, min_exittimes,max_exittimes, alpha=0.3)
-###plt.plot(spacings,min_exittimes, '.', color='tab:blue')
-###plt.plot(spacings,max_exittimes, '.', color='tab:blue')
-plt.xlabel('Spacing d',fontsize=15)
+plt.errorbar(Kthetas, av_exittimes, yerr=rms_exittimes, fmt="none", capsize=2)
+plt.plot(Kthetas,av_exittimes, '.', color='tab:blue')
+plt.fill_between(Kthetas, min_exittimes,max_exittimes, alpha=0.3)
+###plt.plot(Kthetas,min_exittimes, '.', color='tab:blue')
+###plt.plot(Kthetas,max_exittimes, '.', color='tab:blue')
+plt.xlabel(r'$K_\theta$',fontsize=15)
 plt.ylabel(r'Exit time [s]',fontsize=15)
 plt.title('Exit time for dynamic brush, histogram',fontsize=15)
 plt.savefig(plotname)
 
 plt.figure(figsize=[10,8])
-plt.plot(spacings,Nexits_list, '-o')
-plt.xlabel(r'Spacing $d$',fontsize=15)
+plt.plot(Kthetas,Nexits_list, '-o')
+plt.xlabel(r'$K_\theta$',fontsize=15)
 plt.ylabel(r'Number of exits',fontsize=15)
 plt.title('Number of exits for dynamic brush, histogram',fontsize=15)
 plt.savefig(noplotname)
 plt.show()
+
 
 '''
 print('spacings:',spacings)

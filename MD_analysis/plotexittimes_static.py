@@ -15,7 +15,7 @@ Nplacements = 10#10
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 3
+spacing = 4
 psigma  = 1
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 print('spacing:', spacing)
@@ -41,7 +41,7 @@ for line in lines:
         exittimes.append(float(words[0]))
 
 Nexits = len(exittimes)
-Nbins  = int(Nexits/10)      # Don't know if this is the best solution...
+Nbins  = int(Nexits/5)      # Don't know if this is the best solution...
 hist, bin_edges = np.histogram(exittimes, bins=20)
 dbin = bin_edges[1]-bin_edges[0]
 dbinhalf = dbin/2
