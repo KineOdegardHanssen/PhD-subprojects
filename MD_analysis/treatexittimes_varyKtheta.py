@@ -26,7 +26,8 @@ N = len(Kthetas) # ... I don't use this (yet)
 outpath = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Exittime_vs_Ktheta/Spacing'+str(spacing)+'/Sigma_bead_1/'
 outfilename = outpath + 'exittimes_av_rms_range.txt'
 nofilename  = outpath + 'Nexits_vs_Ktheta.txt'
-plotname    = outpath + 'exittimes_av_rms_range_dynamic.png'
+plotname    = outpath + 'exittimes_av_rms_range_dynamic_varyKtheta.png'
+logplotname = outpath + 'exittimes_av_rms_range_varyKtheta_log.png'
 noplotname  = outpath + 'Nexits_vs_Ktheta.png'
 
 
@@ -100,6 +101,20 @@ plt.xlabel(r'$K_\theta$',fontsize=15)
 plt.ylabel(r'Exit time [s]',fontsize=15)
 plt.title('Exit time for dynamic brush, histogram',fontsize=15)
 plt.savefig(plotname)
+
+fig = plt.figure(figsize=[10,8])
+ax = fig.add_subplot(1,1,1)
+plt.errorbar(Kthetas, av_exittimes, yerr=rms_exittimes, fmt="none", capsize=2)
+plt.plot(Kthetas,av_exittimes, '.', color='tab:blue')
+plt.fill_between(Kthetas, min_exittimes,max_exittimes, alpha=0.3)
+ax.set_xscale('log')
+#plt.set_xscale('log')
+###plt.plot(Kthetas,min_exittimes, '.', color='tab:blue')
+###plt.plot(Kthetas,max_exittimes, '.', color='tab:blue')
+plt.xlabel(r'$K_\theta$',fontsize=15)
+plt.ylabel(r'Exit time [s]',fontsize=15)
+plt.title('Exit time for dynamic brush, histogram',fontsize=15)
+plt.savefig(logplotname)
 
 plt.figure(figsize=[10,8])
 plt.plot(Kthetas,Nexits_list, '-o')

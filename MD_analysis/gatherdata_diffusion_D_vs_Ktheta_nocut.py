@@ -80,6 +80,7 @@ endlocation_out = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brus
 outfilename  = endlocation_out+'D_vs_Ktheta_nocut.txt'
 plotname     = endlocation_out+'D_vs_Ktheta_nocut.png'
 plotname_fit = endlocation_out+'D_vs_Ktheta_fit_nocut.png'
+logplotname  = endlocation_out + 'D_vs_Ktheta_nocut_log.png'
 indfilename  = endlocation_out+'D_vs_Ktheta_fitindices_nocut.txt'
 
 outfile = open(outfilename, 'w')
@@ -158,4 +159,18 @@ plt.tight_layout()
 plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 plt.legend(loc='upper left')
 plt.savefig(plotname)
+
+fig = plt.figure(figsize=(6,5))
+ax = fig.add_subplot(1,1,1)
+plt.errorbar(Kthetas, DRs, yerr=DRs_stdv, capsize=2, label=r'$D_R$')
+plt.errorbar(Kthetas, Dzs, yerr=Dzs_stdv, capsize=2, label=r'$D_\perp$')
+plt.errorbar(Kthetas, Dparallel, yerr=Dparallel_stdv, capsize=2, label=r'$D_\parallel$')
+ax.set_xscale('log')
+plt.xlabel(r'$K_\theta$')
+plt.ylabel(r'Diffusion constant $D$')
+plt.title('Diffusion constant $D$, d = %i nm, dynamic %s' % (spacing, systemtype))
+plt.tight_layout()
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+plt.legend(loc='upper left')
+plt.savefig(logplotname)
 
