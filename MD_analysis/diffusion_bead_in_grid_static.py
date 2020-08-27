@@ -32,7 +32,7 @@ Nplacements = 10#10
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 3
+spacing = 100
 psigma  = 1   #.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -47,6 +47,7 @@ plotseed = 0
 plotdirs = False
 zhigh          = 250
 zlow           = -50
+testh          = 50     # For transport measurements
 test_sectioned = False
 #seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 confignrs      = np.arange(1,Nconfigs+1)#300)#20)#101)#1001)#22)
@@ -81,6 +82,7 @@ outfilename_cuts         = endlocation+'cuts.txt'
 outfilename_noexit       = endlocation+'noexitzs.txt'
 outfilename_skippedfiles = endlocation+'skippedfiles.txt'
 outfilename_exittimes    = endlocation+'exittimes.txt'
+outfilename_th           = endlocation+'ths_h%i' % testh +filestext+'.txt'
 
 # Plots
 plotname             = endlocation+filestext+'.png'
@@ -102,7 +104,7 @@ plotname_traj_yz    = endlocation+'traj_yz_config'+str(confignrs[-1])+'.png'
 plotname_traj_xt    = endlocation+'traj_xt_config'+str(confignrs[-1])+'.png'
 plotname_traj_yt    = endlocation+'traj_yt_config'+str(confignrs[-1])+'.png'
 plotname_traj_zt    = endlocation+'traj_zt_config'+str(confignrs[-1])+'.png'
-plotname_th_hist    = endlocation+'th_hist_'+filestext+'.png'
+plotname_th_hist    = endlocation+'th_hist_h%i' % testh +filestext+'.png'
 plotname_exittimes  = endlocation+'exittimes_'+filestext+'.png'
 plotname_exittimes_binned = endlocation+'exittimes_hist_'+filestext+'.png'
 
@@ -160,11 +162,15 @@ Nins          = []
 sections_walk  = []
 sections_steps = []
 # This is not squared, obviously:
-alltimes  = []
-exittimes = []
-exitzs    = [] # A safeguard
+alltimes     = []
+exittimes    = []
+exitzs       = [] # A safeguard
+testh_times  = []
+exiths       = [] # A safeguard
 
 linestart_data = 22
+
+Nread        = 0
 skippedfiles = 0
 
 outfile_cuts = open(outfilename_cuts, 'w')
@@ -322,13 +328,11 @@ for confignr in confignrs:
         time_end = time.process_time()
         
         if max(zs_fortesting)>zhigh:
-            print('Unphysical trajectory for config %i beadplacement %i' % (confignr,beadplacement))
             continue
         if min(zs_fortesting)<zlow:
-            print('Unphysical trajectory for config %i beadplacement %i' % (confignr,beadplacement))
             continue
-            continue
-        
+            
+        Nread += 1 # Counting the number of files we analyze
         pos_inpolymer = []
         
         #before_in
@@ -363,6 +367,15 @@ for confignr in confignrs:
                 posnow = positions[inoex] 
                 outfile_noexit.write('%.16e ' % posnow[2])
             outfile_noexit.write('\n')
+    
+        # testh_times:
+        for i in range(counter):
+            thesepos = positions[i]
+            z        = thesepos[2]
+            if z>testh: # If the polymer is in bulk # Measuring the time when is first reaches height h.
+                testh_times.append(i*dt)
+                exiths.append(i*dt)
+                break
         
         startpos_in   = pos_inpolymer[0]
         #######
@@ -1084,7 +1097,7 @@ print('counters:',average_counter)
 print('spacing:', spacing)
 print('psigma:', psigma)
 
-#    = endlocation+'exittimes.txt'
+# Exit times
 outfile_exittimes = open(outfilename_exittimes,'w')
 outfile_exittimes.write('Exit time | Value of z at exit time\n')
 for i in range(len(exittimes)):
@@ -1095,7 +1108,7 @@ outfile_exittimes.close()
 plt.figure()
 plt.plot(np.sort(exittimes), 'o') # I'll see how this works, if not I can always replot
 plt.ylabel(r'Exit time [s]')
-plt.title('Exit time for brush, d = %i nm' % spacing)
+plt.title('Exit time for static brush, d = %i nm' % spacing)
 plt.tight_layout()
 #plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.savefig(plotname_exittimes)
@@ -1113,6 +1126,31 @@ fig, axs = plt.subplots(1, 1,
 axs.hist(exittimes, bins = 20) 
 plt.xlabel(r'Exit time [s]',fontsize=15)
 plt.ylabel('Number of exits',fontsize=15)
-plt.title('Exit time for brush, d = %i nm, histogram' % spacing,fontsize=15)
+plt.title('Exit time for static brush, d = %i nm, histogram' % spacing,fontsize=15)
 plt.savefig(plotname_exittimes_binned)
 
+## Distribution of times when walker reaches height testh:
+Nth = len(testh_times)
+maxtime_testh = max(testh_times)
+mintime_testh = min(testh_times)
+
+outfile_th = open(outfilename_th,'w')
+outfile_th.write('Files read: %i' % Nread)
+for i in range(Nth):
+    outfile_th.write('%.16e %.16e\n' % (testh_times[i],exiths[i]))
+outfile_th.close()
+
+hist_th, bin_edges_th = np.histogram(testh_times, bins=20)
+
+# Creating histogram II
+# (https://stackoverflow.com/questions/22241240/how-to-normalize-a-histogram-in-python)
+#define width of each column
+width = bin_edges_th[1]-bin_edges_th[0]
+#standardize each column by dividing with the maximum height
+hist_th = hist_th/float(Nread)
+#plot
+plt.bar(bin_edges_th[:-1],hist_th,width = width)
+plt.xlabel(r'$t_h$ [s]')
+plt.ylabel(r'No. of exits/$N_{sims}$') 
+plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.savefig(plotname_th_hist)

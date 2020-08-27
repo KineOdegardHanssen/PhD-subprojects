@@ -29,7 +29,7 @@ def rmsd(x,y):
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 75
+spacing = 6
 psigma  = 1#.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -43,8 +43,9 @@ T        = 3
 plotseed = 0
 plotdirs = False
 test_sectioned = False
-zhigh          = 250
-zlow           = -50
+zhigh          = 250    # For omitting unphysical trajectories
+zlow           = -50    
+testh          = 50     # For transport measurements (default 50, might change for tests)
 #seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
 confignrs    = np.arange(1,1001)#300)#20)#101)#1001)#22) 
 Nseeds       = len(confignrs)      # So that I don't have to change that much
@@ -62,37 +63,41 @@ print('timestepsize:', timestepsize)
 endlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp + str(psigma) + '/'
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 # Text files
-outfilename_ds       = endlocation+'av_ds_'+filestext+'.txt'                        #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_av_ds.txt'
-outfilename_gamma    = endlocation+'zimportance_'+filestext+'.txt'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.txt'
-outfilename_sections = endlocation+'sections_'+filestext+'.txt'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_sections.txt'
-outfilename_maxz     = endlocation+'maxz_az_'+filestext+'.txt'
-outfilename_dt       = endlocation+'dt.txt'
-outfilename_cuts     = endlocation+'cuts.txt'
-outfilename_noexit   = endlocation+'noexitzs.txt'
+outfilename_ds           = endlocation+'av_ds_'+filestext+'.txt'
+outfilename_gamma        = endlocation+'zimportance_'+filestext+'.txt'
+outfilename_sections     = endlocation+'sections_'+filestext+'.txt'
+outfilename_maxz         = endlocation+'maxz_az_'+filestext+'.txt'
+outfilename_dt           = endlocation+'dt.txt'
+outfilename_cuts         = endlocation+'cuts.txt'
+outfilename_noexit       = endlocation+'noexitzs.txt'
 outfilename_skippedfiles = endlocation+'skippedfiles.txt'
+outfilename_exittimes    = endlocation+'exittimes.txt'
+outfilename_th           = endlocation+'ths_h%i' % testh +filestext+'.txt'
 
 # Plots
-plotname             = endlocation+filestext+'.png'                                 #'lammpsdiffusion_qdrgr_'+namebase+filestext+'.png'
-plotname_all         = endlocation+'all_'+filestext+'.png'                          #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_all.png'
-plotname_gamma       = endlocation+'zimportance_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_zimportance.png'
-plotname_SI          = endlocation+'SI_'+filestext+'.png'                           #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_SI.png'
-plotname_parallel_orthogonal = endlocation+'par_ort_'+filestext+'.png'              #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par_ort.png' 
-plotname_dx_dy_dz    = endlocation+'dx_dy_dz_'+filestext+'.png'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_dx_dy_dz.png' 
-plotname_parallel    = endlocation+'par_'+filestext+'.png'                          #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_par.png' 
-plotname_orthogonal  = endlocation+'ort_'+filestext+'.png'                          #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_ort.png'
-plotname_short_all   = endlocation+'short_all_'+filestext+'.png'                    #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_short_all.png'
-plotname_velocity    = endlocation+'velocity_'+filestext+'.png'                     #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity.png'
-plotname_velocity_SI = endlocation+'velocity_SI_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity_SI.png'
-plotname_velocity_sq = endlocation+'velocity_sq_'+filestext+'.png'                  #'lammpsdiffusion_qdrgr_'+namebase+filestext+'_velocity_sq.png'
-plotname_sectioned_average = endlocation+'sections_'+filestext+'.png'               #'lammpsdiffusion_'+namebase+filestext+'_sections.png'
-plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext+'.png'#'lammpsdiffusion_'+namebase+filestext+'_sections_steps.png'
-plotname_traj_xy = endlocation+'traj_xy_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_xy.png'
-plotname_traj_xz = endlocation+'traj_xz_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_xz.png'
-plotname_traj_yz = endlocation+'traj_yz_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_yz.png'
-plotname_traj_xt = endlocation+'traj_xt_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_xt.png'
-plotname_traj_yt = endlocation+'traj_yt_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_yt.png'
-plotname_traj_zt = endlocation+'traj_zt_config'+str(confignrs[-1])+'.png'           #'lammpsdiffusion_'+namebase+filestext+'_traj_zt.png'
-plotname_th_hist = endlocation+'th_hist_'+filestext+'.png'                          #'lammpsdiffusion_'+namebase+filestext+'_th_hist.png'
+plotname             = endlocation+filestext+'.png'
+plotname_all         = endlocation+'all_'+filestext+'.png'
+plotname_gamma       = endlocation+'zimportance_'+filestext+'.png'
+plotname_SI          = endlocation+'SI_'+filestext+'.png'
+plotname_parallel_orthogonal = endlocation+'par_ort_'+filestext+'.png'
+plotname_dx_dy_dz    = endlocation+'dx_dy_dz_'+filestext+'.png'
+plotname_parallel    = endlocation+'par_'+filestext+'.png'
+plotname_orthogonal  = endlocation+'ort_'+filestext+'.png'
+plotname_short_all   = endlocation+'short_all_'+filestext+'.png'
+plotname_velocity    = endlocation+'velocity_'+filestext+'.png'
+plotname_velocity_SI = endlocation+'velocity_SI_'+filestext+'.png'
+plotname_velocity_sq = endlocation+'velocity_sq_'+filestext+'.png'
+plotname_sectioned_average = endlocation+'sections_'+filestext+'.png'
+plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext+'.png'
+plotname_traj_xy    = endlocation+'traj_xy_config'+str(confignrs[-1])+'.png'
+plotname_traj_xz    = endlocation+'traj_xz_config'+str(confignrs[-1])+'.png'
+plotname_traj_yz    = endlocation+'traj_yz_config'+str(confignrs[-1])+'.png'
+plotname_traj_xt    = endlocation+'traj_xt_config'+str(confignrs[-1])+'.png'
+plotname_traj_yt    = endlocation+'traj_yt_config'+str(confignrs[-1])+'.png'
+plotname_traj_zt    = endlocation+'traj_zt_config'+str(confignrs[-1])+'.png'
+plotname_th_hist    = endlocation+'th_hist_h%i' % testh +filestext+'.png'
+plotname_exittimes  = endlocation+'exittimes_'+filestext+'.png'
+plotname_exittimes_binned = endlocation+'exittimes_hist_'+filestext+'.png'
 
 
 ## Setting arrays
@@ -152,9 +157,14 @@ Nins          = []
 sections_walk  = []
 sections_steps = []
 # This is not squared, obviously:
-alltimes  = []
+alltimes    = []
+exittimes   = []
+exitzs      = [] # A safeguard
+testh_times = []
+exiths      = [] # A safeguard
 
 
+Nread        = 0
 skippedfiles = 0
 
 outfile_cuts = open(outfilename_cuts, 'w')
@@ -316,6 +326,7 @@ for confignr in confignrs:
     if min(zs_fortesting)<zlow:
         continue
     
+    Nread += 1 # Counting the number of files we analyze
     pos_inpolymer = []
     
     #before_in
@@ -335,6 +346,9 @@ for confignr in confignrs:
                 posnow = positions[iex] 
                 outfile_cuts.write('%.16e ' % posnow[2])
             outfile_cuts.write('\n')
+            # Saving info on exit times:
+            exittimes.append(i*dt) # Change to time step
+            exitzs.append(z)
             break
         else:
             pos_inpolymer.append(thesepos)
@@ -347,6 +361,16 @@ for confignr in confignrs:
             posnow = positions[inoex] 
             outfile_noexit.write('%.16e ' % posnow[2])
         outfile_noexit.write('\n')
+    
+    # testh_times:
+    for i in range(counter):
+        thesepos = positions[i]
+        z        = thesepos[2]
+        if z>testh: # If the polymer is in bulk # Measuring the time when is first reaches height h.
+            testh_times.append(i*dt)
+            exiths.append(z)
+            break
+    
     startpos_in   = pos_inpolymer[0]
     #######
     # Will divide into several walks with different starting points later on
@@ -1071,3 +1095,70 @@ plt.savefig(plotname_sectioned_average_vs_steps)
 
 print('spacing:', spacing)
 print('psigma:', psigma)
+
+outfile_exittimes = open(outfilename_exittimes,'w')
+outfile_exittimes.write('Exit time | Value of z at exit time\n')
+for i in range(len(exittimes)):
+    outfile_exittimes.write('%.16e %.16e\n' % (exittimes[i],exitzs[i]))
+outfile_exittimes.close()
+
+# Exit times
+plt.figure()
+plt.plot(np.sort(exittimes), 'o') # I'll see how this works, if not I can always replot
+plt.ylabel(r'Exit time [s]')
+plt.title('Exit time for dynamic brush, d = %i nm' % spacing)
+plt.tight_layout()
+#plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+plt.savefig(plotname_exittimes)
+
+Nexits = len(exittimes)
+Nbins  = int(Nexits/10)      # Don't know if this is the best solution...
+hist, bin_edges = np.histogram(exittimes, bins=20)
+
+
+# Creating histogram 
+fig, axs = plt.subplots(1, 1, 
+                        figsize =(10, 7),  
+                        tight_layout = True) 
+  
+axs.hist(exittimes, bins = 20) 
+plt.xlabel(r'Exit time [s]',fontsize=15)
+plt.ylabel('Number of exits',fontsize=15)
+plt.title('Exit time for dynamic brush, d = %i nm, histogram' % spacing,fontsize=15)
+plt.savefig(plotname_exittimes_binned)
+
+
+
+## Distribution of times when walker reaches height testh:
+Nth = len(testh_times)
+maxtime_testh = max(testh_times)
+mintime_testh = min(testh_times)
+
+outfile_th = open(outfilename_th,'w')
+outfile_th.write('Files read: %i\n' % Nread)
+for i in range(Nth):
+    outfile_th.write('%.16e %.16e\n' % (testh_times[i],exiths[i]))
+outfile_th.close()
+
+hist_th, bin_edges_th = np.histogram(testh_times, bins=20)
+
+# Creating histogram II
+# (https://stackoverflow.com/questions/22241240/how-to-normalize-a-histogram-in-python)
+#define width of each column
+width = bin_edges_th[1]-bin_edges_th[0]
+#standardize each column by dividing with the maximum height
+hist_th = hist_th/float(Nread)
+#plot
+plt.bar(bin_edges_th[:-1],hist_th,width = width)
+plt.xlabel(r'$t_h$ [s]')
+plt.ylabel(r'No. of exits/$N_{sims}$') 
+plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.savefig(plotname_th_hist)
+
+
+print('hist, exitzs:',hist)
+print('hist, th:',hist_th)
+
+print('bin_edges_exitzs:',bin_edges)
+print('bin_edges_th:',bin_edges_th)
+
