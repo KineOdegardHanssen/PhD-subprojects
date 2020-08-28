@@ -19,9 +19,10 @@ def avg_and_rms(x):
     rms = np.sqrt(rms/(N-1)) 
     return rms, avg
 
+long = True
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 8
+spacing = 5
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)
@@ -29,15 +30,26 @@ print('psigma:', psigma)
 # Should divide into folders in a more thorough manner?
 # Extracting the correct names (all of them)
 T         = 3
-testh     = 50     # For transport measurements (default 50, might change for tests)
+testh     = 20     # For transport measurements (default 50, might change for tests)
 confignrs = np.arange(1,1001)
 
 
 endlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp + str(psigma) + '/'
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
-infilename           = endlocation+'ths_h%i' % testh +filestext+'.txt'
-outfilename          = endlocation+'ths_h%i' % testh +filestext+'_analysis.txt'
-plotname             = endlocation+'ths_h%i' % testh +filestext+'_dynamic_correct.png'
+if long==False:
+    infilename           = endlocation+'ths_h%i' % testh +filestext+'.txt'
+    outfilename          = endlocation+'ths_h%i' % testh +filestext+'_analysis.txt'
+    plotname             = endlocation+'ths_h%i' % testh +filestext+'_dynamic_correct.png'
+    plotname_dots_lines  = endlocation+'ths_h%i' % testh +filestext+'_dotline_dynamic_correct.png'
+    plotname_loglog      = endlocation+'ths_h%i' % testh +filestext+'_loglog_dynamic_correct.png'
+    plotname_ylog        = endlocation+'ths_h%i' % testh +filestext+'_ylog_dynamic_correct.png'
+else:
+    infilename           = endlocation+'ths_h%i' % testh +filestext+'_long.txt'
+    outfilename          = endlocation+'ths_h%i' % testh +filestext+'_long_analysis.txt'
+    plotname             = endlocation+'ths_h%i' % testh +filestext+'_long_dynamic_correct.png'
+    plotname_dots_lines  = endlocation+'ths_h%i' % testh +filestext+'_dotline_long_dynamic_correct.png'
+    plotname_loglog  = endlocation+'ths_h%i' % testh +filestext+'_loglog_long_dynamic_correct.png'
+    plotname_ylog        = endlocation+'ths_h%i' % testh +filestext+'_ylog_long_dynamic_correct.png'
 
 infile    = open(infilename,'r')
 firstline = infile.readline()
@@ -56,14 +68,22 @@ infile.close()
 
 ## Distribution of times when walker reaches height testh:
 Nth = len(testh_times)
-maxth = max(testh_times)
-minth = min(testh_times)
-maxzh = max(exiths)
-minzh = min(exiths)
-
-avgth, rmsth = avg_and_rms(testh_times)
-avgzh, rmszh = avg_and_rms(exiths)
-
+if Nth>0:
+    maxth = max(testh_times)
+    minth = min(testh_times)
+    maxzh = max(exiths)
+    minzh = min(exiths)
+    
+    avgth, rmsth = avg_and_rms(testh_times)
+    avgzh, rmszh = avg_and_rms(exiths)
+else: # Not sure this really helps with anything...
+    maxth = 0
+    minth = 0
+    maxzh = 0
+    minzh = 0
+    
+    avgth = 0; rmsth = 0
+    avgzh = 0; rmszh = 0
 outfile = open(outfilename,'w')
 outfile.write('Files read: %i\n' % Nreal)
 outfile.write('Number of th\'s: %i\n'% Nth)
@@ -91,3 +111,29 @@ plt.xlabel(r'$t_h$ [s]')
 plt.ylabel(r'No. of exits/$N_{sims}$') 
 plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
 plt.savefig(plotname)
+
+# Plotting dots, not histograms
+halfwidth = width/2.
+bin_edges_shifted = bin_edges_th[:-1]+halfwidth
+figure()
+plt.plot(bin_edges_shifted,hist_th, '-o')
+plt.xlabel(r'$t_h$ [s]')
+plt.ylabel(r'No. of exits/$N_{sims}$') 
+plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.savefig(plotname_dots_lines)
+
+figure()
+plt.loglog(bin_edges_shifted,hist_th, '-o')
+plt.xlabel(r'$t_h$ [s]')
+plt.ylabel(r'No. of exits/$N_{sims}$') 
+plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.savefig(plotname_loglog)
+
+fig = figure()
+ax = fig.add_subplot(1,1,1)
+plt.plot(bin_edges_shifted,hist_th, '-o')
+plt.xlabel(r'$t_h$ [s]')
+plt.ylabel(r'No. of exits/$N_{sims}$')
+ax.set_yscale('log')
+plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.savefig(plotname_ylog)

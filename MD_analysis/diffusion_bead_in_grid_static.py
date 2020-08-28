@@ -32,7 +32,7 @@ Nplacements = 10#10
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 100
+spacing = 75
 psigma  = 1   #.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -1131,9 +1131,6 @@ plt.savefig(plotname_exittimes_binned)
 
 ## Distribution of times when walker reaches height testh:
 Nth = len(testh_times)
-maxtime_testh = max(testh_times)
-mintime_testh = min(testh_times)
-
 outfile_th = open(outfilename_th,'w')
 outfile_th.write('Files read: %i' % Nread)
 for i in range(Nth):

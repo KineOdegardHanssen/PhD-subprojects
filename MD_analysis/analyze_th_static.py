@@ -60,13 +60,22 @@ infile.close()
 
 ## Distribution of times when walker reaches height testh:
 Nth = len(testh_times)
-maxth = max(testh_times)
-minth = min(testh_times)
-maxzh = max(exiths)
-minzh = min(exiths)
-
-avgth, rmsth = avg_and_rms(testh_times)
-avgzh, rmszh = avg_and_rms(exiths)
+if Nth>0:
+    maxth = max(testh_times)
+    minth = min(testh_times)
+    maxzh = max(exiths)
+    minzh = min(exiths)
+    
+    avgth, rmsth = avg_and_rms(testh_times)
+    avgzh, rmszh = avg_and_rms(exiths)
+else: # Not sure this really helps with anything... 
+    maxth = 0
+    minth = 0
+    maxzh = 0
+    minzh = 0
+    
+    avgth = 0; rmsth = 0
+    avgzh = 0; rmszh = 0
 
 outfile = open(outfilename,'w')
 outfile.write('Files read: %i\n' % Nreal)
