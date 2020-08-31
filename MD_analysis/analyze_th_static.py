@@ -19,6 +19,7 @@ def avg_and_rms(x):
     rms = np.sqrt(rms/(N-1)) 
     return rms, avg
 
+long = False
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 spacing = 8
@@ -37,11 +38,27 @@ beadplacements = np.arange(1,Nplacements+1)
 
 
 basepath        = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/Spacing'+str(spacing)+'/'
-endlocation     = basepath + 'Results/'
+endlocation     = basepath + 'Radius1/Results/'
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(beadplacements[0])+'to'+str(beadplacements[-1])
+################################
 infilename           = endlocation+'ths_h%i' % testh +filestext+'.txt'
 outfilename          = endlocation+'ths_h%i' % testh +filestext+'_static_analysis.txt'
 plotname             = endlocation+'ths_h%i' % testh +filestext+'_static_correct.png'
+################################
+if long==False:
+    infilename           = endlocation+'ths_h%i' % testh +filestext+'.txt'
+    outfilename          = endlocation+'ths_h%i' % testh +filestext+'_static_analysis.txt'
+    plotname             = endlocation+'ths_h%i' % testh +filestext+'_static_correct.png'
+    plotname_dots_lines  = endlocation+'ths_h%i' % testh +filestext+'_dotline_static_correct.png'
+    plotname_loglog      = endlocation+'ths_h%i' % testh +filestext+'_loglog_static_correct.png'
+    plotname_ylog        = endlocation+'ths_h%i' % testh +filestext+'_ylog_static_correct.png'
+else:
+    infilename           = endlocation+'ths_h%i' % testh +filestext+'_long.txt'
+    outfilename          = endlocation+'ths_h%i' % testh +filestext+'_long_static_analysis.txt'
+    plotname             = endlocation+'ths_h%i' % testh +filestext+'_long_static_correct.png'
+    plotname_dots_lines  = endlocation+'ths_h%i' % testh +filestext+'_dotline_long_static_correct.png'
+    plotname_loglog  = endlocation+'ths_h%i' % testh +filestext+'_loglog_long_static_correct.png'
+    plotname_ylog        = endlocation+'ths_h%i' % testh +filestext+'_ylog_long_static_correct.png'
 
 infile    = open(infilename,'r')
 firstline = infile.readline()
@@ -104,3 +121,29 @@ plt.xlabel(r'$t_h$ [s]')
 plt.ylabel(r'No. of exits/$N_{sims}$') 
 plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
 plt.savefig(plotname)
+
+# Plotting dots, not histograms
+halfwidth = width/2.
+bin_edges_shifted = bin_edges_th[:-1]+halfwidth
+figure()
+plt.plot(bin_edges_shifted,hist_th, '-o')
+plt.xlabel(r'$t_h$ [s]')
+plt.ylabel(r'No. of exits/$N_{sims}$') 
+plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.savefig(plotname_dots_lines)
+
+figure()
+plt.loglog(bin_edges_shifted,hist_th, '-o')
+plt.xlabel(r'$t_h$ [s]')
+plt.ylabel(r'No. of exits/$N_{sims}$') 
+plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.savefig(plotname_loglog)
+
+fig = figure()
+ax = fig.add_subplot(1,1,1)
+plt.plot(bin_edges_shifted,hist_th, '-o')
+plt.xlabel(r'$t_h$ [s]')
+plt.ylabel(r'No. of exits/$N_{sims}$')
+ax.set_yscale('log')
+plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.savefig(plotname_ylog)
