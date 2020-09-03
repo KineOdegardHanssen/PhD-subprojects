@@ -17,7 +17,7 @@ bulkdiffusion = False #False
 substrate     = False
 
 #spacing = 7
-spacings = [2.5]#[3,5,8,10]#[1, 1.25, 1.5, 2]##[3,4,5,7,10,15,25]
+spacings = [2.5]#[25,50,75,100]#[3,5,8,10]#[1,1.25,1.5,2]#
 psigma   = 1         # So far, we need to treat one and one sigma.
 damp     = 10
 
@@ -31,7 +31,7 @@ placements = np.arange(1,11)
 for spacing in spacings:
     filestext  = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(placements[0])+'to'+str(placements[-1])
     
-    endlocation = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/Spacing'+str(spacing)+'/Radius' + str(psigma) + '/Results/'
+    endlocation = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/Spacing'+str(spacing)+'/Radius' + str(psigma) + '/Nocut/'
     
     infilename      = endlocation+'av_ds'+filestext+'.txt'
     if long==True:
