@@ -3,9 +3,11 @@ import matplotlib.pyplot as plt                     # To plot
 import numpy as np
 import math
 
+long = True
+
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 1.25
+spacing = 5
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)
@@ -29,8 +31,15 @@ endlocation_nocut   = endlocation_cut + 'Nocut/'
 filestext           = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 
 # Text files
-infilename_ds_nocut = endlocation_nocut+'av_ds_'+filestext+'_nocut.txt'
-infilename_ds_cut   = endlocation_cut+'av_ds_'+filestext+'.txt'
+infilename_ds_nocut = endlocation_nocut+'av_ds_'+filestext+'_nocut'
+infilename_ds_cut   = endlocation_cut+'av_ds_'+filestext
+if long==False:
+    infilename_ds_nocut = infilename_ds_nocut+'.txt'
+    infilename_ds_cut   = infilename_ds_cut+'.txt'
+else:
+    infilename_ds_nocut = infilename_ds_nocut+'_long.txt'
+    infilename_ds_cut   = infilename_ds_cut+'_long.txt'
+    
 
 # Plots
 #plotname_all        = endlocation_nocut+'par_ort_all_'+filestext+'_nocutandcuttogether.png'

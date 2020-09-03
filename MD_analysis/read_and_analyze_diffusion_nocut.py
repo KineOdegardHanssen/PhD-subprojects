@@ -1,11 +1,6 @@
-from skimage import morphology, measure, io, util   # For performing morphology operations (should maybe import more from skimage...)
-from mpl_toolkits.mplot3d import Axes3D             # Plotting in 3D
 import matplotlib.pyplot as plt                     # To plot
 from scipy.optimize import curve_fit
 from pylab import *
-from scipy.ndimage import measurements, convolve    # Should have used the command below, but changing now will lead to confusion
-from scipy import ndimage                           # For Euclidean distance measurement
-import maintools_percolation as perctools
 import numpy as np
 import random
 import math
@@ -13,14 +8,17 @@ import time
 import os
 import glob
 
+###### Tricky parameter: ##################################################
+long = False # Only set long=True if you have long runs for the selected d's
+###########################################################################
+
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-bulkdiffusion = False
+bulkdiffusion = False#False
 substrate     = False
 cutit         = False
 maxh          = 55.940983199999756
 
-#spacing = 7
-spacings = [1,1.25,1.5]#[1,1.25,1.5,2,3,4,5,6,7,10,15,25,50,75,100]#3,4,5,6,7,10,15,25,50,75,100]
+spacings = [8]#[50,75,100]#[7,10,15,25]#[3,4,5,6]#[1,1.25,1.5,2]#[3,4,5,7,10,15,25]#
 psigma   = 1
 damp     = 10
 
@@ -28,10 +26,6 @@ Nsteps = 2001
 confignrs = np.arange(1,1001)
 
 # Make file names
-## Weird cutoff (bead):
-#namebase    = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122' %spacing
-#folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
-# Usual cutoff (bead):
 
 for spacing in spacings:
     if bulkdiffusion==True:
@@ -42,14 +36,18 @@ for spacing in spacings:
     else:
         parentfolder = 'Brush/'
         filestext     = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])
-    
-    endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/' % damp +parentfolder+ 'Sigma_bead_' +str(psigma) + '/Nocut/'
-    infilename    = endlocation+'av_ds'+filestext+'_nocut.txt'
-    outfilename   = endlocation+'diffusion'+filestext+'_nocut.txt'
-    metaname      = endlocation+'diffusion_metadata'+filestext+'_nocut.txt'
-    plotname_R    = endlocation+'diffusion_R'+filestext+'_nocut.png'
-    plotname_dz   = endlocation+'diffusion_dz'+filestext+'_nocut.png'
-    plotname_dpar = endlocation+'diffusion_dpar'+filestext+'_nocut.png'
+    filestext = filestext + '_nocut'
+    endlocation   = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/' % damp +parentfolder+ 'Sigma_bead_' +str(psigma) + '/Nocut/'
+    if cutit==True:
+        endlocation = endlocation + 'maxh'+ str(maxh)+'/'
+    infilename      = endlocation+'av_ds'+filestext+'.txt'  
+    if long==True:
+        infilename  = endlocation+'av_ds'+filestext+'_long.txt' 
+    outfilename     = endlocation+'diffusion'+filestext+'.txt'
+    metaname        = endlocation+'diffusion_metadata'+filestext+'.txt'
+    plotname_R      = endlocation+'diffusion_R'+filestext+'.png'
+    plotname_dz     = endlocation+'diffusion_dz'+filestext+'.png'
+    plotname_dpar   = endlocation+'diffusion_dpar'+filestext+'.png'
     
     # Choosing which part to fit: in file
     rangefilename = endlocation+'indices_for_fit.txt'
@@ -82,7 +80,8 @@ for spacing in spacings:
     timestepsize = 0.00045*unittime
     print('timestepsize:', timestepsize)
     Npartitions = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
-    
+
+
     # Set up arrays
     Nsteps_R   = endindex_R-startindex_R
     Nsteps_ort = endindex_ort-startindex_ort 
@@ -93,7 +92,7 @@ for spacing in spacings:
     dR2s   = np.zeros(Nsteps_R) 
     dz2s   = np.zeros(Nsteps_ort) 
     dpar2s = np.zeros(Nsteps_par)
-    
+
     # Read file
     infile = open(infilename,'r')
     lines = infile.readlines()
@@ -181,6 +180,8 @@ for spacing in spacings:
     metafile.write('endindex_ort: %i\n' % endindex_ort)
     metafile.write('startindex_par: %i\n' % startindex_par)
     metafile.write('endindex_par: %i\n' % endindex_par)
+    if long==True:
+        metafile.write('long file used')
     metafile.close()
 
     plt.figure(figsize=(6,5))

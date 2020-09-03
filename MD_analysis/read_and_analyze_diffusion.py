@@ -5,13 +5,16 @@ from scipy.optimize import curve_fit
 from pylab import *
 from scipy.ndimage import measurements, convolve    # Should have used the command below, but changing now will lead to confusion
 from scipy import ndimage                           # For Euclidean distance measurement
-import maintools_percolation as perctools
 import numpy as np
 import random
 import math
 import time
 import os
 import glob
+
+###### Tricky parameter: ##################################################
+long = False # Only set long=True if you have long runs for the selected d's
+###########################################################################
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 bulkdiffusion = False#False
@@ -20,18 +23,14 @@ cutit         = False
 maxh          = 55.940983199999756
 
 #spacing = 7
-spacings = [4]#[3,4,5,7,10,15,25]
-psigma   = 3
+spacings = [8]#[3,4,5,7,10,15,25]
+psigma   = 1
 damp     = 10
 
 Nsteps = 2001
 confignrs = np.arange(1,1001)
 
 # Make file names
-## Weird cutoff (bead):
-#namebase    = '_quadr_M9N101_ljunits_spacing%i_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122' %spacing
-#folderbase  = 'Part_in_chgr_subst_all_quadr_M9N101_ljunits_Langevin_Kangle14.0186574854529_Kbond140.186574854529_debye_kappa1_debcutoff3_chargeel-1_effdiel0.00881819074717447_T3_theta0is180_pmass1.5_sect_placeexact_ljcut1p122'
-# Usual cutoff (bead):
 
 for spacing in spacings:
     if bulkdiffusion==True:
@@ -43,10 +42,12 @@ for spacing in spacings:
         parentfolder = 'Brush/'
         filestext     = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])
     
-    endlocation   = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing%i/damp%i_diffseedLgv/' % (spacing,damp) +parentfolder+ 'Sigma_bead_' +str(psigma) + '/'
+    endlocation   = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/' % damp +parentfolder+ 'Sigma_bead_' +str(psigma) + '/'
     if cutit==True:
         endlocation = endlocation + 'maxh'+ str(maxh)+'/'
     infilename    = endlocation+'av_ds'+filestext+'.txt'
+    if long==True:
+        infilename  = endlocation+'av_ds'+filestext+'_long.txt' 
     outfilename   = endlocation+'diffusion'+filestext+'.txt'
     metaname      = endlocation+'diffusion_metadata'+filestext+'.txt'
     plotname_R    = endlocation+'diffusion_R'+filestext+'.png'
@@ -184,6 +185,8 @@ for spacing in spacings:
     metafile.write('endindex_ort: %i\n' % endindex_ort)
     metafile.write('startindex_par: %i\n' % startindex_par)
     metafile.write('endindex_par: %i\n' % endindex_par)
+    if long==True:
+        metafile.write('long file used')
     metafile.close()
 
     plt.figure(figsize=(6,5))

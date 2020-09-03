@@ -29,7 +29,8 @@ def rmsd(x,y):
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 1
+long    = True
+spacing = 2.5
 psigma  = 1#.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -49,7 +50,10 @@ confignrs    = np.arange(1,1001)
 Nseeds       = len(confignrs)      # So that I don't have to change that much
 maxz_av      = 0
 filescounter = 0
-Nsteps       = 2001 # 20001 before
+if long==True:
+    Nsteps   = 10001
+else:
+    Nsteps   = 2001 # 20001 before
 #writeevery   = 10                  # I'm writing to file every this many time steps
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
@@ -62,38 +66,98 @@ endlocation_in           = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Pl
 endlocation              = endlocation_in +'Nocut/'
 filestext                = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 # Text files
-outfilename_ds           = endlocation+'av_ds_'+filestext+'_nocut.txt'                        
-outfilename_gamma        = endlocation+'zimportance_'+filestext+'_nocut.txt'                  
-outfilename_sections     = endlocation+'sections_'+filestext+'_nocut.txt'                     
-outfilename_maxz         = endlocation+'maxz_az_'+filestext+'_nocut.txt'
-outfilename_dt           = endlocation+'dt_nocut.txt'
-outfilename_alltrajs_z   = endlocation+'zs_all.txt'
-outfilename_alltrajs_R2  = endlocation+'R2s_all.txt'
-outfilename_skippedfiles = endlocation+'skippedfiles.txt'
+outfilename_ds           = endlocation+'av_ds_'+filestext+'_nocut'                        
+outfilename_gamma        = endlocation+'zimportance_'+filestext+'_nocut'                  
+outfilename_sections     = endlocation+'sections_'+filestext+'_nocut'                     
+outfilename_maxz         = endlocation+'maxz_az_'+filestext+'_nocut'
+outfilename_dt           = endlocation+'dt_nocut'
+outfilename_alltrajs_z   = endlocation+'zs_all'
+outfilename_alltrajs_R2  = endlocation+'R2s_all'
+outfilename_skippedfiles = endlocation+'skippedfiles'
 
 # Plots
-plotname             = endlocation+filestext+'_nocut.png'
-plotname_all         = endlocation+'all_'+filestext+'_nocut.png'
-plotname_gamma       = endlocation+'zimportance_'+filestext+'_nocut.png' 
-plotname_SI          = endlocation+'SI_'+filestext+'_nocut.png' 
-plotname_parallel_orthogonal = endlocation+'par_ort_'+filestext+'_nocut.png'  
-plotname_dx_dy_dz    = endlocation+'dx_dy_dz_'+filestext+'_nocut.png'         
-plotname_parallel    = endlocation+'par_'+filestext+'_nocut.png'              
-plotname_orthogonal  = endlocation+'ort_'+filestext+'_nocut.png'              
-plotname_short_all   = endlocation+'short_all_'+filestext+'_nocut.png'                 
-plotname_velocity    = endlocation+'velocity_'+filestext+'_nocut.png'                  
-plotname_velocity_SI = endlocation+'velocity_SI_'+filestext+'_nocut.png'    
-plotname_velocity_sq = endlocation+'velocity_sq_'+filestext+'_nocut.png'      
-plotname_sectioned_average = endlocation+'sections_'+filestext+'_nocut.png'
-plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext+'_nocut.png'
-plotname_traj_xy = endlocation+'traj_xy_config'+str(confignrs[-1])+'_nocut.png'           
-plotname_traj_xz = endlocation+'traj_xz_config'+str(confignrs[-1])+'_nocut.png'           
-plotname_traj_yz = endlocation+'traj_yz_config'+str(confignrs[-1])+'_nocut.png'           
-plotname_traj_xt = endlocation+'traj_xt_config'+str(confignrs[-1])+'_nocut.png'           
-plotname_traj_yt = endlocation+'traj_yt_config'+str(confignrs[-1])+'_nocut.png'           
-plotname_traj_zt = endlocation+'traj_zt_config'+str(confignrs[-1])+'_nocut.png'           
-plotname_th_hist = endlocation+'th_hist_'+filestext+'_nocut.png'                          
+plotname             = endlocation+filestext+'_nocut'
+plotname_all         = endlocation+'all_'+filestext+'_nocut'
+plotname_gamma       = endlocation+'zimportance_'+filestext+'_nocut' 
+plotname_SI          = endlocation+'SI_'+filestext+'_nocut' 
+plotname_parallel_orthogonal = endlocation+'par_ort_'+filestext+'_nocut'  
+plotname_dx_dy_dz    = endlocation+'dx_dy_dz_'+filestext+'_nocut'         
+plotname_parallel    = endlocation+'par_'+filestext+'_nocut'              
+plotname_orthogonal  = endlocation+'ort_'+filestext+'_nocut'              
+plotname_short_all   = endlocation+'short_all_'+filestext+'_nocut'                
+plotname_velocity    = endlocation+'velocity_'+filestext+'_nocut'                  
+plotname_velocity_SI = endlocation+'velocity_SI_'+filestext+'_nocut'    
+plotname_velocity_sq = endlocation+'velocity_sq_'+filestext+'_nocut'      
+plotname_sectioned_average = endlocation+'sections_'+filestext+'_nocut'
+plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext+'_nocut'
+plotname_traj_xy     = endlocation+'traj_xy_config'+str(confignrs[-1])+'_nocut'           
+plotname_traj_xz     = endlocation+'traj_xz_config'+str(confignrs[-1])+'_nocut'           
+plotname_traj_yz     = endlocation+'traj_yz_config'+str(confignrs[-1])+'_nocut'           
+plotname_traj_xt     = endlocation+'traj_xt_config'+str(confignrs[-1])+'_nocut'           
+plotname_traj_yt     = endlocation+'traj_yt_config'+str(confignrs[-1])+'_nocut'           
+plotname_traj_zt     = endlocation+'traj_zt_config'+str(confignrs[-1])+'_nocut'           
+plotname_th_hist     = endlocation+'th_hist_'+filestext+'_nocut'
 
+if long==True:
+    outfilename_ds           = outfilename_ds+'_long.txt'
+    outfilename_gamma        = outfilename_gamma +'_long.txt'
+    outfilename_sections     = outfilename_sections+'_long.txt'
+    outfilename_maxz         = outfilename_maxz+'_long.txt'
+    outfilename_dt           = outfilename_dt+'_long.txt'
+    outfilename_skippedfiles = outfilename_skippedfiles+'_long.txt'
+    
+    # Plots
+    plotname             = plotname+'_long.png'
+    plotname_all         = plotname_all+'_long.png'
+    plotname_gamma       = plotname_gamma+'_long.png'
+    plotname_SI          = plotname_SI+'_long.png'
+    plotname_parallel_orthogonal = plotname_parallel_orthogonal+'_long.png'
+    plotname_dx_dy_dz    = plotname_dx_dy_dz+'_long.png'
+    plotname_parallel    = plotname_parallel+'_long.png'
+    plotname_orthogonal  = plotname_orthogonal+'_long.png'
+    plotname_short_all   = plotname_short_all+'_long.png'
+    plotname_velocity    = plotname_velocity+'_long.png'
+    plotname_velocity_SI = plotname_velocity_SI+'_long.png'
+    plotname_velocity_sq = plotname_velocity_sq+'_long.png'
+    plotname_sectioned_average = plotname_sectioned_average+'_long.png'
+    plotname_sectioned_average_vs_steps = plotname_sectioned_average_vs_steps+'_long.png'
+    plotname_traj_xy    = plotname_traj_xy+'_long.png'
+    plotname_traj_xz    = plotname_traj_xz+'_long.png'
+    plotname_traj_yz    = plotname_traj_yz+'_long.png'
+    plotname_traj_xt    = plotname_traj_xt+'_long.png'
+    plotname_traj_yt    = plotname_traj_yt+'_long.png'
+    plotname_traj_zt    = plotname_traj_zt+'_long.png'
+    plotname_th_hist    = plotname_th_hist+'_long.png'
+else:
+    outfilename_ds           = outfilename_ds+'.txt'
+    outfilename_gamma        = outfilename_gamma +'.txt'
+    outfilename_sections     = outfilename_sections+'.txt'
+    outfilename_maxz         = outfilename_maxz+'.txt'
+    outfilename_dt           = outfilename_dt+'.txt'
+    outfilename_skippedfiles = outfilename_skippedfiles+'.txt'
+    
+    # Plots
+    plotname             = plotname+'.png'
+    plotname_all         = plotname_all+'.png'
+    plotname_gamma       = plotname_gamma+'.png'
+    plotname_SI          = plotname_SI+'.png'
+    plotname_parallel_orthogonal = plotname_parallel_orthogonal+'.png'
+    plotname_dx_dy_dz    = plotname_dx_dy_dz+'.png'
+    plotname_parallel    = plotname_parallel+'.png'
+    plotname_orthogonal  = plotname_orthogonal+'.png'
+    plotname_short_all   = plotname_short_all+'.png'
+    plotname_velocity    = plotname_velocity+'.png'
+    plotname_velocity_SI = plotname_velocity_SI+'.png'
+    plotname_velocity_sq = plotname_velocity_sq+'.png'
+    plotname_sectioned_average = plotname_sectioned_average+'.png'
+    plotname_sectioned_average_vs_steps = plotname_sectioned_average_vs_steps+'.png'
+    plotname_traj_xy    = plotname_traj_xy+'.png'
+    plotname_traj_xz    = plotname_traj_xz+'.png'
+    plotname_traj_yz    = plotname_traj_yz+'.png'
+    plotname_traj_xt    = plotname_traj_xt+'.png'
+    plotname_traj_yt    = plotname_traj_yt+'.png'
+    plotname_traj_zt    = plotname_traj_zt+'.png'
+    plotname_th_hist    = plotname_th_hist+'.png'
 
 ## Setting arrays
 # Prepare for sectioning distance data:
@@ -154,7 +218,6 @@ sections_steps = []
 # This is not squared, obviously:
 alltimes  = []
 
-
 skippedfiles = 0
 
 outfile_alltrajs_z   = open(outfilename_alltrajs_z, 'w')
@@ -163,10 +226,16 @@ outfile_skippedfiles = open(outfilename_skippedfiles, 'w')
 
 for confignr in confignrs:
     print('On config number:', confignr)
-    infilename_all  = endlocation_in+'all_confignr'+str(confignr)+'.lammpstrj'
-    infilename_free = endlocation_in+'freeatom_confignr'+str(confignr)+'.lammpstrj' 
-    plotname_dirs   = endlocation+'dxdydzR2_seed'+str(confignr)+'.png'
-    plotname_testsect = endlocation+'testsectioned_seed'+str(confignr)+'.png'
+    if long==True:
+        infilename_all  = endlocation_in+'long/'+'all_confignr'+str(confignr)+'_long.lammpstrj'
+        infilename_free = endlocation_in+'long/'+'freeatom_confignr'+str(confignr)+'_long.lammpstrj'
+        plotname_dirs   = endlocation_in+'dxdydzR2_seed'+str(confignr)+'_long.png'
+        plotname_testsect = endlocation_in+'testsectioned_seed'+str(confignr)+'_long.png'
+    else:
+        infilename_all  = endlocation_in+'all_confignr'+str(confignr)+'.lammpstrj'
+        infilename_free = endlocation_in+'freeatom_confignr'+str(confignr)+'.lammpstrj'
+        plotname_dirs   = endlocation_in+'dxdydzR2_seed'+str(confignr)+'.png'
+        plotname_testsect = endlocation_in+'testsectioned_seed'+str(confignr)+'.png'
     
     #print('infilename_all:',infilename_all)
     
