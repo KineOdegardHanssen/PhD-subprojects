@@ -39,15 +39,15 @@ testh     = 20     # For transport measurements (default 50, might change for te
 #-----------------------------PLOTNAMES, ETC.------------------------------#
 endlocation = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/th_stat_vs_dyn/d'+str(spacing)+'/'
 if long==False:
-    plotname             = endlocation+'ths_h%i_d' % testh + str(spacing) +'_stat_vs_dyn.png'
-    plotname_dots_lines  = endlocation+'ths_h%i_d' % testh + str(spacing) +'_dotline_stat_vs_dyn.png'
-    plotname_loglog      = endlocation+'ths_h%i_d' % testh + str(spacing) +'_loglog_stat_vs_dyn.png'
-    plotname_ylog        = endlocation+'ths_h%i_d' % testh + str(spacing) +'_ylog_stat_vs_dyn.png'
+    plotname             = endlocation+'trs_r%i_d' % testh + str(spacing) +'_stat_vs_dyn.png'
+    plotname_dots_lines  = endlocation+'trs_r%i_d' % testh + str(spacing) +'_dotline_stat_vs_dyn.png'
+    plotname_loglog      = endlocation+'trs_r%i_d' % testh + str(spacing) +'_loglog_stat_vs_dyn.png'
+    plotname_ylog        = endlocation+'trs_r%i_d' % testh + str(spacing) +'_ylog_stat_vs_dyn.png'
 else:
-    plotname             = endlocation+'ths_h%i_d' % testh + str(spacing) +'_long_stat_vs_dyn.png'
-    plotname_dots_lines  = endlocation+'ths_h%i_d' % testh + str(spacing) +'_dotline_long_stat_vs_dyn.png'
-    plotname_loglog      = endlocation+'ths_h%i_d' % testh + str(spacing) +'_loglog_long_stat_vs_dyn.png'
-    plotname_ylog        = endlocation+'ths_h%i_d' % testh + str(spacing) +'_ylog_long_stat_vs_dyn.png'
+    plotname             = endlocation+'trs_r%i_d' % testh + str(spacing) +'_long_stat_vs_dyn.png'
+    plotname_dots_lines  = endlocation+'trs_r%i_d' % testh + str(spacing) +'_dotline_long_stat_vs_dyn.png'
+    plotname_loglog      = endlocation+'trs_r%i_d' % testh + str(spacing) +'_loglog_long_stat_vs_dyn.png'
+    plotname_ylog        = endlocation+'trs_r%i_d' % testh + str(spacing) +'_ylog_long_stat_vs_dyn.png'
 
 #--------------------------------DYNAMIC-----------------------------------#
 confignrs = np.arange(1,1001)
@@ -119,9 +119,9 @@ inlocation     = basepath + 'Radius1/Results/'
 filestext      = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(beadplacements[0])+'to'+str(beadplacements[-1])
 
 if long==False:
-    infilename           = inlocation+'ths_h%i' % testh +filestext+'.txt'
+    infilename           = inlocation+'trs_r%i' % testh +filestext+'.txt'
 else:
-    infilename           = inlocation+'ths_h%i' % testh +filestext+'_long.txt'
+    infilename           = inlocation+'trs_r%i' % testh +filestext+'_long.txt'
 
 infile    = open(infilename,'r')
 firstline = infile.readline()
@@ -176,18 +176,18 @@ bin_edges_th_static = bin_edges_shifted
 figure()
 plt.plot(bin_edges_th_dynamic,hist_th_dynamic, '-o', label='Dynamic brush')
 plt.plot(bin_edges_th_static,hist_th_static, '-o', label='Static brush')
-plt.xlabel(r'$t_h$ [s]')
+plt.xlabel(r'$t_r$ [s]')
 plt.ylabel(r'No. of arrivals/$N_{sims}$') 
-plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh))
+plt.title('$t_r$ in system size by d = %i nm, r = %.1f nm' % (spacing,testh))
 plt.legend(loc='upper right')
 plt.savefig(plotname_dots_lines)
 
 figure()
 plt.loglog(bin_edges_th_dynamic,hist_th_dynamic, '-o', label='Dynamic brush')
 plt.loglog(bin_edges_th_static,hist_th_static, '-o', label='Static brush')
-plt.xlabel(r'$t_h$ [s]')
+plt.xlabel(r'$t_r$ [s]')
 plt.ylabel(r'No. of arrivals/$N_{sims}$') 
-plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.title('$t_r$ in system size by d = %i nm, r = %.1f nm' % (spacing,testh)) 
 plt.legend(loc='upper right')
 plt.savefig(plotname_loglog)
 
@@ -195,10 +195,10 @@ fig = figure()
 ax = fig.add_subplot(1,1,1)
 plt.plot(bin_edges_th_dynamic,hist_th_dynamic, '-o', label='Dynamic brush')
 plt.plot(bin_edges_th_static,hist_th_static, '-o', label='Static brush')
-plt.xlabel(r'$t_h$ [s]')
+plt.xlabel(r'$t_r$ [s]')
 plt.ylabel(r'No. of arrivals/$N_{sims}$')
 ax.set_yscale('log')
-plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.title('$t_r$ in system size by d = %i nm, r = %.1f nm' % (spacing,testh)) 
 plt.legend(loc='upper right')
 plt.savefig(plotname_ylog)
 

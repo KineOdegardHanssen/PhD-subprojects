@@ -44,31 +44,31 @@ Nd = len(spacings)
 
 # Locations, text snippets, etc.
 baselocation = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'
-outlocation  = baselocation + 'd_vs_th/'
+outlocation  = baselocation + 'd_vs_tr/'
 filestext    = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 
 # Plot names:
-hstring = 'h' + '%i_' % testh
+hstring = 'r' + '%i_' % testh
 for i in range(Nd):
     hstring = hstring + 'd'+str(spacings[i])+'_' 
 
 if long==False:
-    plotname_dots_lines  = outlocation+ 'ths_' + hstring + filestext+'_dotline_dynamic_correct.png'
-    plotname_loglog      = outlocation+ 'ths_' + hstring + filestext+'_loglog_dynamic_correct.png'
-    plotname_ylog        = outlocation+ 'ths_' + hstring + filestext+'_ylog_dynamic_correct.png'
+    plotname_dots_lines  = outlocation+ 'trs_' + hstring + filestext+'_dotline_dynamic_correct.png'
+    plotname_loglog      = outlocation+ 'trs_' + hstring + filestext+'_loglog_dynamic_correct.png'
+    plotname_ylog        = outlocation+ 'trs_' + hstring + filestext+'_ylog_dynamic_correct.png'
 else:
-    plotname_dots_lines  = outlocation+ 'ths_' + hstring + filestext+'_dotline_long_dynamic_correct.png'
-    plotname_loglog      = outlocation+'ths_'+ hstring + filestext +'_loglog_long_dynamic_correct.png'
-    plotname_ylog        = outlocation+'ths_'+ hstring + filestext+'_ylog_long_dynamic_correct.png'
+    plotname_dots_lines  = outlocation+ 'trs_' + hstring + filestext+'_dotline_long_dynamic_correct.png'
+    plotname_loglog      = outlocation+'trs_'+ hstring + filestext +'_loglog_long_dynamic_correct.png'
+    plotname_ylog        = outlocation+'trs_'+ hstring + filestext+'_ylog_long_dynamic_correct.png'
 
 
 for i in range(Nd):
     spacing        = spacings[i]
     inlocation     = baselocation + 'Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp + str(psigma) + '/'
     if long==False:
-        infilename = inlocation+'ths_h%i' % testh +filestext+'.txt'
+        infilename = inlocation+'trs_r%i' % testh +filestext+'.txt'
     else:
-        infilename = inlocation+'ths_h%i' % testh +filestext+'_long.txt'
+        infilename = inlocation+'trs_r%i' % testh +filestext+'_long.txt'
     infile    = open(infilename,'r')
     firstline = infile.readline()
     Nreal     = float(firstline.split()[2]) # Nread in the original script
@@ -99,18 +99,18 @@ for i in range(Nd):
 figure()
 for i in range(Nd):
     plt.plot(edges[i],hists[i], '-o', label='d=%.2f' % spacings[i])
-plt.xlabel(r'$t_h$ [s]')
+plt.xlabel(r'$t_r$ [s]')
 plt.ylabel(r'No. of arrivals/$N_{sims}$') 
-plt.title('$t_h$ in system size by h = %i nm' % testh) 
+plt.title('$t_r$ in system size by h = %i nm' % testh) 
 plt.legend(loc='upper right')
 plt.savefig(plotname_dots_lines)
 
 figure()
 for i in range(Nd):
     plt.loglog(edges[i],hists[i], '-o', label='d=%.2f' % spacings[i])
-plt.xlabel(r'$t_h$ [s]')
+plt.xlabel(r'$t_r$ [s]')
 plt.ylabel(r'No. of arrivals/$N_{sims}$') 
-plt.title('$t_h$ in system size by h = %i nm' % testh) 
+plt.title('$t_r$ in system size by r = %i nm' % testh) 
 plt.legend(loc='upper right')
 plt.savefig(plotname_loglog)
 
@@ -118,9 +118,9 @@ fig = figure()
 ax = fig.add_subplot(1,1,1)
 for i in range(Nd):
     plt.plot(edges[i],hists[i], '-o', label='d=%.2f' % spacings[i])
-plt.xlabel(r'$t_h$ [s]')
+plt.xlabel(r'$t_r$ [s]')
 plt.ylabel(r'No. of arrivals/$N_{sims}$')
 ax.set_yscale('log')
-plt.title('$t_h$ in system size by h = %i nm' % testh) 
+plt.title('$t_r$ in system size by r = %i nm' % testh) 
 plt.legend(loc='upper right')
 plt.savefig(plotname_ylog)

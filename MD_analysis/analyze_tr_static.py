@@ -41,24 +41,24 @@ basepath        = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brus
 endlocation     = basepath + 'Radius1/Results/'
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(beadplacements[0])+'to'+str(beadplacements[-1])
 ################################
-infilename           = endlocation+'ths_h%i' % testh +filestext+'.txt'
-outfilename          = endlocation+'ths_h%i' % testh +filestext+'_static_analysis.txt'
-plotname             = endlocation+'ths_h%i' % testh +filestext+'_static_correct.png'
+infilename           = endlocation+'trs_r%i' % testh +filestext+'.txt'
+outfilename          = endlocation+'trs_r%i' % testh +filestext+'_static_analysis.txt'
+plotname             = endlocation+'trs_r%i' % testh +filestext+'_static_correct.png'
 ################################
 if long==False:
-    infilename           = endlocation+'ths_h%i' % testh +filestext+'.txt'
-    outfilename          = endlocation+'ths_h%i' % testh +filestext+'_static_analysis.txt'
-    plotname             = endlocation+'ths_h%i' % testh +filestext+'_static_correct.png'
-    plotname_dots_lines  = endlocation+'ths_h%i' % testh +filestext+'_dotline_static_correct.png'
-    plotname_loglog      = endlocation+'ths_h%i' % testh +filestext+'_loglog_static_correct.png'
-    plotname_ylog        = endlocation+'ths_h%i' % testh +filestext+'_ylog_static_correct.png'
+    infilename           = endlocation+'trs_r%i' % testh +filestext+'.txt'
+    outfilename          = endlocation+'trs_r%i' % testh +filestext+'_static_analysis.txt'
+    plotname             = endlocation+'trs_r%i' % testh +filestext+'_static_correct.png'
+    plotname_dots_lines  = endlocation+'trs_r%i' % testh +filestext+'_dotline_static_correct.png'
+    plotname_loglog      = endlocation+'trs_r%i' % testh +filestext+'_loglog_static_correct.png'
+    plotname_ylog        = endlocation+'trs_r%i' % testh +filestext+'_ylog_static_correct.png'
 else:
-    infilename           = endlocation+'ths_h%i' % testh +filestext+'_long.txt'
-    outfilename          = endlocation+'ths_h%i' % testh +filestext+'_long_static_analysis.txt'
-    plotname             = endlocation+'ths_h%i' % testh +filestext+'_long_static_correct.png'
-    plotname_dots_lines  = endlocation+'ths_h%i' % testh +filestext+'_dotline_long_static_correct.png'
-    plotname_loglog  = endlocation+'ths_h%i' % testh +filestext+'_loglog_long_static_correct.png'
-    plotname_ylog        = endlocation+'ths_h%i' % testh +filestext+'_ylog_long_static_correct.png'
+    infilename           = endlocation+'trs_r%i' % testh +filestext+'_long.txt'
+    outfilename          = endlocation+'trs_r%i' % testh +filestext+'_long_static_analysis.txt'
+    plotname             = endlocation+'trs_r%i' % testh +filestext+'_long_static_correct.png'
+    plotname_dots_lines  = endlocation+'trs_r%i' % testh +filestext+'_dotline_long_static_correct.png'
+    plotname_loglog    = endlocation+'trs_r%i' % testh +filestext+'_loglog_long_static_correct.png'
+    plotname_ylog       = endlocation+'trs_r%i' % testh +filestext+'_ylog_long_static_correct.png'
 
 infile    = open(infilename,'r')
 firstline = infile.readline()
@@ -96,15 +96,15 @@ else: # Not sure this really helps with anything...
 
 outfile = open(outfilename,'w')
 outfile.write('Files read: %i\n' % Nreal)
-outfile.write('Number of th\'s: %i\n'% Nth)
-outfile.write('-----------th------------\n')
-outfile.write('Min th: %.16f\n' % minth )
-outfile.write('Max th: %.16f\n' % maxth )
-outfile.write('Avg th, rms th: %.16f %.16f\n' % (avgth, rmsth))
+outfile.write('Number of tr\'s: %i\n'% Nth)
+outfile.write('-----------tr------------\n')
+outfile.write('Min tr: %.16f\n' % minth )
+outfile.write('Max tr: %.16f\n' % maxth )
+outfile.write('Avg tr, rms tr: %.16f %.16f\n' % (avgth, rmsth))
 outfile.write('-----------xh------------\n')
-outfile.write('Min zh: %.16f\n' % minzh )
-outfile.write('Max zh: %.16f\n' % maxzh )
-outfile.write('Avg zh, rms zh: %.16f %.16f\n' % (avgzh, rmszh))
+outfile.write('Min r: %.16f\n' % minzh )
+outfile.write('Max r: %.16f\n' % maxzh )
+outfile.write('Avg r, rms r: %.16f %.16f\n' % (avgzh, rmszh))
 outfile.close()
 
 hist_th, bin_edges_th = np.histogram(testh_times, bins=20)
@@ -117,9 +117,9 @@ width = bin_edges_th[1]-bin_edges_th[0]
 hist_th = hist_th/float(Nreal)
 #plot
 plt.bar(bin_edges_th[:-1],hist_th,width = width)
-plt.xlabel(r'$t_h$ [s]')
+plt.xlabel(r'$t_r$ [s]')
 plt.ylabel(r'No. of arrivals/$N_{sims}$') 
-plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.title('$t_r$ in system size by d = %i nm, r = %.1f nm' % (spacing,testh)) 
 plt.savefig(plotname)
 
 # Plotting dots, not histograms
@@ -127,23 +127,23 @@ halfwidth = width/2.
 bin_edges_shifted = bin_edges_th[:-1]+halfwidth
 figure()
 plt.plot(bin_edges_shifted,hist_th, '-o')
-plt.xlabel(r'$t_h$ [s]')
+plt.xlabel(r'$t_r$ [s]')
 plt.ylabel(r'No. of arrivals/$N_{sims}$') 
-plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.title('$t_r$ in system size by d = %i nm, r = %.1f nm' % (spacing,testh)) 
 plt.savefig(plotname_dots_lines)
 
 figure()
 plt.loglog(bin_edges_shifted,hist_th, '-o')
-plt.xlabel(r'$t_h$ [s]')
+plt.xlabel(r'$t_r$ [s]')
 plt.ylabel(r'No. of arrivals/$N_{sims}$') 
-plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.title('$t_r$ in system size by d = %i nm, r = %.1f nm' % (spacing,testh)) 
 plt.savefig(plotname_loglog)
 
 fig = figure()
 ax = fig.add_subplot(1,1,1)
 plt.plot(bin_edges_shifted,hist_th, '-o')
-plt.xlabel(r'$t_h$ [s]')
+plt.xlabel(r'$t_r$ [s]')
 plt.ylabel(r'No. of arrivals/$N_{sims}$')
 ax.set_yscale('log')
-plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.title('$t_r$ in system size by d = %i nm, r = %.1f nm' % (spacing,testh)) 
 plt.savefig(plotname_ylog)
