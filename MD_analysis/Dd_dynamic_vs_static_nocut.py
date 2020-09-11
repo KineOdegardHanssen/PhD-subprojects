@@ -1,11 +1,6 @@
-from skimage import morphology, measure, io, util   # For performing morphology operations (should maybe import more from skimage...)
-from mpl_toolkits.mplot3d import Axes3D             # Plotting in 3D
 import matplotlib.pyplot as plt                     # To plot
 from scipy.optimize import curve_fit
 from pylab import *
-from scipy.ndimage import measurements, convolve    # Should have used the command below, but changing now will lead to confusion
-from scipy import ndimage                           # For Euclidean distance measurement
-import maintools_percolation as perctools
 import numpy as np
 import random
 import math
@@ -33,7 +28,8 @@ damp     = 10
 bulkdiffusion = False
 substrate     = False
 moresigmas    = False
-big           = True
+big           = False
+bulk_cut      = False
 confignrs     = np.arange(1,1001)
 filestext     = '_seed'+str(confignrs[0])+'to'+str(confignrs[-1])
 
@@ -43,6 +39,14 @@ if moresigmas==True:
 
 basepath_base      = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/'
 endlocation_static = basepath_base+'D_vs_d/Nocut/'
+
+bulklocation = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/Brush/Sigma_bead_' +str(psigma) + '/'
+
+bulkfilename  = bulklocation + 'diffusion_bulk'+filestext
+if bulk_cut==True:
+    bulkfilename = bulkfilename +'_cut.txt'
+else:
+    bulkfilename = bulkfilename +'_uncut.txt'
 
 ## Files to read
 brushfilename_dyn  = endlocation + 'D_vs_d.txt'
@@ -129,15 +133,36 @@ for i in range(1,N_stat+1):
     
 brushfile_stat.close()
 
+###
+Bulk:
+
+bulkfile  = open(bulkfilename, 'r')
+# D_R2  sigmaD_R2 b_R2 sigmab_R2; D_z2  sigmaD_z2  b_z2  sigmaD_z2; D_par2 sigmaD_par2  b_par2  sigmab_par2
+bulklines = bulkfile.readlines()
+bulkline  = bulklines[1]
+words     = bulkline.split()
+
+# Ds
+DRs_bulk = float(words[0])
+Dzs_bulk = float(words[4])
+Dparallel_bulk = float(words[8])
+
+# Ds, stdv
+DRs_stdv_bulk = float(words[1])
+Dzs_stdv_bulk = float(words[5])
+Dparallel_stdv_bulk = float(words[9])
+
+bulkfile.close()
+
 if big==False:
     plt.figure(figsize=(8,5))
     ax = plt.subplot(111)
-    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, capsize=2, label=r'$D_R$, dyn.')
-    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, capsize=2, label=r'$D_\perp$, dyn.')
-    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, capsize=2, label=r'$D_\parallel$, dyn.')
-    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, capsize=2, label=r'$D_R$, stat.')
-    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, capsize=2, label=r'$D_\perp$, stat.')
-    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, capsize=2, label=r'$D_\parallel$, stat.')
+    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, color='r', capsize=2, label=r'$D_R$, dyn.')
+    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', capsize=2, label=r'$D_\perp$, dyn.')
+    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, label=r'$D_\parallel$, dyn.')
+    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, color='lightcoral', capsize=2, label=r'$D_R$, stat.')
+    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', capsize=2, label=r'$D_\perp$, stat.')
+    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', capsize=2, label=r'$D_\parallel$, stat.')
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$')
     else:
@@ -164,12 +189,12 @@ else:
     plt.rc('xtick', labelsize=20) 
     plt.rc('ytick', labelsize=20) 
     ax = plt.subplot(111)
-    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_R$, dyn.')
-    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_\perp$, dyn.')
-    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
-    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_R$, stat.')
-    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_\perp$, stat.')
-    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_\parallel$, stat.')
+    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, color='r', linewidth=7.0, capsize=2, label=r'$D_R$, dyn.')
+    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', linewidth=7.0, capsize=2, label=r'$D_\perp$, dyn.')
+    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
+    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, color='lightcoral', linewidth=7.0, capsize=2, label=r'$D_R$, stat.')
+    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, stat.')
+    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, stat.')
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$', fontsize=20)
     else:
@@ -196,13 +221,12 @@ plt.savefig(plotname)
 if big==False:
     plt.figure(figsize=(6.4,5))
     ax = plt.subplot(111)
-    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, capsize=2, label=r'$D_R$, dyn.')
-    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, capsize=2, label=r'$D_\perp$, dyn.')
-    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, capsize=2, label=r'$D_\parallel$, dyn.')
-    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, capsize=2, label=r'$D_R$, stat.')
-    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, capsize=2, label=r'$D_\perp$, stat.')
-    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, capsize=2, label=r'$D_\parallel$, stat.')
-    #plt.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, capsize=2, label=r'$D_\parallel$, stat.')
+    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, color='r', capsize=2, label=r'$D_R$, dyn.')
+    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', capsize=2, label=r'$D_\perp$, dyn.')
+    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, label=r'$D_\parallel$, dyn.')
+    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, color='lightcoral', capsize=2, label=r'$D_R$, stat.')
+    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', capsize=2, label=r'$D_\perp$, stat.')
+    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', capsize=2, label=r'$D_\parallel$, stat.')
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$')
     else:
@@ -216,21 +240,19 @@ if big==False:
     #plt.tight_layout()
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     #plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-    #           ncol=2, mode="expand", borderaxespad=0.)
-    #box = ax.get_position()
-    #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
-    #ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-    #plt.legend(loc='upper left')
+    #           ncol=2, mode="expand", borderaxespad=0.)    
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 else:
     plt.figure(figsize=(12.8,10))
     ax = plt.subplot(111)
-    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_R$, dyn.')
-    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_\perp$, dyn.')
-    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
-    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_R$, stat.')
-    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_\perp$, stat.')
-    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, linewidth=7.0, capsize=2, label=r'$D_\parallel$, stat.')
-    #plt.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, capsize=2, label=r'$D_\parallel$, stat.')
+    ax.errorbar(spacings_dyn, DRs_dyn, yerr=DRs_stdv_dyn, color='r', linewidth=7.0, capsize=2, label=r'$D_R$, dyn.')
+    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', linewidth=7.0, capsize=2, label=r'$D_\perp$, dyn.')
+    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
+    ax.errorbar(spacings_stat, DRs_stat, yerr=DRs_stdv_stat, color='lightcoral', linewidth=7.0, capsize=2, label=r'$D_R$, stat.')
+    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, stat.')
+    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, stat.')
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$', fontsize=20)
     else:
