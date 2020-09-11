@@ -9,7 +9,7 @@ import os
 import glob
 
 ###### Tricky parameter: ###################################################
-long = True # Only set long=True if you have long runs for the selected d's
+long = False # Only set long=True if you have long runs for the selected d's
 ############################################################################
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
@@ -17,7 +17,7 @@ bulkdiffusion = False #False
 substrate     = False
 
 #spacing = 7
-spacings = [2.5]#[25,50,75,100]#[3,5,8,10]#[1,1.25,1.5,2]#
+spacings = [75]#[25,50,75,100]#[3,5,8,10]#[1,1.25,1.5,2]#
 psigma   = 1         # So far, we need to treat one and one sigma.
 damp     = 10
 
@@ -143,7 +143,7 @@ for spacing in spacings:
     a_z2 = coeffs[0]
     b_z2 = coeffs[1]
     D_z2 = a_z2/6.
-    rms_D_z2 = np.sqrt(covs[0,0])/6.
+    rms_D_z2 = np.sqrt(covs[0,0])/2.
     rms_b_z2 = np.sqrt(covs[1,1])
 
     fit_z2 = a_z2*times_ort+b_z2
@@ -153,7 +153,7 @@ for spacing in spacings:
     a_par2     = coeffs[0]
     b_par2     = coeffs[1]
     D_par2     = a_par2/6.
-    rms_D_par2 = np.sqrt(covs[0,0])/6.
+    rms_D_par2 = np.sqrt(covs[0,0])/4.
     rms_b_par2 = np.sqrt(covs[1,1])
 
     fit_par2 = a_par2*times_par+b_par2
