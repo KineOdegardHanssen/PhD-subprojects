@@ -17,12 +17,12 @@ def avg_and_rms(x):
     for i in range(N):
         rms += (x[i]-avg)*(x[i]-avg)
     rms = np.sqrt(rms/(N-1)) 
-    return rms, avg
+    return avg, rms
 
-long = True
+long = False
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 5
+spacing = 2
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)

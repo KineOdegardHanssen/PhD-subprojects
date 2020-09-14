@@ -24,7 +24,7 @@ def avg_and_rms(x):
 long = False
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 5
+spacing = 25
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)

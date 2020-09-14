@@ -24,7 +24,7 @@ def avg_and_rms(x):
 long = False
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 5
+spacing = 4
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)
@@ -37,7 +37,7 @@ testh     = 20     # For transport measurements (default 50, might change for te
 
 
 #-----------------------------PLOTNAMES, ETC.------------------------------#
-endlocation = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/th_stat_vs_dyn/d'+str(spacing)+'/'
+endlocation = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/tr_stat_vs_dyn/d'+str(spacing)+'/'
 if long==False:
     plotname             = endlocation+'trs_r%i_d' % testh + str(spacing) +'_stat_vs_dyn.png'
     plotname_dots_lines  = endlocation+'trs_r%i_d' % testh + str(spacing) +'_dotline_stat_vs_dyn.png'
@@ -55,9 +55,9 @@ confignrs = np.arange(1,1001)
 inlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp + str(psigma) + '/'
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 if long==False:
-    infilename           = inlocation+'ths_h%i' % testh +filestext+'.txt'
+    infilename           = inlocation+'trs_r%i' % testh +filestext+'.txt'
 else:
-    infilename           = inlocation+'ths_h%i' % testh +filestext+'_long.txt'
+    infilename           = inlocation+'trs_r%i' % testh +filestext+'_long.txt'
 
 infile    = open(infilename,'r')
 firstline = infile.readline()
@@ -123,10 +123,10 @@ if long==False:
 else:
     infilename           = inlocation+'trs_r%i' % testh +filestext+'_long.txt'
 
-infile    = open(infilename,'r')
-firstline = infile.readline()
+infile_s  = open(infilename,'r')
+firstline = infile_s.readline()
 Nreal     = float(firstline.split()[2]) # Nread in the original script
-lines     = infile.readlines()
+lines     = infile_s.readlines()
 
 testh_times = []
 exiths      = []
@@ -136,7 +136,7 @@ for line in lines:
     if len(words)>0:
         testh_times.append(float(words[0]))
         exiths.append(float(words[1]))
-infile.close()
+infile_s.close()
 
 ## Distribution of times when walker reaches height testh:
 Nth = len(testh_times)

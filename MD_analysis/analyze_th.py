@@ -17,12 +17,12 @@ def avg_and_rms(x):
     for i in range(N):
         rms += (x[i]-avg)*(x[i]-avg)
     rms = np.sqrt(rms/(N-1)) 
-    return rms, avg
+    return avg, rms
 
-long = True
+long = False
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 5
+spacing = 6
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)
@@ -88,9 +88,9 @@ outfile = open(outfilename,'w')
 outfile.write('Files read: %i\n' % Nreal)
 outfile.write('Number of th\'s: %i\n'% Nth)
 outfile.write('-----------th------------\n')
-outfile.write('Min th: %.16f\n' % minth )
-outfile.write('Max th: %.16f\n' % maxth )
-outfile.write('Avg th, rms th: %.16f %.16f\n' % (avgth, rmsth))
+outfile.write('Min th: %.16e\n' % minth )
+outfile.write('Max th: %.16e\n' % maxth )
+outfile.write('Avg th, rms th: %.16e %.16e\n' % (avgth, rmsth))
 outfile.write('-----------xh------------\n')
 outfile.write('Min zh: %.16f\n' % minzh )
 outfile.write('Max zh: %.16f\n' % maxzh )

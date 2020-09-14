@@ -40,6 +40,7 @@ brushfile = open(brushfilename, 'r')
 ## Files to write to
 outfilename  = endlocation+'Dpar_div_Dz_vs_d_dynamic.txt'
 plotname     = endlocation+'Dpar_div_Dz_vs_d_dynamic.png'
+plotname_smalld = endlocation+'Dpar_div_Dz_vs_d_dynamic_smalld.png'
 
 #
 outfile   = open(outfilename, 'w')
@@ -48,7 +49,7 @@ lines = brushfile.readlines()
 N = len(lines)-1
 
 # ds
-spacings = np.zeros(N)
+spacings = []
 # Ds
 Dparallel_div_Dzs = np.zeros(N)
 # Ds, stdv
@@ -59,14 +60,15 @@ for i in range(1,N+1):
     words = lines[i].split()
     j = i-1
     
-    spacings[j] = float(words[0]) 
+    spacing = float(words[0]) 
+    spacings.append(spacing)
     Dz = float(words[5])
     Dparallel = float(words[9])
     
     Dparallel_div_Dzs[j] = Dparallel/Dz
     Dparallel_div_Dzs_stdv[j] = abs(Dparallel_div_Dzs[j])*np.sqrt((float(words[10])/Dparallel)**2+(float(words[6])/Dz)**2)
     
-    outfile.write('%.5e %.5e %.5e\n' % (spacings[j], Dparallel_div_Dzs[j], Dparallel_div_Dzs_stdv[j]))
+    outfile.write('%.5e %.5e %.5e\n' % (spacing, Dparallel_div_Dzs[j], Dparallel_div_Dzs_stdv[j]))
 
 
 outfile.close()
@@ -80,3 +82,14 @@ plt.title(r'$D_{par}/D_z$ vs $d$')
 plt.tight_layout()
 plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 plt.savefig(plotname)
+
+N10 = spacings.index(10)
+
+plt.figure(figsize=(6,5))
+plt.errorbar(spacings[0:N10], Dparallel_div_Dzs[0:N10], yerr=Dparallel_div_Dzs_stdv[0:N10], capsize=2)
+plt.xlabel(r'$d$')
+plt.ylabel(r'$D_{par}/D_z$')
+plt.title(r'$D_{par}/D_z$ vs $d$')
+plt.tight_layout()
+plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+plt.savefig(plotname_smalld)
