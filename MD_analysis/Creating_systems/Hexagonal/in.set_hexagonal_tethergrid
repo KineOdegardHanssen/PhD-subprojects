@@ -1,0 +1,26 @@
+# Set variables
+variable spacing equal 4
+variable mass equal 1 # This is not so smart... Far from unity...
+variable bl equal 2
+
+# Setting system properties
+units nano
+dimension 2
+lattice hex 10
+boundary p p p   # Don't really need this, but whatever
+atom_style atomic
+
+lattice hex ${spacing}
+region simbox block 0 ${bl} 0 ${bl} 0 1
+create_box 1 simbox
+create_atoms 1 box
+
+pair_style zero 10.0
+
+# Hmmm...
+pair_coeff * *
+
+mass 1 ${mass} 
+
+write_data data.hexgrid_box${bl}x${bl}_gridspacing${spacing}_mass${mass}
+
