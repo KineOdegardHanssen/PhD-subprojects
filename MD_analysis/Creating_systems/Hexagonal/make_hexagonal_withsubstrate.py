@@ -188,7 +188,7 @@ counter = 0
 for j in range(M):
     for i in range(N-1):
         counter += 1
-        k = j*(N+1)+i+1
+        k = j*N+i+1
         outfile.write('%i 1 %i %i\n' % (counter, k, (k+1)))
 
 outfile.write('\nAngles\n\n')
@@ -197,7 +197,7 @@ counter = 0
 for j in range(M):
     for i in range(N-2):
         counter += 1
-        k = j*(N+1)+i+1
+        k = j*N+i+1
         outfile.write('%i 1 %i %i %i\n' % (counter, k, (k+1), (k+2)))
 
 
