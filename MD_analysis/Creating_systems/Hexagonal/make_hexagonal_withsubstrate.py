@@ -7,7 +7,7 @@ import math
 
 # Set variables
 N               = 100 # Number of bond vectors = number of units - 1 # Per chainaffect
-gridspacing     = 3 # The spacing in our grid # Default is 40
+gridspacing     = 4 # The spacing in our grid # Default is 40
 Nx              = 2
 Ny              = 2
 substratecharge = 0
@@ -30,6 +30,15 @@ infilename = 'data.hexgrid_box%ix%i_gridspacing%i' % (Nx,Ny,gridspacing) + '_mas
 infile     = open(infilename, 'r')
 
 lines = infile.readlines()
+
+# For appropriate box wrt BCs:
+xline = lines[5].split()
+yline = lines[6].split()
+xmin  = float(xline[0])
+xmax  = float(xline[1])
+ymin  = float(yline[0])
+ymax  = float(yline[1])
+
 
 xes = []
 ys  = []
@@ -114,12 +123,9 @@ for j in range(M):
         qs.append(charge)
 
 ### Data on system
-xmax = max(xpos)+0.5*gridspacing
-ymax = max(ypos)+0.5*gridspacing
+# xmax, xmin, ymax, ymin read from LAMMPS. That automatically ensures periodicity
 zmax = max(zpos)*3.0
-zmin = min(zpos)*3.0 # Change something here...
-xmin = min(xpos)-0.5*gridspacing
-ymin = min(ypos)-0.5*gridspacing
+zmin = min(zpos)*3.0
 
 # Now I know how big the system is. Next: Setting the substrate.
 # Which atom type? 4, since I use 3 for the unbound bead?
