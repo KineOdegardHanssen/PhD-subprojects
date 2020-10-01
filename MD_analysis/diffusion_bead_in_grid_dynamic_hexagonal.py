@@ -29,11 +29,10 @@ def rmsd(x,y):
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-long    = True
-spacing = 4.5
-psigma  = 1#.5
+long    = False
+spacing = 3
+psigma  = 1
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
-#pmass   = 1.5
 print('spacing:', spacing)
 print('psigma:', psigma)
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
@@ -44,9 +43,11 @@ T        = 3
 plotseed = 0
 plotdirs = False
 test_sectioned = False
-zhigh          = 250
-zlow           = -50
-confignrs    = np.arange(1,1001)
+zhigh          = 290    # For omitting unphysical trajectories
+zlow           = -50    
+testh          = 20     # For transport measurements (default 50, might change for tests)
+#seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
+confignrs    = np.arange(1,1001)#300)#20)#101)#1001)#22) 
 Nseeds       = len(confignrs)      # So that I don't have to change that much
 maxz_av      = 0
 filescounter = 0
@@ -62,41 +63,44 @@ Npartitions  = 5 # For extracting more walks from one file (but is it really suc
 minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 print('timestepsize:', timestepsize)
 
-endlocation_in           = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp+str(psigma) + '/'
-endlocation              = endlocation_in +'Nocut/'
-filestext                = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
+endlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp + str(psigma) + '/Hexagonal/'
+filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_hex'
 # Text files
-outfilename_ds           = endlocation+'av_ds_'+filestext+'_nocut'                        
-outfilename_gamma        = endlocation+'zimportance_'+filestext+'_nocut'                  
-outfilename_sections     = endlocation+'sections_'+filestext+'_nocut'                     
-outfilename_maxz         = endlocation+'maxz_az_'+filestext+'_nocut'
-outfilename_dt           = endlocation+'dt_nocut'
-outfilename_alltrajs_z   = endlocation+'zs_all'
-outfilename_alltrajs_R2  = endlocation+'R2s_all'
-outfilename_skippedfiles = endlocation+'skippedfiles'
+outfilename_ds           = endlocation+'av_ds_'+filestext
+outfilename_gamma        = endlocation+'zimportance_'+filestext
+outfilename_sections     = endlocation+'sections_'+filestext
+outfilename_maxz         = endlocation+'maxz_az_'+filestext
+outfilename_dt           = endlocation+'dt'+'_hex'
+outfilename_cuts         = endlocation+'cuts'+'_hex'
+outfilename_noexit       = endlocation+'noexitzs'+'_hex'
+outfilename_skippedfiles = endlocation+'skippedfiles'+'_hex'
+outfilename_exittimes    = endlocation+'exittimes'+'_hex'
+outfilename_th           = endlocation+'ths_h%i' % testh +filestext
 
 # Plots
-plotname             = endlocation+filestext+'_nocut'
-plotname_all         = endlocation+'all_'+filestext+'_nocut'
-plotname_gamma       = endlocation+'zimportance_'+filestext+'_nocut' 
-plotname_SI          = endlocation+'SI_'+filestext+'_nocut' 
-plotname_parallel_orthogonal = endlocation+'par_ort_'+filestext+'_nocut'  
-plotname_dx_dy_dz    = endlocation+'dx_dy_dz_'+filestext+'_nocut'         
-plotname_parallel    = endlocation+'par_'+filestext+'_nocut'              
-plotname_orthogonal  = endlocation+'ort_'+filestext+'_nocut'              
-plotname_short_all   = endlocation+'short_all_'+filestext+'_nocut'                
-plotname_velocity    = endlocation+'velocity_'+filestext+'_nocut'                  
-plotname_velocity_SI = endlocation+'velocity_SI_'+filestext+'_nocut'    
-plotname_velocity_sq = endlocation+'velocity_sq_'+filestext+'_nocut'      
-plotname_sectioned_average = endlocation+'sections_'+filestext+'_nocut'
-plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext+'_nocut'
-plotname_traj_xy     = endlocation+'traj_xy_config'+str(confignrs[-1])+'_nocut'           
-plotname_traj_xz     = endlocation+'traj_xz_config'+str(confignrs[-1])+'_nocut'           
-plotname_traj_yz     = endlocation+'traj_yz_config'+str(confignrs[-1])+'_nocut'           
-plotname_traj_xt     = endlocation+'traj_xt_config'+str(confignrs[-1])+'_nocut'           
-plotname_traj_yt     = endlocation+'traj_yt_config'+str(confignrs[-1])+'_nocut'           
-plotname_traj_zt     = endlocation+'traj_zt_config'+str(confignrs[-1])+'_nocut'           
-plotname_th_hist     = endlocation+'th_hist_'+filestext+'_nocut'
+plotname             = endlocation+filestext
+plotname_all         = endlocation+'all_'+filestext
+plotname_gamma       = endlocation+'zimportance_'+filestext
+plotname_SI          = endlocation+'SI_'+filestext
+plotname_parallel_orthogonal = endlocation+'par_ort_'+filestext
+plotname_dx_dy_dz    = endlocation+'dx_dy_dz_'+filestext
+plotname_parallel    = endlocation+'par_'+filestext
+plotname_orthogonal  = endlocation+'ort_'+filestext
+plotname_short_all   = endlocation+'short_all_'+filestext
+plotname_velocity    = endlocation+'velocity_'+filestext
+plotname_velocity_SI = endlocation+'velocity_SI_'+filestext
+plotname_velocity_sq = endlocation+'velocity_sq_'+filestext
+plotname_sectioned_average = endlocation+'sections_'+filestext
+plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext
+plotname_traj_xy    = endlocation+'traj_xy_config'+str(confignrs[-1])+'_hex'
+plotname_traj_xz    = endlocation+'traj_xz_config'+str(confignrs[-1])+'_hex'
+plotname_traj_yz    = endlocation+'traj_yz_config'+str(confignrs[-1])+'_hex'
+plotname_traj_xt    = endlocation+'traj_xt_config'+str(confignrs[-1])+'_hex'
+plotname_traj_yt    = endlocation+'traj_yt_config'+str(confignrs[-1])+'_hex'
+plotname_traj_zt    = endlocation+'traj_zt_config'+str(confignrs[-1])+'_hex'
+plotname_th_hist    = endlocation+'th_hist_h%i' % testh +filestext
+plotname_exittimes  = endlocation+'exittimes_'+filestext
+plotname_exittimes_binned = endlocation+'exittimes_hist_'+filestext
 
 if long==True:
     outfilename_ds           = outfilename_ds+'_long.txt'
@@ -104,7 +108,11 @@ if long==True:
     outfilename_sections     = outfilename_sections+'_long.txt'
     outfilename_maxz         = outfilename_maxz+'_long.txt'
     outfilename_dt           = outfilename_dt+'_long.txt'
+    outfilename_cuts         = outfilename_cuts+'_long.txt'
+    outfilename_noexit       = outfilename_noexit+'_long.txt'
     outfilename_skippedfiles = outfilename_skippedfiles+'_long.txt'
+    outfilename_exittimes    = outfilename_exittimes+'_long.txt'
+    outfilename_th           = outfilename_th+'_long.txt'
     
     # Plots
     plotname             = plotname+'_long.png'
@@ -128,13 +136,19 @@ if long==True:
     plotname_traj_yt    = plotname_traj_yt+'_long.png'
     plotname_traj_zt    = plotname_traj_zt+'_long.png'
     plotname_th_hist    = plotname_th_hist+'_long.png'
+    plotname_exittimes  = plotname_exittimes+'_long.png'
+    plotname_exittimes_binned = plotname_exittimes_binned+'_long.png'
 else:
     outfilename_ds           = outfilename_ds+'.txt'
     outfilename_gamma        = outfilename_gamma +'.txt'
     outfilename_sections     = outfilename_sections+'.txt'
     outfilename_maxz         = outfilename_maxz+'.txt'
     outfilename_dt           = outfilename_dt+'.txt'
+    outfilename_cuts         = outfilename_cuts+'.txt'
+    outfilename_noexit       = outfilename_noexit+'.txt'
     outfilename_skippedfiles = outfilename_skippedfiles+'.txt'
+    outfilename_exittimes    = outfilename_exittimes+'.txt'
+    outfilename_th           = outfilename_th+'.txt'
     
     # Plots
     plotname             = plotname+'.png'
@@ -158,6 +172,8 @@ else:
     plotname_traj_yt    = plotname_traj_yt+'.png'
     plotname_traj_zt    = plotname_traj_zt+'.png'
     plotname_th_hist    = plotname_th_hist+'.png'
+    plotname_exittimes  = plotname_exittimes+'.png'
+    plotname_exittimes_binned = plotname_exittimes_binned+'.png'
 
 ## Setting arrays
 # Prepare for sectioning distance data:
@@ -216,26 +232,38 @@ Nins          = []
 sections_walk  = []
 sections_steps = []
 # This is not squared, obviously:
-alltimes  = []
+alltimes    = []
+exittimes   = []
+exitzs      = [] # A safeguard
+testh_times = []
+exiths      = [] # A safeguard
 
+
+Nread        = 0
 skippedfiles = 0
 
-outfile_alltrajs_z   = open(outfilename_alltrajs_z, 'w')
-outfile_alltrajs_R2  = open(outfilename_alltrajs_R2, 'w')
+outfile_cuts = open(outfilename_cuts, 'w')
+outfile_cuts.write('confignr time_cut zs\n')
+
+outfile_noexit = open(outfilename_noexit,'w')
+outfile_noexit.write('confignr zs\n')
+
 outfile_skippedfiles = open(outfilename_skippedfiles, 'w')
 
 for confignr in confignrs:
     print('On config number:', confignr)
     if long==True:
-        infilename_all  = endlocation_in+'long/'+'all_confignr'+str(confignr)+'_long.lammpstrj'
-        infilename_free = endlocation_in+'long/'+'freeatom_confignr'+str(confignr)+'_long.lammpstrj'
-        plotname_dirs   = endlocation_in+'dxdydzR2_seed'+str(confignr)+'_long.png'
-        plotname_testsect = endlocation_in+'testsectioned_seed'+str(confignr)+'_long.png'
+        infilename_all  = endlocation+'long/'+'all_confignr'+str(confignr)+'_hex_long.lammpstrj'
+        infilename_free = endlocation+'long/'+'freeatom_confignr'+str(confignr)+'_hex_long.lammpstrj'
+        plotname_dirs   = endlocation+'dxdydzR2_seed'+str(confignr)+'_hex_long.png'
+        plotname_testsect = endlocation+'testsectioned_seed'+str(confignr)+'_hex_long.png'
     else:
-        infilename_all  = endlocation_in+'all_confignr'+str(confignr)+'.lammpstrj'
-        infilename_free = endlocation_in+'freeatom_confignr'+str(confignr)+'.lammpstrj'
-        plotname_dirs   = endlocation_in+'dxdydzR2_seed'+str(confignr)+'.png'
-        plotname_testsect = endlocation_in+'testsectioned_seed'+str(confignr)+'.png'
+        infilename_all  = endlocation+'all_confignr'+str(confignr)+'_hex.lammpstrj'
+        infilename_free = endlocation+'freeatom_confignr'+str(confignr)+'_hex.lammpstrj'
+        plotname_dirs   = endlocation+'dxdydzR2_seed'+str(confignr)+'_hex.png'
+        plotname_testsect = endlocation+'testsectioned_seed'+str(confignr)+'_hex.png'
+
+    
     
     #print('infilename_all:',infilename_all)
     
@@ -246,8 +274,8 @@ for confignr in confignrs:
         infile_all = open(infilename_all, "r")
     except:
         try:
-            infilename_all = endlocation_in+'long/'+'all_confignr'+str(confignr)+'.lammpstrj'
-            infilename_free = endlocation_in+'long/'+'freeatom_confignr'+str(confignr)+'.lammpstrj'
+            infilename_all = endlocation+'long/'+'all_confignr'+str(confignr)+'.lammpstrj'
+            infilename_free = endlocation+'long/'+'freeatom_confignr'+str(confignr)+'.lammpstrj'
             infile_all = open(infilename_all, "r")
         except:
             print('Oh, lammpstrj-file! Where art thou?')
@@ -279,7 +307,7 @@ for confignr in confignrs:
     counter = 0
     while i<totlines:
         words = lines[i].split()
-        if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
+        if words[0]=='ITEM:':
             if words[1]=='TIMESTEP':
                 i+=skiplines
             elif words[1]=='NUMBER': # These will never kick in. 
@@ -341,7 +369,7 @@ for confignr in confignrs:
     zs_fortesting = []
     while i<totlines:
         words = lines[i].split()
-        if (words[0]=='ITEM:'): # Some double testing going on...
+        if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
             if words[1]=='TIMESTEP':
                 words2 = lines[i+1].split() # The time step is on the next line
                 t = float(words2[0])
@@ -386,9 +414,52 @@ for confignr in confignrs:
     if min(zs_fortesting)<zlow:
         continue
     
+    Nread += 1 # Counting the number of files we analyze
+    pos_inpolymer = []
+    
+    #before_in
+    
     # I do not take into account that the free bead can enter the polymer grid and then exit again. If that happens, there might be discontinuities or weird kinks in the data (if you look at the graphs...) # I do not have this in my test-dataset. Maybe make the bead lighter and see what happens?
     
-    Nin   = Nsteps
+    Nin   = 0
+    maxzpol = 0
+    brokenthis = 0
+    for i in range(counter):
+        thesepos = positions[i]
+        z        = thesepos[2]
+        if z>extent_polymers: # If the polymer is in bulk # We don't want it to go back and forth between brush and bulk # That will cause discontinuities in our data
+            brokenthis = 1
+            outfile_cuts.write('%i %i ' % (confignr, i)) # Jubileum
+            for iex in range(Nin): # Ugh, stupid loop structure... 
+                posnow = positions[iex] 
+                outfile_cuts.write('%.16e ' % posnow[2])
+            outfile_cuts.write('\n')
+            # Saving info on exit times:
+            exittimes.append(i*dt) # Change to time step
+            exitzs.append(z)
+            break
+        else:
+            pos_inpolymer.append(thesepos)
+            if z>maxzpol:
+                maxzpol = z
+            Nin+=1
+    if brokenthis==0:
+        outfile_noexit.write('%i ' % confignr) 
+        for inoex in range(Nin):
+            posnow = positions[inoex] 
+            outfile_noexit.write('%.16e ' % posnow[2])
+        outfile_noexit.write('\n')
+    
+    # testh_times:
+    for i in range(counter):
+        thesepos = positions[i]
+        z        = thesepos[2]
+        if z>testh: # If the polymer is in bulk # Measuring the time when is first reaches height h.
+            testh_times.append(i*dt)
+            exiths.append(z)
+            break
+    
+    startpos_in   = pos_inpolymer[0]
     #######
     # Will divide into several walks with different starting points later on
     # Should store for RMS too? ... Then I need to have more starting points or more time frames.
@@ -404,10 +475,6 @@ for confignr in confignrs:
     step_temp = []
     gamma_temp = []
     
-    # For analysis of exit times (a temporary feature, but it will probably remain)
-    outfile_alltrajs_z.write('%i ' % confignr)
-    outfile_alltrajs_R2.write('%i ' % confignr)
-            
     R_temp.append(0)
     dx_temp.append(0)
     dy_temp.append(0)
@@ -415,10 +482,9 @@ for confignr in confignrs:
     step_temp.append(0)
     allRs.append(0)        # We will set this here since we know the value
     alltimes.append(0)
-    startpos = positions[0]
     for i in range(1,Nin):       
-        this = positions[i]
-        dist = this-startpos
+        this_in = pos_inpolymer[i]
+        dist = this_in-startpos_in
         dx   = dist[0]         # Signed
         dy   = dist[1]
         dz   = dist[2]
@@ -435,9 +501,6 @@ for confignr in confignrs:
         vy2i = vyi*vyi
         vz2i = vzi*vzi
         v2i  = vx2i + vy2i + vz2i
-        #
-        outfile_alltrajs_z.write('%.16e ' % dz)
-        outfile_alltrajs_R2.write('%.16e ' % R2)
         # All together:
         allRs.append(R2)
         alldxs.append(dx2)
@@ -479,9 +542,6 @@ for confignr in confignrs:
     times_byseed.append(step_temp)
     gamma_avg = np.mean(gamma_temp)
     gamma_avgs.append(gamma_avg)
-    outfile_alltrajs_z.write('\n')
-    outfile_alltrajs_R2.write('\n')
-    
     
     coeffs = np.polyfit(step_temp,R_temp,1)
     a = coeffs[0]
@@ -522,12 +582,12 @@ for confignr in confignrs:
         part_end     = part_start+len_thiswalk
         if part_start>(Nin-1):              # Do not start this section if the bead has left the brush.
             break
-        rstart = positions[part_start]
+        rstart = pos_inpolymer[part_start]
         for j in range(len_thiswalk):
             #print('i:',i,', j:',j)
             if part_start+j>(Nin-1):
                 break
-            rthis =  positions[part_start+j]
+            rthis =  pos_inpolymer[part_start+j]
             drvec = rthis - rstart
             dr2   = np.dot(drvec,drvec)
             dz2   = drvec[2]*drvec[2]
@@ -539,10 +599,10 @@ for confignr in confignrs:
             print('drvec:', drvec)
             print('dr2:', dr2)
             '''
-            average_walks[i][j]    +=dr2#= average_walks[i][j] + dr2 # Notation? [i,j] or [i][j] # Ugh, and should I have one of these for R2, dx2, dy2 and dz2?
+            average_walks[i][j]    +=dr2
             average_walks_z2[i][j] +=dz2
             average_walks_p2[i][j] +=dpar2
-            average_counters[i][j] +=1#= average_counters[i][j] + 1
+            average_counters[i][j] +=1
             this_part.append(dr2)
             these_steps.append(j)
         part_walks.append(this_part)
@@ -565,8 +625,9 @@ for confignr in confignrs:
     #partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
     #time_afterpartition = time.process_time()
     #print('Time, partitioning:',time_afterpartition-time_beforepartition)
-outfile_alltrajs_z.close()
-outfile_alltrajs_R2.close()
+
+outfile_cuts.close()
+outfile_noexit.close()
 outfile_skippedfiles.close()
 
 print('filescounter:', filescounter)
@@ -1122,3 +1183,68 @@ plt.savefig(plotname_sectioned_average_vs_steps)
 
 print('spacing:', spacing)
 print('psigma:', psigma)
+
+outfile_exittimes = open(outfilename_exittimes,'w')
+outfile_exittimes.write('Exit time | Value of z at exit time\n')
+for i in range(len(exittimes)):
+    outfile_exittimes.write('%.16e %.16e\n' % (exittimes[i],exitzs[i]))
+outfile_exittimes.close()
+
+# Exit times
+plt.figure()
+plt.plot(np.sort(exittimes), 'o') # I'll see how this works, if not I can always replot
+plt.ylabel(r'Exit time [s]')
+plt.title('Exit time for dynamic brush, d = %i nm' % spacing)
+plt.tight_layout()
+#plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+plt.savefig(plotname_exittimes)
+
+Nexits = len(exittimes)
+Nbins  = int(Nexits/10)      # Don't know if this is the best solution...
+hist, bin_edges = np.histogram(exittimes, bins=20)
+
+
+# Creating histogram 
+fig, axs = plt.subplots(1, 1, 
+                        figsize =(10, 7),  
+                        tight_layout = True) 
+  
+axs.hist(exittimes, bins = 20) 
+plt.xlabel(r'Exit time [s]',fontsize=15)
+plt.ylabel('Number of exits',fontsize=15)
+plt.title('Exit time for dynamic brush, d = %i nm, histogram' % spacing,fontsize=15)
+plt.savefig(plotname_exittimes_binned)
+
+
+
+## Distribution of times when walker reaches height testh:
+Nth = len(testh_times)
+
+outfile_th = open(outfilename_th,'w')
+outfile_th.write('Files read: %i\n' % Nread)
+for i in range(Nth):
+    outfile_th.write('%.16e %.16e\n' % (testh_times[i],exiths[i]))
+outfile_th.close()
+
+hist_th, bin_edges_th = np.histogram(testh_times, bins=20)
+
+# Creating histogram II
+# (https://stackoverflow.com/questions/22241240/how-to-normalize-a-histogram-in-python)
+#define width of each column
+width = bin_edges_th[1]-bin_edges_th[0]
+#standardize each column by dividing with the maximum height
+hist_th = hist_th/float(Nread)
+#plot
+plt.bar(bin_edges_th[:-1],hist_th,width = width)
+plt.xlabel(r'$t_h$ [s]')
+plt.ylabel(r'No. of exits/$N_{sims}$') 
+plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
+plt.savefig(plotname_th_hist)
+
+
+print('hist, exitzs:',hist)
+print('hist, th:',hist_th)
+
+print('bin_edges_exitzs:',bin_edges)
+print('bin_edges_th:',bin_edges_th)
+

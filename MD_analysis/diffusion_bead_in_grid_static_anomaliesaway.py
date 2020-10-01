@@ -28,9 +28,9 @@ Nplacements = 10#10
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-testmode = True
+testmode = False
 long    = True
-spacing = 2.5
+spacing = 4.5
 psigma  = 1   #.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -53,7 +53,10 @@ Nplacements    = len(beadplacements)
 Nfiles         = Nconfigs*Nplacements
 maxz_av        = 0
 filescounter   = 0
-Nsteps         = 2001 # 20001 before
+if long==True:
+    Nsteps         = 10001
+else:
+    Nsteps         = 2001
 #writeevery   = 10                  # I'm writing to file every this many time steps
 unitlength     = 1e-9
 unittime       = 2.38e-11 # s
@@ -310,7 +313,7 @@ for confignr in confignrs:
         print('config nr', confignr,', beadplacement:', beadplacement, ' of', Nplacements)
         ## Find the position of the free bead:
         if long==True:
-            infilename_free = basepath+'long/'+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'.lammpstrj'
+            infilename_free = basepath+'long/'+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'_long.lammpstrj'
         else:
             infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'.lammpstrj'
         
@@ -357,7 +360,7 @@ for confignr in confignrs:
         zs_fortesting = []
         while i<totlines:
             words = lines[i].split()
-            if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
+            if words[0]=='ITEM:':
                 if words[1]=='TIMESTEP':
                     words2 = lines[i+1].split() # The time step is on the next line
                     t = float(words2[0])

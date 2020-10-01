@@ -29,8 +29,8 @@ def rmsd(x,y):
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-long    = True
-spacing = 4.5
+long    = False
+spacing = 3
 psigma  = 1#.5
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 #pmass   = 1.5
@@ -62,18 +62,18 @@ Npartitions  = 5 # For extracting more walks from one file (but is it really suc
 minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 print('timestepsize:', timestepsize)
 
-endlocation_in           = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp+str(psigma) + '/'
+endlocation_in           = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp+str(psigma) + '/Hexagonal/'
 endlocation              = endlocation_in +'Nocut/'
-filestext                = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
+filestext                = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_hex'
 # Text files
 outfilename_ds           = endlocation+'av_ds_'+filestext+'_nocut'                        
 outfilename_gamma        = endlocation+'zimportance_'+filestext+'_nocut'                  
 outfilename_sections     = endlocation+'sections_'+filestext+'_nocut'                     
 outfilename_maxz         = endlocation+'maxz_az_'+filestext+'_nocut'
-outfilename_dt           = endlocation+'dt_nocut'
-outfilename_alltrajs_z   = endlocation+'zs_all'
-outfilename_alltrajs_R2  = endlocation+'R2s_all'
-outfilename_skippedfiles = endlocation+'skippedfiles'
+outfilename_dt           = endlocation+'dt_nocut'+'_hex'
+outfilename_alltrajs_z   = endlocation+'zs_all'+'_hex'
+outfilename_alltrajs_R2  = endlocation+'R2s_all'+'_hex'
+outfilename_skippedfiles = endlocation+'skippedfiles'+'_hex'
 
 # Plots
 plotname             = endlocation+filestext+'_nocut'
@@ -90,12 +90,12 @@ plotname_velocity_SI = endlocation+'velocity_SI_'+filestext+'_nocut'
 plotname_velocity_sq = endlocation+'velocity_sq_'+filestext+'_nocut'      
 plotname_sectioned_average = endlocation+'sections_'+filestext+'_nocut'
 plotname_sectioned_average_vs_steps = endlocation+'sections_steps_'+filestext+'_nocut'
-plotname_traj_xy     = endlocation+'traj_xy_config'+str(confignrs[-1])+'_nocut'           
-plotname_traj_xz     = endlocation+'traj_xz_config'+str(confignrs[-1])+'_nocut'           
-plotname_traj_yz     = endlocation+'traj_yz_config'+str(confignrs[-1])+'_nocut'           
-plotname_traj_xt     = endlocation+'traj_xt_config'+str(confignrs[-1])+'_nocut'           
-plotname_traj_yt     = endlocation+'traj_yt_config'+str(confignrs[-1])+'_nocut'           
-plotname_traj_zt     = endlocation+'traj_zt_config'+str(confignrs[-1])+'_nocut'           
+plotname_traj_xy     = endlocation+'traj_xy_config'+str(confignrs[-1])+'_hex'+'_nocut'           
+plotname_traj_xz     = endlocation+'traj_xz_config'+str(confignrs[-1])+'_hex'+'_nocut'           
+plotname_traj_yz     = endlocation+'traj_yz_config'+str(confignrs[-1])+'_hex'+'_nocut'           
+plotname_traj_xt     = endlocation+'traj_xt_config'+str(confignrs[-1])+'_hex'+'_nocut'           
+plotname_traj_yt     = endlocation+'traj_yt_config'+str(confignrs[-1])+'_hex'+'_nocut'           
+plotname_traj_zt     = endlocation+'traj_zt_config'+str(confignrs[-1])+'_hex'+'_nocut'           
 plotname_th_hist     = endlocation+'th_hist_'+filestext+'_nocut'
 
 if long==True:
@@ -227,15 +227,15 @@ outfile_skippedfiles = open(outfilename_skippedfiles, 'w')
 for confignr in confignrs:
     print('On config number:', confignr)
     if long==True:
-        infilename_all  = endlocation_in+'long/'+'all_confignr'+str(confignr)+'_long.lammpstrj'
-        infilename_free = endlocation_in+'long/'+'freeatom_confignr'+str(confignr)+'_long.lammpstrj'
-        plotname_dirs   = endlocation_in+'dxdydzR2_seed'+str(confignr)+'_long.png'
-        plotname_testsect = endlocation_in+'testsectioned_seed'+str(confignr)+'_long.png'
+        infilename_all  = endlocation_in+'long/'+'all_confignr'+str(confignr)+'_hex'+'_long.lammpstrj'
+        infilename_free = endlocation_in+'long/'+'freeatom_confignr'+str(confignr)+'_hex'+'_long.lammpstrj'
+        plotname_dirs   = endlocation_in+'dxdydzR2_seed'+str(confignr)+'_hex'+'_long.png'
+        plotname_testsect = endlocation_in+'testsectioned_seed'+str(confignr)+'_hex'+'_long.png'
     else:
-        infilename_all  = endlocation_in+'all_confignr'+str(confignr)+'.lammpstrj'
-        infilename_free = endlocation_in+'freeatom_confignr'+str(confignr)+'.lammpstrj'
-        plotname_dirs   = endlocation_in+'dxdydzR2_seed'+str(confignr)+'.png'
-        plotname_testsect = endlocation_in+'testsectioned_seed'+str(confignr)+'.png'
+        infilename_all  = endlocation_in+'all_confignr'+str(confignr)+'_hex'+'.lammpstrj'
+        infilename_free = endlocation_in+'freeatom_confignr'+str(confignr)+'_hex'+'.lammpstrj'
+        plotname_dirs   = endlocation_in+'dxdydzR2_seed'+str(confignr)+'_hex'+'.png'
+        plotname_testsect = endlocation_in+'testsectioned_seed'+str(confignr)+'_hex'+'.png'
     
     #print('infilename_all:',infilename_all)
     
@@ -246,8 +246,8 @@ for confignr in confignrs:
         infile_all = open(infilename_all, "r")
     except:
         try:
-            infilename_all = endlocation_in+'long/'+'all_confignr'+str(confignr)+'.lammpstrj'
-            infilename_free = endlocation_in+'long/'+'freeatom_confignr'+str(confignr)+'.lammpstrj'
+            infilename_all = endlocation_in+'long/'+'all_confignr'+str(confignr)+'_hex'+'.lammpstrj'
+            infilename_free = endlocation_in+'long/'+'freeatom_confignr'+str(confignr)+'_hex'+'.lammpstrj'
             infile_all = open(infilename_all, "r")
         except:
             print('Oh, lammpstrj-file! Where art thou?')
@@ -279,7 +279,7 @@ for confignr in confignrs:
     counter = 0
     while i<totlines:
         words = lines[i].split()
-        if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
+        if words[0]=='ITEM:':
             if words[1]=='TIMESTEP':
                 i+=skiplines
             elif words[1]=='NUMBER': # These will never kick in. 
@@ -341,7 +341,7 @@ for confignr in confignrs:
     zs_fortesting = []
     while i<totlines:
         words = lines[i].split()
-        if (words[0]=='ITEM:'): # Some double testing going on...
+        if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
             if words[1]=='TIMESTEP':
                 words2 = lines[i+1].split() # The time step is on the next line
                 t = float(words2[0])

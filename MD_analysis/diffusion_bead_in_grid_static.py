@@ -26,17 +26,16 @@ def rmsd(x,y):
     delta = np.sqrt(delta/(Nx-1))
     return delta
 # Settings
-Nconfigs    = 100#100
-Nplacements = 10#10
+Nconfigs    = 100
+Nplacements = 10
 #
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
 long    = True
-spacing = 2.5
-psigma  = 1   #.5
+spacing = 4.5
+psigma  = 1
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
-#pmass   = 1.5
 print('spacing:', spacing)
 print('psigma:', psigma)
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
@@ -50,8 +49,7 @@ zhigh          = 250
 zlow           = -50
 testh          = 20     # For transport measurements
 test_sectioned = False
-#seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
-confignrs      = np.arange(1,Nconfigs+1)#300)#20)#101)#1001)#22)
+confignrs      = np.arange(1,Nconfigs+1)
 beadplacements = np.arange(1,Nplacements+1)
 Nconfigs       = len(confignrs)      # So that I don't have to change that much
 Nplacements    = len(beadplacements)
@@ -319,7 +317,7 @@ for confignr in confignrs:
         print('config nr', confignr,', beadplacement:', beadplacement, ' of', Nplacements)
         ## Find the position of the free bead:
         if long==True:
-            infilename_free = basepath+'long/'+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'.lammpstrj'
+            infilename_free = basepath+'long/'+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'_long.lammpstrj'
         else:
             infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'.lammpstrj'
         
@@ -327,10 +325,17 @@ for confignr in confignrs:
             infile_free = open(infilename_free, "r")
             #print('file name that WORKED:', infilename_config)
         except:
-            print('Oh, data-file! Where art thou?')
-            print('file name that failed:', infilename_free)
-            skippedfiles += 1
-            continue # Skipping this file if it does not exist
+            if long==True:
+                try:
+                    infilename_free = basepath+'long/'+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'.lammpstrj'
+                    infile_free = open(infilename_free, "r")
+                except:
+                    print('Oh, data-file! Where art thou?')
+                    print('file name that failed:', infilename_free)
+                    skippedfiles += 1
+                    continue # Skipping this file if it does not exist
+            else:
+                continue
         filescounter += 1
         
         # Moving on, if the file exists
@@ -367,7 +372,7 @@ for confignr in confignrs:
         zs_fortesting = []
         while i<totlines:
             words = lines[i].split()
-            if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
+            if words[0]=='ITEM:':
                 if words[1]=='TIMESTEP':
                     words2 = lines[i+1].split() # The time step is on the next line
                     t = float(words2[0])
