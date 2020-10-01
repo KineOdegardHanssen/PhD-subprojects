@@ -279,7 +279,7 @@ for confignr in confignrs:
     counter = 0
     while i<totlines:
         words = lines[i].split()
-        if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
+        if words[0]=='ITEM:':
             if words[1]=='TIMESTEP':
                 i+=skiplines
             elif words[1]=='NUMBER': # These will never kick in. 
@@ -341,7 +341,7 @@ for confignr in confignrs:
     zs_fortesting = []
     while i<totlines:
         words = lines[i].split()
-        if (words[0]=='ITEM:' and words[1]=='TIMESTEP'): # Some double testing going on...
+        if words[0]=='ITEM:': # Some double testing going on...
             if words[1]=='TIMESTEP':
                 words2 = lines[i+1].split() # The time step is on the next line
                 t = float(words2[0])
