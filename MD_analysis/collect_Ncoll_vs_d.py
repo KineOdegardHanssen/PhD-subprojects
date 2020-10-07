@@ -34,7 +34,8 @@ ncoll_rms = np.zeros(Nd)
 for spacing in spacings:
     print('spacing:', spacing)
     outfolder_coll = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Singletrajectories/Spacing' + str(spacing) + '/'
-    ncollfilename = outfolder_coll + 'Ncoll_selectedconfigs.txt'
+    #ncollfilename = outfolder_coll + 'Ncoll_selectedconfigs.txt'
+    ncollfilename = outfolder_coll + 'Ncoll_manyconfigs.txt'
     ncollfile     = open(ncollfilename,'r')
     lines = ncollfile.readlines()
     
