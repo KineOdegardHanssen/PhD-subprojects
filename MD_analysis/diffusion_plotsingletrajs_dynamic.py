@@ -47,7 +47,7 @@ zhigh          = 290    # For omitting unphysical trajectories
 zlow           = -50    
 testh          = 20     # For transport measurements (default 50, might change for tests)
 #seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
-confignrs    = np.arange(1,1001)#300)#20)#101)#1001)#22) 
+confignrs    = [1,200,500,750,999]
 Nseeds       = len(confignrs)      # So that I don't have to change that much
 maxz_av      = 0
 filescounter = 0
@@ -64,6 +64,7 @@ minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 print('timestepsize:', timestepsize)
 
 endlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp + str(psigma) + '/'
+plotlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Singletrajectories/Spacing'+str(spacing)+'/'
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 
 
@@ -81,14 +82,11 @@ for confignr in confignrs:
     if long==True:
         infilename_all  = endlocation+'long/'+'all_confignr'+str(confignr)+'_long.lammpstrj'
         infilename_free = endlocation+'long/'+'freeatom_confignr'+str(confignr)+'_long.lammpstrj'
-        plotname_dirs   = endlocation+'dxdydzR2_seed'+str(confignr)+'_long.png'
-        plotname_testsect = endlocation+'testsectioned_seed'+str(confignr)+'_long.png'
     else:
         infilename_all  = endlocation+'all_confignr'+str(confignr)+'.lammpstrj'
         infilename_free = endlocation+'freeatom_confignr'+str(confignr)+'.lammpstrj'
-        plotname_dirs   = endlocation+'dxdydzR2_seed'+str(confignr)+'.png'
-        plotname_testsect = endlocation+'testsectioned_seed'+str(confignr)+'.png'
-    
+    plotname     = plotlocation+'traj_d'+str(spacing)+'_config%i.png' % confignr
+    plotname_ind = plotlocation+'traj_d'+str(spacing)+'_config%i_index.png' % confignr
     # Read in:
     #### Automatic part
     ## Find the extent of the polymers: Max z-coord of beads in the chains
@@ -192,6 +190,8 @@ for confignr in confignrs:
             if words[1]=='TIMESTEP':
                 words2 = lines[i+1].split() # The time step is on the next line
                 t = float(words2[0])
+                if t>200000:
+                    break # Want to compare short and long simulations on equal footing
                 times.append(t)
                 i+=skiplines
             elif words[1]=='NUMBER': # These will never kick in. 
@@ -232,5 +232,58 @@ for confignr in confignrs:
         continue
     
     # Mark point where the bead exits the brush (if it does)
-    
+    Nin   = 0
+    maxzpol = 0
+    brokenthis = 0
+    exitt = False
+    x_inpolymer  = []
+    y_inpolymer  = []
+    z_inpolymer  = []
+    xy_inpolymer = []
+    time_inpolymer = []
+    time_real_inpolymer = []
+    for i in range(counter):
+        thesepos = positions[i]
+        z        = thesepos[2]
+        if z>extent_polymers: # If the polymer is in bulk # We don't want it to go back and forth between brush and bulk # That will cause discontinuities in our data
+            # Saving info on exit times:
+            exitt = i*dt
+            break
+        else:
+            x = thesepos[0]
+            y = thesepos[1]
+            xy = np.sqrt(x*x+y*y)
+            x_inpolymer.append(x)
+            y_inpolymer.append(y)
+            z_inpolymer.append(z)
+            xy_inpolymer.append(xy)
+            time_inpolymer.append(times_single[i])
+            time_real_inpolymer.append(times_single_real[i])
+            if z>maxzpol:
+                maxzpol = z
+            Nin+=1
     # Plot
+    plt.figure(figsize=(10,5))
+    ax = plt.subplot(111)
+    ax.plot(time_real_inpolymer,z_inpolymer,label=r'$z$')
+    ax.plot(time_real_inpolymer,xy_inpolymer,label=r'$\sqrt{x^2+y^2}$')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Distance travelled [nm]')
+    plt.title(r'$z(t)$ and $\sqrt{x^2(t)+y^2(t)}$, d=%.2f, config %i' % (spacing,confignr))
+    plt.ticklabel_format(axis='x', style='sci', scilimits=(0,0))
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    plt.savefig(plotname)
+    
+    plt.figure(figsize=(10,5))
+    ax = plt.subplot(111)
+    ax.plot(time_inpolymer,z_inpolymer,label=r'$z$')
+    ax.plot(time_inpolymer,xy_inpolymer,label=r'$\sqrt{x^2+y^2}$')
+    plt.xlabel('Time [s]')
+    plt.ylabel('Distance travelled [nm]')
+    plt.title(r'$z(t)$ and $\sqrt{x^2(t)+y^2(t)}$, d=%.2f, config %i' % (spacing,confignr))
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+    plt.savefig(plotname_ind)

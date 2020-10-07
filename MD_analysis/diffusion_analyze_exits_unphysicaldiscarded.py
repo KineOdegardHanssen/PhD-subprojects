@@ -67,10 +67,11 @@ print('timestepsize:', timestepsize)
 endlocation  = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Exitfrac_vs_d/'
 filestext    = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 # Text files
-outfilename = endlocation+'Nesc_div_Nread_'+filestext+'.txt'
+outfilename  = endlocation+'Nesc_div_Nread_'+filestext+'.txt'
 
 # Plots
-plotname    = endlocation+'Nesc_div_Nread_'+filestext+'.png'
+plotname        = endlocation+'Nesc_div_Nread_'+filestext+'.png'
+plotname_smalld = endlocation+'Nesc_div_Nread_'+filestext+'_smalld.png'
 
 ## Setting arrays
 # Prepare for sectioning distance data:
@@ -264,10 +265,18 @@ for l in range(Nd):
     escfraction[l] = escfrac_this
 outfile.close()
 
-plt.figure((6,5))
+plt.figure(figsize=(6,5))
 plt.plot(spacings,escfraction)
 plt.xlabel('$d$ [nm]')
 plt.ylabel(r'$N_{esc}/N_{sims}$')
 plt.title(r'Fraction of escaped beads vs spacing $d$')
 plt.tight_layout()
 plt.savefig(plotname)
+
+plt.figure(figsize=(6,5))
+plt.plot(spacings[:13],escfraction[:13])
+plt.xlabel('$d$ [nm]')
+plt.ylabel(r'$N_{esc}/N_{sims}$')
+plt.title(r'Fraction of escaped beads vs spacing $d$')
+plt.tight_layout()
+plt.savefig(plotname_smalld)
