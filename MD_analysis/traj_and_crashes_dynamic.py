@@ -1,9 +1,6 @@
-from skimage import morphology, measure, io, util   # For performing morphology operations (should maybe import more from skimage...)
-from mpl_toolkits.mplot3d import Axes3D             # Plotting in 3D
 import matplotlib.pyplot as plt                     # To plot
 from scipy.optimize import curve_fit
 from pylab import *
-from scipy.ndimage import measurements, convolve    # Should have used the command below, but changing now will lead to confusion
 from scipy import ndimage                           # For Euclidean distance measurement
 import data_treatment as datr
 import numpy as np
@@ -29,8 +26,8 @@ def rmsd(x,y):
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-long       = True
-spacing    = 4.5
+long       = False
+spacing    = 1
 psigma     = 1
 sigma_atom = psigma
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
@@ -47,8 +44,7 @@ test_sectioned = False
 zhigh          = 290    # For omitting unphysical trajectories
 zlow           = -50    
 testh          = 20     # For transport measurements (default 50, might change for tests)
-#seeds  = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
-confignrs    = [1,200,500,750,999]
+confignrs    = [125,550,650,700,750]
 Nseeds       = len(confignrs)      # So that I don't have to change that much
 maxz_av      = 0
 filescounter = 0
@@ -303,8 +299,11 @@ for confignr in confignrs:
             if words[0]=='Loop':
                 break
             if startit==1:
-                times_coll.append(int(words[0]))
-                pot_energies.append(float(words[1]))
+                if words[0]=='WARNING:':
+                    break
+                else:
+                    times_coll.append(int(words[0]))
+                    pot_energies.append(float(words[1]))
             if words[0]=='Step':
                 startit = 1
     infile_coll.close()
@@ -313,7 +312,9 @@ for confignr in confignrs:
     crashbefore = 0
     thistime = 0
     i = 0
-    while thistime<=200001:
+    breaker = len(pot_energies)
+    tstop   = 200001
+    while thistime<=tstop and i<breaker:
         pot_en   = pot_energies[i]
         thistime = times_coll[i]
         if (pot_en!=0 and crashbefore==0):
