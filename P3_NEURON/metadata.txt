@@ -1,0 +1,342 @@
+Model-ID 496497595
+Originalverdier, cm:
+Soma:			1.14805
+Akson:			3.00603
+Apikal dendritt:	0.514141
+(Basal) dendritt:	9.98231
+
+Måter å variere på:
+1. Endre bare soma
+2. Endre bare soma og dendritt
+3. Endre alle med en faktor 	(Nettene er ikke på aksoner, så dette er kanskje ikke så relevant)
+4. Sette alle like og variere	(Ditto)
+5. Variere bare i dendrittene for å se effekten av det?
+6. Endre bare for aksonet?
+
+1: filnavn: _cm_soma[verdi,cm]
+2: filnavn: _cm_soma[verdi,cm]_dend[verdi,cm]
+3: filnavn: _everycm_fac[faktor]
+4: filnavn: _everycm_equal[verdi,cm]
+
+Begynne med 1.? Det gir vel en del intuisjon?
+Burde kanskje kvantifisere på en eller annen måte?
+--------------------------------------------------------------------------------------------------------
+Verdier, endre bare soma:
+Lavere cm, flere topper. Soma og seg. 1 i aksonet har høyere [Ca] for lavere cm.
+--------------------------------------------------------
+0.01:
+Spenning i soma: 	20 topper (vs 18). Høyere toppverdier, lavere bunnverdier. Mer ujevne topper?
+Spenning i aksonet:	20 topper. Litt høyere toppverdier, bunnverdiene ser like ut.
+[Ca] i soma:	 	Rettere, (litt) høyere verdier.
+[Ca] i akson:	 	Høyere for seg. 1, lavere for seg 2 og 3? Seg 1 litt rettere. 2&3 flater mer ut
+--------------------------------------------------------
+0.5:
+Spenning i soma: 	En ekstra topp, litt høyere verdier (litt over 0 mV vs litt under 0 mV)
+Spenning i aksonet:	En ekstra topp, litt høyere verdier (så vidt synlig)
+[Ca] i soma:	 	Ingen synlig forskjell (Se nærmere på disse)
+[Ca] i akson:	 	Ingen synlig forskjell
+--------------------------------------------------------
+2.0:
+Spenning i soma: 	En topp mindre. Høyere bunnverdier, lavere toppverdier. Avtar mer.
+Spenning i aksonet:	En mindre topp, litt lavere verdier
+[Ca] i soma:	 	Litt lavere verdier. Litt annen form, så vidt mer buet.
+[Ca] i akson:	 	Litt lavere verdier, likere for segmentene. Litt annen form.
+--------------------------------------------------------
+10.0:
+Spenning i soma: 	Lave verdier, 'flatliner'.
+Spenning i aksonet:	Lave verdier, 'flatliner'.
+[Ca] i soma:	 	Lavere verdier, glatt, konvergerer raskere.
+[Ca] i akson:	 	Lavere verdier, glatt, konvergerer raskere. Seg. 2 høyere enn 3.
+--------------------------------------------------------------------------------------------------------
+Verdier, endre bare dend:
+Lavere cm, flere topper. Ca i soma og aksonseg. 1 høyere for lavere cm.
+--------------------------------------------------------
+0.01:
+Spenning i soma: 	23 topper, ca 10 mV. Bunn nesten -90 mV?
+Spenning i aksonet:	23 topper, over -20 mV, bunn nesten -90 mV? Seg. 2 blir nokså mye høyere enn 3.
+[Ca] i soma:	 	Rettere og høyere.
+[Ca] i akson:	 	Seg. 1 rettere og høyere, 2 og 3 ca samme verdi, men flater mer ut. Krysser.
+--------------------------------------------------------
+0.5:
+Spenning i soma: 	22 topper, ca 10 mV. Bunn nesten -90 mV?
+Spenning i aksonet:	22 topper, over -20 mV, bunn nesten -90 mV? Seg. 2 blir nokså mye høyere enn 3.
+[Ca] i soma:	 	Rettere og høyere (men litt lavere enn med cm=0.01)
+[Ca] i akson:	 	Seg. 1 rettere og høyere, 2 og 3 ca samme verdi, men flater mer ut. Krysser. 
+--------------------------------------------------------
+1.0:
+Spenning i soma: 	22 topper, ca 10 mV. Bunn litt under -80 mV.
+Spenning i aksonet:	22 topper, over -20 mV, bunn nesten -90 mV? Seg. 2 blir nokså mye høyere enn 3.
+[Ca] i soma:	 	Rettere og høyere.
+[Ca] i akson:	 	Seg. 1 rettere og høyere, 2 og 3 ca samme verdi, men flater mer ut. Krysser.
+--------------------------------------------------------
+2.0:
+Spenning i soma: 	21 topper, ca 10 mV. Bunn rett under -80 mV.
+Spenning i aksonet:	21 topper, over -20 mV, bunn -85 til -90 mV? Seg. 2 blir nokså mye høyere enn 3.
+[Ca] i soma:	 	Rettere og høyere. Cirka dobbelt så høy maksverdi som i originalen.
+[Ca] i akson:	 	Seg. 1 rettere og høyere, 2 og 3 ca samme verdi, men flater mer ut. Krysser.
+--------------------------------------------------------
+20.0:
+Spenning i soma: 	5-6 topper, flater ut til platå, faller når strømmen skrus av.
+Spenning i aksonet:	4-5 topper, flater ut til platå, faller når strømmen skrus av.
+[Ca] i soma:	 	Mye lavere maksverdi. Øker, når topp, avtar sakte.
+[Ca] i akson:	 	Mye lavere maksverdi. Øker, når topp, avtar sakte.
+
+--------------------------------------------------------------------------------------------------------
+Verdier, endre bare akson:
+Original: 18 topper.
+Lite forskjell på Vm i soma for lave Cm. Høyden på toppene avtar med økende Cm. Antallet er jevnt. Toppenes høyde avtar med tid for større Cm.
+[Ca] i aksonet er høyere og rettere for lave Cm.
+[Ca] i soma er lavere og mer kurvet for høye Cm.
+--------------------------------------------------------
+0.01:
+Spenning i soma: 	18 topper. Litt sterkere etterhyperpolarisering. Litt høyere topp og lavere bunn?
+Spenning i aksonet:	18 topper. Nesten overlapp av seg. i toppene. Toppene høyere, men avtar mer. Bunnen nokså lik?
+[Ca] i soma:	 	Litt mindre krummet enn originalen. Cirka samme verdier.
+[Ca] i akson:	 	Alle er rettere. Høyere verdier for alle (0.0008 for seg. 1 vs 0.0006 i originalen).
+--------------------------------------------------------
+0.5:
+Spenning i soma: 	18 topper. Litt sterkere etterhyperpolarisering. Litt høyere verdi for topp og lavere bunn?
+Spenning i aksonet:	18 topper. Nesten overlapp av seg. i toppene. Toppene høyere, men avtar mer. Bunnen nokså lik?
+[Ca] i soma:	 	Litt mindre krummet enn originalen. Cirka samme verdier.
+[Ca] i akson:	 	Alle er rettere. Høyere verdier for alle (0.0008 for seg. 1). Seg. nærmere i verdi enn for Cm = 0.01
+--------------------------------------------------------
+1.0:
+Spenning i soma: 	18 topper. Litt sterkere etterhyperpolarisering. Litt høyere verdi for topp og lavere bunn?
+Spenning i aksonet:	18 topper. Mer overlapp av seg. i toppene. Toppene høyere, men avtar mer. Bunnen nokså lik?
+[Ca] i soma:	 	Litt mindre krummet enn originalen. Cirka samme verdier.
+[Ca] i akson:	 	Seg. 3 høyest, a lavest. Krummer fortsatt mindre enn i originalen. Seg. 3 ca 0.0007.
+--------------------------------------------------------
+2.0:
+Spenning i soma: 	18 topper. Litt sterkere etterhyperpolarisering. Nokså like verdier for topp og bunn?
+Spenning i aksonet:	18 topper. Litt mer overlapp av seg. i toppene Toppene litt høyere, men avtar litt mer. Bunnen nokså lik? Ligner ganske på originalen.
+[Ca] i soma:	 	Litt mindre krummet enn originalen. Cirka samme verdier.
+[Ca] i akson:	 	Seg. 1 høyere enn orig. Fortsatt litt rettere. Seg 3 og 2 krummer mer, krysser seg. 1s graf.
+--------------------------------------------------------
+5.0:
+Spenning i soma: 	18 topper + en liten ekstratopp. Litt lavere verdi for topp og høyere for bunn?
+Spenning i aksonet:	18 topper. Toppene lavere, større forskjell mellom seg. 1 vs 2,3. Bunnen litt høyere?
+[Ca] i soma:	 	Litt mer krummet enn originalen. Cirka samme verdier.
+[Ca] i akson:	 	Seg. 1 lavere (ca 0.0005). Seg 2 og 3 betydelig mindre enn 1.
+--------------------------------------------------------
+10.0:
+Spenning i soma: 	18 topper + en liten ekstratopp. Litt lavere verdi for topp og høyere for bunn?
+Spenning i aksonet:	18 topper. Toppene enda lavere, større forskjell mellom seg. 1 vs 2,3. Seg. 2 tydelig høyere enn seg. 3. Bunnen litt høyere?
+[Ca] i soma:	 	Litt mer krummet enn originalen. Så vidt litt lavere verdier.
+[Ca] i akson:	 	Seg. 1 lavere (ca 0.00035). Seg 2 og 3 mye mindre enn 1, de ser lineære ut.
+--------------------------------------------------------
+20.0:
+Spenning i soma: 	18 topper + en liten ekstratopp. Litt lavere verdi for topp og høyere for bunn. Toppene avtar etter den første. Generelt litt mer ujvene enn originalen.
+Spenning i aksonet:	18 topper. Toppene enda lavere, større forskjell mellom seg. 1 vs 2,3. Seg. 2 tydelig høyere enn seg. 3. Seg. 3 mye mindre enn seg. 1. Bunnen litt høyere.
+[Ca] i soma:	 	Mer krummet enn originalen. Lavere verdier.
+[Ca] i akson:	 	Seg. 1 lavere (ca 0.00020). Seg 2 og 3 mye mindre enn 1, de ser lineære ut.
+--------------------------------------------------------
+50.0:
+Spenning i soma: 	18 topper + en liten ekstratopp. Litt lavere verdi for topp og høyere for bunn. Toppene avtar etter mer drastisk etter den første. De ni siste toppener er relativt like i høyde. Bunnverdien øker også før den stabiliserer seg.
+Spenning i aksonet:	18 topper. Toppene enda lavere, større forskjell mellom seg. 1 vs 2,3. Seg. 2 tydelig høyere enn seg. 3. Seg. 3 mye mindre enn seg. 1. Seg. 2 og 3 ser lite spisse ut, mer som bølger enn spikes. Bunnen litt høyere.
+[Ca] i soma:	 	Mer krummet enn originalen. Lavere verdier.
+[Ca] i akson:	 	Seg. 1 lavere (ca 0.000120). Seg 2 og 3 mye mindre enn 1, de ser lineære ut.
+--------------------------------------------------------
+100.0:
+Spenning i soma: 	18 topper. Størrelsen avtar hele veien.
+Spenning i aksonet:	18 topper. Lave topper. Ujevn form. Lite skarpe alle sammen. 
+[Ca] i soma:	 	Cirka halvparten av verdien av originalen. Øker raskt, når et toppunkt og avtar sakte.
+[Ca] i akson:	 	Seg. 1 lavere (ca 0.000110). Seg 2 og 3 en god del mindre enn 1.
+--------------------------------------------------------------------------------------------------------
+Verdier, endre soma og dend:
+--------------------------------------------------------
+Soma 0.01, dend 0.01:
+Spenning i soma:	27 spikes. Ujevn høyde, men toppene når ca 20 mV. Bunnene litt over -90 mV, jevnere.
+Spenning i aksonet:	27 spikes. Ujevn høyde, starter over -20 mV og avtar litt. Bunn ca -90 mV? Seg. 2s topper blir gradvis høyere enn seg. 3s.
+[Ca] i soma:	 	Rettere, når høyere verdier.
+[Ca] i akson:		Seg. 1 rett til ca t=110? Ruglete. Tydelig større en seg. 2 og 3. Seg. 2 krysser seg 3. Seg. 1 tydelig høyere enn før.
+--------------------------------------------------------
+Soma 0.5, dend 0.5:
+Spenning i soma:	Teller 24 spikes. Mye høyere, nærmere 20. Varierer en del i høyden.
+Spenning i aksonet:	Teller 24 spikes. Litt lavere i starten, blir så ganske likt? Lavere verdier for bunnpunktene. Større forskjell mellom segmentene.
+[Ca] i soma:	 	Mye rettere, når høyere verdier.
+[Ca] i akson:	 	Mye rettere, når høyere verdier. Større forskjell på segmentene.
+--------------------------------------------------------
+Soma 2.0, dend 2.0:
+Spenning i soma:	19 topper (og en halv). Høyere toppverdier, lavere bunnverdier.
+Spenning i aksonet:	19 topper. Høyere toppverdier, lavere bunnverdier.
+[Ca] i soma:	 	Dobbelt så stor. Rettere.
+[Ca] i akson:	 	Høyere verdier. Segmentene mer forskjellige. Annen form enn i originalen.
+--------------------------------------------------------
+Soma 0.5, dend 2.0:
+Spenning i soma:	22 topper. Når godt over 0 mV, kanskje 10-15 mV? Relativt jevne topper. Bunn litt under -80 mV.
+Spenning i aksonet:	22 topper. Starter over -20 mV (-12 mV?) og avtar litt. Seg. 2 etterhvert høyere enn seg. 3.
+[Ca] i soma:	 	Rett og ruglete, stabiliserer seg/avtar rundt t=100. Dobbelt så høy verdi som før.
+[Ca] i akson:	 	Seg. 1 rett og ruglete, litt høyere verdi. Seg. 2 og 3 konvergerer nesten.
+--------------------------------------------------------
+Soma 2.0, dend 0.5:
+Spenning i soma:	20 topper. Jevne, ca. 5 mV? Bunn under -80 mV. 
+Spenning i aksonet:	20 topper. Over -20 mV, avtar i høyde. Bunn under -80 mV, blir mer negativ.
+[Ca] i soma:	 	Rettere, høyere verdier. Ruglete.
+[Ca] i akson:	 	Seg. 1 rettere, høyere verdier. Seg. 2 og 3 konvergerer, ca lik verdi som før.
+--------------------------------------------------------
+Verdier, endre alle (soma, basal dendritt, akson):
+Original: 18 topper.
+Vm:
+[Ca]:
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.01:
+Spenning i soma:	26 hele topper + en liten en. Ujevn høyde, topp ca 20mV. Bunn jevn, ca -90mV.
+Spenning i aksonet:	26 hele topper + en liten en. Ujevn høyde, avtar ujevnt fra ca 20mV til kanskje 5mV (platå). Bunn jevn, ca -95mV. Seg. 2 og 3 litt høyere i forhold til seg. 1 når en sammenligner med originalen.
+[Ca] i soma:	 	Rettere, høyere (0.008mM). Fortsatt ruglete.
+[Ca] i akson:	 	Rettere, høyere (0.00175mM). Fortsatt ruglete. Seg. 3 størst, så 2, så 1.
+--------------------------------------------------------
+soma 0.5; dend 0.01; akson 0.01:
+Spenning i soma:	24 hele + en liten topp. Ujevn høyde, litt under 20mV. Kun første er over 20mV. Bunn jevn, nær -90mV.
+Spenning i aksonet:	24 hele + en liten topp. Ujevn høyde, avtar ujevnt fra litt under 20mV til kanskje 5mV (platå). Bunn jevn, ca -92mV. Seg. 2 og 3 litt høyere i forhold til seg. 1 når en sammenligner med originalen.
+[Ca] i soma:	 	Rettere, høyere (0.008mM). Fortsatt ruglete.
+[Ca] i akson:	 	Rettere, høyere (0.0016mM). Fortsatt ruglete. Seg. 3 størst, så 2, så 1.
+--------------------------------------------------------
+soma 0.01; dend 0.5; akson 0.01:
+Spenning i soma:	25 hele + en liten topp. Ujevn høyde, litt under 20mV, noen over. Bunn jevn, -85 - -90mV.
+Spenning i aksonet:	25 hele + en liten topp. Ujevn høyde, avtar fra ca 15mV og når et platå. Seg. 2 og 3 litt høyere i forhold til seg. 1 når en sammenligner med originalen. Bunn ca. -90mV.
+[Ca] i soma:	 	Rettere, høyere (0.008mM). Fortsatt ruglete. 
+[Ca] i akson:	 	Rettere, høyere (0.00175mM). Fortsatt ruglete. Seg. 3 størst, så 2, så 1.
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.5:
+Spenning i soma:	26 + en liten topp. Veldig ujevn høyde, omkring 20mV. Bunn jevn, -85 - -90mV?
+Spenning i aksonet:	26 + en liten topp. Ujevn høyde, avtar fra 5mV og til litt under 0 (platå). Oscillerer. Seg. 2 og 3 likere hverandre. Bunn ca -90mV.
+[Ca] i soma:	 	Rettere, høyere (0.008mM). Fortsatt ruglete. 
+[Ca] i akson:	 	Rettere, høyere (0.0016mM). Fortsatt ruglete. Seg. 3,2 større enn 1. Seg. 3 størst først, krysser så seg. 2.
+--------------------------------------------------------
+soma 0.01; dend 0.5; akson 0.5:
+Spenning i soma:	25 hele + en liten topp. Ujevn høyde, litt under 20mV, noen over. Bunn jevn, -85 - -90mV.
+Spenning i aksonet:	25 hele + en liten topp. Ujevn høyde, avtar fra 5mV til litt under 0 (platå med lite osc.). Seg. 2 og 3 likere hverandre.
+[Ca] i soma:	 	Rettere, høyere (0.008mM). Fortsatt ruglete. 
+[Ca] i akson:	 	Rettere, høyere (0.0016mM). Fortsatt ruglete. Seg. 3,2 større enn 1. Seg. 3 størst først, krysser så seg. 2.
+--------------------------------------------------------
+soma 0.5; dend 0.01; akson 0.5:
+Spenning i soma:	24 hele + en liten topp. Ujevn høyde, litt under 20mV, kun første over. Varierer mer systematisk enn før: Mer 'bølgete' utseende. Bunn jevn, ca -90mV?
+Spenning i aksonet:	24 hele + en liten topp. Toppene avtar fra ca 5mV til litt under 0 (platå med lite osc.). Bunn ca. -90mV. Seg. 2 og 3 likere hverandre.
+[Ca] i soma:	 	Rettere, høyere (0.008mM). Fortsatt ruglete. 
+[Ca] i akson:	 	Rettere, høyere (0.0015mM). Fortsatt ruglete. Seg. 3,2 større enn 1. Seg. 3 størst først, krysser seg. 2 ganske sent.
+--------------------------------------------------------
+soma 0.5; dend 0.5; akson 0.01:
+Spenning i soma:	24 topper. Litt ujevn høyde (men ikke så veldig), ca 15mV? Jevn bunn, ca -85mV?
+Spenning i aksonet:	24 topper. Avtar fra 10mV til ca 0 (jevnt platå). Bunn ca. -90mV, avtar til -95? Seg. 2 og 3 litt høyere i forhold til seg. 1 når en sammenligner med originalen. Mindre forskj. på seg. 2 og 3 ift originalen.
+[Ca] i soma:	 	Rettere, høyere (0.008mM). Fortsatt ruglete. 
+[Ca] i akson:	 	Rettere, høyere (0.0016mM). Fortsatt ruglete. Seg. 3 størst, seg. 1 minst.
+--------------------------------------------------------
+soma 0.5; dend 0.5; akson 0.5:
+Spenning i soma:	24 topper. Litt ujevn høyde, ca 15mV? Jevn bunn, ca -85mV? En dypere bunn etter siste topp.
+Spenning i aksonet:	
+[Ca] i soma:	 	Rettere, høyere (0.008mM). Fortsatt ruglete. 
+[Ca] i akson:	 	Rettere, høyere (0.0014mM). Fortsatt ruglete. Seg. 3,2 større enn 1. Seg. 3 størst først, krysser seg. 2 ganske sent.
+--------------------------------------------------------
+soma 1.0; dend 1.0; akson 1.0:
+Spenning i soma:	22 topper, temmelig jevne. Ca. 10mV? Jevn bunn, ca -85mV? 
+Spenning i aksonet:	
+[Ca] i soma:	 	Rettere, høyere (0.007mM). Fortsatt ruglete. 
+[Ca] i akson:	 	Rettere, høyere (0.0013mM). Fortsatt ruglete. Begynnelsen: seg. 3 størst, 1 minst. Slutten: Seg. 1 størst, seg. 3 minst. De krysser altså.
+--------------------------------------------------------
+soma 2.0; dend 2.0; akson 2.0:
+Spenning i soma:	19 + en liten topp. Temmelig jevne, litt under 5mV? Jevn bunn, ca -80mV.
+Spenning i aksonet:	
+[Ca] i soma:	 	Rettere, høyere (0.006mM). Fortsatt ruglete. 
+[Ca] i akson:	 	Seg. 1 ganske rett, seg. 2 og 3 ordentlig buet. Ganske like 1 i begynnelsen, så krysser de ca midtveis. Seg. 2 blir større enn seg 3 ved ca 60ms. Seg 2 og 3 konvergerer. Seg. 1 ca 0.001 mM, de andre ca 0.0006.
+--------------------------------------------------------
+soma 5.0; dend 5.0; akson 5.0:
+Spenning i soma:	15 topper. Avtar i høyde til de når et platå. Ca. -10 til -15mV. Bunnen øker fra ca -70 til ca -65mV. Etterhyperpolarisering. 
+Spenning i aksonet:	15 topper. Seg. tydelig forskjøvet i tid. Topp litt over -20mV, faller til ca -25mV. Seg. 2 og 3 lavere enn seg. 1, men forskj. er mer konstant i tid enn for originalen. Jevn verdi for bunnene, men stor forskjell mellom segmentene. Ca. -70mV for seg. 1 til ca. -88mV for seg. 3. 
+[Ca] i soma:	 	Lavere (0.0025mM), mer buet. Fortsatt ruglete.
+[Ca] i akson:	 	Alle er buede. Fortsatt ruglete. Seg. 1 mye tydelig høyere enn de andre (0.0004mM vs 0.0002). 
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 5.0:
+Spenning i soma:	27 topper. Ujevne, ca 20mV, ingen drift. Bunn litt over -90mV. Dypere bunn etter toppene.
+Spenning i aksonet:	27 topper. Seg. 1 hele veien  mye høyere enn de andre. Seg. 2 alltid høyere enn 3. Bunn ca -88mV. Topper litt ujevne, men alltid over -20mV. Dupp etter toppene (etterhyperpolarisering?)
+[Ca] i soma:	 	Rettere graf, fortsatt ruglete. Høyere (0.008mM).
+[Ca] i akson:	 	Seg. 1 høyere, seg. 2 og 3 mye lavere. Alle ser temmelig rette ut. Seg. 1 ruglete. 
+--------------------------------------------------------
+soma 0.01; dend 5.0; akson 0.01:
+Spenning i soma:	21 + en liten topp. Noe ujevnt i starten, blir så veldig jevne. Topp ca 10mV, bunn litt over -80mV.
+Spenning i aksonet:	21 + en liten topp. Toppene avtar og når platå. Fra nesten 10mV til litt under 0. Alle seg. ganske like, men forskjellen øker. Bunn seg. 1 er -80mV, litt lavere for seg. 2 og 3 (minker for dem, blir ca. -85mV). Mindre forskjell mellom segmentbunnene enn i originalen.
+[Ca] i soma:	 	Rettere graf, fortsatt ruglete. Høyere (0.005mM). Litt mer buet enn eksempelet ovenfor.
+[Ca] i akson:	 	Alle ganske rette. Max. ca. 0.0012mM. Seg. 3 størst, 1 minst. Ingen krysning.
+--------------------------------------------------------
+soma 5.0; dend 0.01; akson 0.01:
+Spenning i soma:	17 topper, jevne  unntatt at den siste er noe lavere og den første noe høyere. Resten ca. 3mV? Bunn litt over -80mV. Dupp etter toppene.
+Spenning i aksonet:	17 topper. Avtar, når platå(?). Fra litt over 0mV til ca. -10. Nesten like høye for alle seg. Bunnene også likere enn originalen, rundt -80mV. Synker med tiden, ca -85 for seg. 2 og 3.
+[Ca] i soma:	 	Rettere graf, fortsatt ruglete. Høyere (0.0055mM). En viss buethet.
+[Ca] i akson:	 	
+--------------------------------------------------------
+soma 10.0; dend 10.0; akson 10.0:
+Spenning i soma:	Avtagende topper (3-4), når platå, faller når strømmen skrus av. Maks topp ca -20mV.
+Spenning i aksonet:	Avtagende topper (2-3), når platå, faller når strømmen skrus av. Maks topp ca -30mV.
+[Ca] i soma:	 	Glatt, lav (maksverdi litt under 0.0007mM). Øker raskt og konvergerer.
+[Ca] i akson:	 	Ser glatt ut. Små, seg. 1 ca 0.000120mM. Seg. 2 og 3 lavere, mellom 0.000105 og 0.0001.
+--------------------------------------------------------
+soma 0.01; dend 10.0; akson 10.0:
+Spenning i soma:	20 topper. Første topp 5mV?, resten varierer om 2mV? Bunn litt lavere enn -70mV. Etterhyperpolarisering. 
+Spenning i aksonet:	20 topper, ganske jevne. Litt under -20mV. Seg. 1 mye høyere enn seg. 2, som igjen er en del høyere enn seg. 3. Bunn fra -72mV? til -78mV?
+[Ca] i soma:	 	Samme verdi som originalen, men rettere. Fortsatt ruglet.
+[Ca] i akson:	 	Lavere verdi. Seg. 1 ca 0.00035mM, seg. 2 og 3 betydelig lavere (ca 0.0001mM, lineære).
+--------------------------------------------------------
+soma 0.01; dend 10.0; akson 0.01:
+Spenning i soma:	20 topper, etterhyperpolarisering. Topper ca. 5mV, bunn ca -70.
+Spenning i aksonet:	20 topper. Avtar fra 5mV? til -5mV? Segmentene nokså like, blir litt større forskjell med tiden. Bunnene for seg. 2 og 3 avtar med tiden. Seg. 1 har bunn ca. for -76mV, seg. 3 fra -81mV? til -85mV? 
+[Ca] i soma:	 	Bittelitt høyere, litt rettere enn originalen.
+[Ca] i akson:	 	Lineære, høyere (0.001mM). Rette. Seg. 3 høyest, 1 minst. Krysser ikke. Seg. 1 buer litt?
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 10.0:
+Spenning i soma:	26 + en liten topp. Varierer veldig i høyde, fra 25mV til 15mV. Bunn jevn, -85mV?
+Spenning i aksonet:	26 + en liten topp. Jevn i høyde, men stor variasjon i seg. Seg. 1 ca -25mV, seg. 2 litt under -50mV, seg. 3 litt under -60mV. Bunn jevn og nesten helt lik for alle seg, ca -85mV.
+[Ca] i soma:	 	Høy og rett, når nesten 0.008mM.
+[Ca] i akson:	 	Rett. Når litt over 0.0005 for seg. 1. Nesten helt flat for seg. 2 og 3 (når plottet med seg1)
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.01:
+Spenning i soma:	
+Spenning i aksonet:	
+[Ca] i soma:	 	
+[Ca] i akson:	 	
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.01:
+Spenning i soma:	
+Spenning i aksonet:	
+[Ca] i soma:	 	
+[Ca] i akson:	 	
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.01:
+Spenning i soma:	
+Spenning i aksonet:	
+[Ca] i soma:	 	
+[Ca] i akson:	 	
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.01:
+Spenning i soma:	
+Spenning i aksonet:	
+[Ca] i soma:	 	
+[Ca] i akson:	 	
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.01:
+Spenning i soma:	
+Spenning i aksonet:	
+[Ca] i soma:	 	
+[Ca] i akson:	 	
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.01:
+Spenning i soma:	
+Spenning i aksonet:	
+[Ca] i soma:	 	
+[Ca] i akson:	 	
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.01:
+Spenning i soma:	
+Spenning i aksonet:	
+[Ca] i soma:	 	
+[Ca] i akson:	 	
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.01:
+Spenning i soma:	
+Spenning i aksonet:	
+[Ca] i soma:	 	
+[Ca] i akson:	 	
+--------------------------------------------------------
+soma 0.01; dend 0.01; akson 0.01:
+Spenning i soma:	
+Spenning i aksonet:	
+[Ca] i soma:	 	
+[Ca] i akson:	 	

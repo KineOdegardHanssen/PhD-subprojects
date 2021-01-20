@@ -1,0 +1,23 @@
+Model-ID 496497595:
+Effect of changing Cm
+
+---------------------------------------------------
+Soma potential
+
+Cm changed | # Peaks | Height, top | Height, bottom | Even peaks? 		 |  
+Soma       | Fewer   | Lower	   | Higher	    | Decay more, then more even |
+Dendrite   | Fewer   | Lower	   | Higher	    | More even			 |
+Axon       | Same    | Lower	   | Higher	    | Decay more
+
+--------------------------------------------------------------------
+Axon potential
+All
+Cm changed | # Peaks | Height, top | Height, bottom | Even peaks? |  
+Soma       | Fewer   | Lower	   | Higher	    | Decay more  |
+Dendrite   | Higher  | Higher	   | Higher	    | Decay more  |
+Axon       | Same    | Lower	   | Higher	    | Decay less  |
+Segment differences
+Cm changed | Height, top | Height, bottom 	   |  
+Soma       | Larger?	 | Smaller	  	   |
+Dendrite   | Smaller	 | Larger	  	   |
+Axon       | Larger	 | Smaller (and more even) |

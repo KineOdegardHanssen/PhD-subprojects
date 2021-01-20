@@ -1,0 +1,9 @@
+Spiking threshold:
+
+Model-ID 496497595:
+idur=100ms:
+Originale parametre: I=0.263nA (En topp), I=0.29 (Stabile topper)
+Cm, soma=0.01: I=0.260 (En topp), I=0.28 (Stabile topper (finn et ordentlig mål))
+Cm, soma=2.0:  I=0.265 (En topp, -26.8mV), I=0.30 (stabile(?) topper)
+Cm, dend=0.01: I=0.221 (En topp), I=0.27 (Stabile topper)
+Cm, dend=15.0: I=0.272 (En topp), I=0.3 (Stabile (??) topper)
