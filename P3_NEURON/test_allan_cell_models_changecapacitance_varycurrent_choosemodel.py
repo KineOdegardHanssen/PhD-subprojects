@@ -19,6 +19,8 @@ testmodel = 496497595 #Developmentcell (One short axon, branched dendrites, ever
 testmodelname = 'neur_%i' % testmodel
 all_models    = [testmodelname]
 
+v_init = -86.5#-90#
+
 # Change this! Or come up with some automated solution.
 idxs = [0,6,25,39,58]
 
@@ -32,14 +34,14 @@ cm_axon = 3.00603
 # Changing values of membrane capacitance:
 #cm_soma = 0.01
 #cm_dend = 0.01
-#cm_axon = 10.0
+#cm_axon = 0.01
 
 # Change current:
-idur = 1000 # ms
-iamp = 0.26 # nA
+idur = 100 #1000 # ms
+iamp = 0.5 #0.41 # nA
 
-idelay = 100 # ms # 1
-afteri = 100 # ms # 20
+idelay = 1#100 # ms # 1
+afteri = 20#100 # ms # 20
 
 #
 tstop_i = idur+afteri+idelay
@@ -50,8 +52,9 @@ def return_allen_cell_model(model_folder):
 
     celsius = params["conditions"][0]["celsius"]
     reversal_potentials = params["conditions"][0]["erev"]
-    v_init = params["conditions"][0]["v_init"]
+    #v_init = params["conditions"][0]["v_init"] # This might be wrong, will set it by hand above
     active_mechs = params["genome"]
+    Ra = params["passive"][0]["ra"]  # This was not here before
     neuron.h.celsius = celsius
     # print(Ra, celsius, v_init)
     # print(reversal_potentials)
@@ -68,6 +71,7 @@ def return_allen_cell_model(model_folder):
         'dt' : 2.**-5,      # simulation time step size
         'tstart' : -100.,      # start time of simulation, recorders start at t=0
         'tstop' : tstop_i,     # stop simulation at idur+20 ms.
+        'Ra':Ra,
         # 'custom_code': ['remove_axon.hoc']
     }
 
@@ -148,11 +152,20 @@ for model_idx in range(len(all_models)):
 
     ax4.plot(cell.tvec, stimulus.i)
 
-    fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp),  'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp),  'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_vinit{}_addedRa.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon,v_init)))
     
     # print out section information: # Works even though I do everything through LFPy
     #for sec in neuron.h.allsec():
     #    neuron.h.psection()
+
+    fig = plt.figure(figsize=[12, 8])
+    plt.plot(cell.tvec, cell.vmem[0, :])
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Potential (mV)')
+    plt.title('Membrane potential in soma')
+    plt.legend(loc='upper right')
+    fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp),  'idur{}_iamp{}_{}_cmsoma{}_cmdend{}_cmaxon{}_vinit{}_addedRa_big.png'.format(idur, iamp, model_name,cm_soma,cm_dend,cm_axon,v_init)))
+    
 
     fig = plt.figure(figsize=[12, 8])
     [plt.plot(cell.tvec, cell.vmem[idx, :], label='%i' % idx) for idx in idxs]
@@ -160,7 +173,7 @@ for model_idx in range(len(all_models)):
     plt.ylabel('Potential (mV)')
     plt.title('Membrane potential along axon')
     plt.legend(loc='upper right')
-    fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_vinit{}_axon_addedRa.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon,v_init)))
     
     fig = plt.figure(figsize=[12, 8])
     #plt.plot(cell.tvec, cell.rec_variables['cai'][0, :], label='Soma') # Soma is high
@@ -169,20 +182,20 @@ for model_idx in range(len(all_models)):
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration along axon')
     plt.legend(loc='lower right')
-    fig.savefig(join("figures", "%i" % testmodel, "current_idur%i_iamp" % idur + str(iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_axon_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel, "current_idur%i_iamp" % idur + str(iamp), "axon", 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_vinit{}_axon_Ca_addedRa.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon,v_init)))
     
     fig = plt.figure(figsize=[12, 8])
     plt.plot(cell.tvec, cell.rec_variables['cai'][0, :])
     plt.xlabel('Time (ms)')
     plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
     plt.title('Ca$^{2+}$-concentration in soma')
-    fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_Ca.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon)))
+    fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp), 'idur{}_iamp{}_{}_{}_cmsoma{}_cmdend{}_cmaxon{}_vinit{}_Ca_addedRa.png'.format(idur, iamp, model_idx, model_name,cm_soma,cm_dend,cm_axon,v_init)))
     
-    outfilename = "figures/%i/current_idur%i_iamp" % (testmodel,idur) + str(iamp)+"/idur%i_iamp" % idur + str(iamp)+"_cmsoma" + str(cm_soma) + "_cmdend" + str(cm_dend) + "_cmaxon"+ str(cm_axon) + ".txt"
+    outfilename = "figures/%i/current_idur%i_iamp" % (testmodel,idur) + str(iamp)+"/idur%i_iamp" % idur + str(iamp)+"_cmsoma" + str(cm_soma) + "_cmdend" + str(cm_dend) + "_cmaxon"+ str(cm_axon) + "_vinit"+str(v_init)+"_addedRa.txt"
     outfile = open(outfilename,'w')
     vmem_soma = cell.vmem[0,:]#[idx, :] # Have time array too...
     Ca_soma   = cell.rec_variables['cai'][0, :] # Don't know if I need this...
-    print('vmem_soma:',vmem_soma)
+    print('vmem_soma[0]:',vmem_soma[0])
     
     time = cell.tvec # time
     Nt   = len(time)
@@ -191,4 +204,29 @@ for model_idx in range(len(all_models)):
         outfile.write('%.16f %.16f %.16f\n' % (time[i],vmem_soma[i],Ca_soma[i]))
     outfile.close()    
     
+    vmax = max(vmem_soma) 
+    vmin = min(vmem_soma) 
+    deltav = vmax-vmin
+    vthr  = vmax-0.15*deltav # If there is a peak above this value, we count it
+    vprev = vthr-40 # A peak never kicks in at initiation, even if I change vthr
+    Npeaks = 0
+    for i in range (1,len(vmem_soma)-1):  
+        print(vmem_soma[i])
+        if vmem_soma[i-1]<vmem_soma[i] and vmem_soma[i+1]<vmem_soma[i] and vmem_soma[i]>vthr:
+            Npeaks+=1
+    print(Npeaks, ' peaks for model ', testmodel, ', current ', iamp)
+    print('vmax:', vmax)
+
+    outfilename = "figures/%i/current_idur%i_iamp" % (testmodel,idur) + str(iamp)+"/idur%i_iamp" % idur + str(iamp)+"_cmsoma" + str(cm_soma) + "_cmdend" + str(cm_dend) + "_cmaxon"+ str(cm_axon) + "_vinit"+str(v_init)+"_addedRa_vmax.txt"
+    outfile = open(outfilename,'w') 
+    outfile.write('%.5f' % vmax)
+    outfile.close()   
+    
+    outfilename = "figures/%i/current_idur%i_iamp" % (testmodel,idur) + str(iamp)+"/idur%i_iamp" % idur + str(iamp)+"_cmsoma" + str(cm_soma) + "_cmdend" + str(cm_dend) + "_cmaxon"+ str(cm_axon) + "_vinit"+str(v_init)+"_addedRa_Npeaks.txt"
+    outfile = open(outfilename,'w') 
+    outfile.write('%i' % Npeaks)
+    outfile.close()   
+    
+    print('vmem_soma[0]:',vmem_soma[0])
+
     sys.exit()
