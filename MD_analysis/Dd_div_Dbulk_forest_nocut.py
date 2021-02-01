@@ -92,6 +92,9 @@ bulkfile.close()
 lines = brushfile.readlines()
 N = len(lines)-1
 
+# ds
+spacings = np.zeros(N)
+
 # Ds, 2
 DRs_v2 = np.zeros(N)
 Dxs_v2 = np.zeros(N)
@@ -122,6 +125,8 @@ Dparallel_stdv_ud = np.zeros(N)
 for i in range(1,N+1):
     words = lines[i].split()
     j = i-1
+    
+    spacings[j] = float(words[0])
     
     # v2
     DRs_v2[j] = float(words[1])/DRs_bulk

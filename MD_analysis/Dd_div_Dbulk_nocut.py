@@ -54,35 +54,26 @@ brushfilename = endlocation + 'D_vs_d.txt'
 bulkfile  = open(bulkfilename, 'r')
 brushfile = open(brushfilename, 'r')
 ## Files to write to
-outfilename    = endlocation+'Dd_div_Dbulk_vs_d'
-plotname       = endlocation+'Dd_div_Dbulk_vs_d'
 outfilename_2  = endlocation+'Dd_div_Dbulk_vs_d_2'
 plotname_2     = endlocation+'Dd_div_Dbulk_vs_d_2'
 outfilename_3  = endlocation+'D_vs_d_dynamic.txt'
 plotname_3     = endlocation+'D_vs_d_dynamic.png'
 plotname_small = endlocation+'Dd_div_Dbulk_vs_d_2_smalld.png'
 if bulk_cut==True:
-    outfilename   = outfilename   + '_cut.txt'
     outfilename_2 = outfilename_2 + '_cut.txt'
-    plotname      = plotname      + '_cut.png'
     plotname_2    = plotname_2    + '_cut.png'
 else:
-    outfilename   = outfilename   + '_uncut.txt'
     outfilename_2 = outfilename_2 + '_uncut.txt'
-    plotname      = plotname      + '_uncut.png'
     plotname_2    = plotname_2    + '_uncut.png'
 #
-outfile   = open(outfilename, 'w')
 outfile_2 = open(outfilename_2, 'w')
 outfile_3 = open(outfilename_3, 'w')
 
 # Write header
 if moresigmas==False:
-    outfile.write('d   D_R2/DR_bulk   sigmaD_R2/DR_bulk; D_z2/Dz_Dbulk  sigmaD_z2/Dz_Dbulk  sigmaD_z2/Dz_Dbulk; D_par2/Dpar_bulk sigmaD_par2/Dpar_bulk\n')
     outfile_2.write('d   D_R2/Dbulk   sigmaD_R2/Dbulk; D_z2/Dbulk  sigmaD_z2/Dbulk  sigmaD_z2/Dbulk; D_par2/Dbulk sigmaD_par2/Dbulk\n')
     outfile_3.write('d   D_R2   sigmaD_R2; D_z2  sigmaD_z2  sigmaD_z2; D_par2 sigmaD_par2\n')
 else:
-    outfile.write('d/sigma_b   D_R2/DR_bulk   sigmaD_R2/DR_bulk; D_z2/Dz_Dbulk  sigmaD_z2/Dz_Dbulk  sigmaD_z2/Dz_Dbulk; D_par2/Dpar_bulk sigmaD_par2/Dpar_bulk\n')
     outfile_2.write('d/sigma_b   D_R2/Dbulk   sigmaD_R2/Dbulk; D_z2/Dbulk  sigmaD_z2/Dbulk  sigmaD_z2/Dbulk; D_par2/Dbulk sigmaD_par2/Dbulk\n')
     outfile_3.write('d/sigma_b   D_R2   sigmaD_R2; D_z2  sigmaD_z2  sigmaD_z2; D_par2 sigmaD_par2\n')
 
@@ -108,18 +99,6 @@ N = len(lines)-1
 
 # ds
 spacings = np.zeros(N)
-# Ds
-DRs = np.zeros(N)
-Dxs = np.zeros(N)
-Dys = np.zeros(N)
-Dzs = np.zeros(N)
-Dparallel = np.zeros(N)
-# Ds, stdv
-DRs_stdv = np.zeros(N)
-Dxs_stdv = np.zeros(N)
-Dys_stdv = np.zeros(N)
-Dzs_stdv = np.zeros(N)
-Dparallel_stdv = np.zeros(N)
 
 # Ds, 2
 DRs_v2 = np.zeros(N)
@@ -153,13 +132,6 @@ for i in range(1,N+1):
     j = i-1
     
     spacings[j] = float(words[0])
-    DRs[j] = float(words[1])/DRs_bulk
-    Dzs[j] = float(words[5])/Dzs_bulk
-    Dparallel[j] = float(words[9])/Dparallel_bulk
-    # Ds, stdv
-    DRs_stdv[j] = abs(DRs_bulk)*np.sqrt((float(words[2])/DRs[j])**2+(DRs_stdv_bulk/DRs_bulk)**2)
-    Dzs_stdv[j] = abs(Dzs_bulk)*np.sqrt((float(words[6])/Dzs[j])**2+(Dzs_stdv_bulk/Dzs_bulk)**2)
-    Dparallel_stdv[j] = abs(Dparallel_bulk)*np.sqrt((float(words[10])/Dparallel[j])**2+(Dparallel_stdv_bulk/Dparallel_bulk)**2)
     
     # v2
     DRs_v2[j] = float(words[1])/DRs_bulk
@@ -179,33 +151,13 @@ for i in range(1,N+1):
     Dzs_stdv_ud[j] = float(words[6])
     Dparallel_stdv_ud[j] = float(words[10])
     
-    outfile.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacings[j], DRs[j], DRs_stdv[j], Dzs[j], Dzs_stdv[j], Dparallel[j], Dparallel_stdv[j]))
     outfile_2.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacings[j], DRs_v2[j], DRs_stdv_v2[j], Dzs_v2[j], Dzs_stdv_v2[j], Dparallel_v2[j], Dparallel_stdv_v2[j]))
     outfile_3.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacings[j], DRs_ud[j], DRs_stdv_ud[j], Dzs_ud[j], Dzs_stdv_ud[j], Dparallel_ud[j], Dparallel_stdv_ud[j]))
 
 
-outfile.close()
 outfile_2.close()
 outfile_3.close()
 brushfile.close()
-
-plt.figure(figsize=(6,5))
-plt.errorbar(spacings, DRs, yerr=DRs_stdv, capsize=2, label=r'$D_R/D_{bulk,R}$')
-plt.errorbar(spacings, Dzs, yerr=Dzs_stdv, capsize=2, label=r'$D_\perp/D_{bulk,\perp}$')
-plt.errorbar(spacings, Dparallel, yerr=Dparallel_stdv, capsize=2, label=r'$D_\parallel/D_{bulk,\parallel}$')
-if moresigmas==False:
-    plt.xlabel(r'$d$')
-else:
-    plt.xlabel(r'$d/\sigma_b$')
-plt.ylabel(r'Diffusion constant $D/D_{bulk}$')
-if moresigmas==False:
-    plt.title('Diffusion constant $D/D_{bulk}$ vs $d$')
-else:
-    plt.title('Diffusion constant $D/D_{bulk}$ vs $d/\sigma_b$')
-plt.tight_layout()
-plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-plt.legend(loc='upper left')
-plt.savefig(plotname)
 
 
 plt.figure(figsize=(6,5))
