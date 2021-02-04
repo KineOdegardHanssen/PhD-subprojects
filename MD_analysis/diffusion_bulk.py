@@ -5,7 +5,7 @@ from scipy.optimize import curve_fit
 from pylab import *
 from scipy.ndimage import measurements, convolve    # Should have used the command below, but changing now will lead to confusion
 from scipy import ndimage                           # For Euclidean distance measurement
-import maintools_percolation as perctools
+#import maintools_percolation as perctools
 import data_treatment as datr
 import numpy as np
 import random
@@ -93,18 +93,19 @@ def partition_holders_averaged(Nsteps,minlength):   # Perhaps I should have this
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 spacing = 10 #100
 psigma  = 1
+damp    = 10
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
 
 # Should divide into folders in a more thorough manner?
 # Extracting the correct names (all of them)
 plotdirs = False
-startpart = '_'#'_withsubstrate_'#'_'#
+startpart = '_withsubstrate_'#'_'#
 if startpart=='_':
     parentfolder = 'Pure_bulk/'
 else:
     parentfolder = 'Bulk_substrate/'
 test_sectioned = True
-seeds  = np.arange(1,1001)#[23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113]
+seeds  = np.arange(1,1001)
 Nseeds = len(seeds)
 Nsteps = 20001
 Npartitions  = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
@@ -115,24 +116,20 @@ unittime     = 2.38e-11 # s
 timestepsize = 0.00045*unittime*writeevery # LAMMPS writes the actual time step to file, but I recreate the time array using np.arange. Therefore I need to multiply with writeevery
 
 print('timestepsize:', timestepsize)
-nextpart = 'ljunits_'
-namemid  = 'Langevin_scaled_T3'#_pmass1.5'
-nameend  = '_sect_placeexact_ljepsilon0.730372054992096_ljcut1p122'
-namebase = 'bulkdiffusion'+startpart+'ljunits_spacing%i_' % spacing + namemid +'_psigma'+str(psigma)+ nameend
-folderbase = 'Bulkdiffusion'+startpart+nextpart+namemid+nameend
-namebase_short = namebase # In case I ever need to shorten it
-endlocation          = '/home/kine/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/'+parentfolder+folderbase+'/Spacing'+str(spacing)+'/Sigma_bead_' + str(psigma)+'/'
-outfilename          = endlocation+'lammpsdiffusion_'+namebase_short+'.txt'
-outfilename_ds       = endlocation+'lammpsdiffusion_'+namebase+'_av_ds.txt'
-outfilename_gamma    = endlocation+'lammpsdiffusion_'+namebase_short+'_zimportance.txt'
-outfilename_sections = endlocation+'lammpsdiffusion_'+namebase_short+'_sections.txt'
-plotname             = endlocation+'lammpsdiffusion_'+namebase_short+'.png'
-plotname_gamma       = endlocation+'lammpsdiffusion_'+namebase_short+'_zimportance.png'
-plotname_SI          = endlocation+'lammpsdiffusion_'+namebase_short+'_SI.png'
-plotname_velocity    = endlocation+'lammpsdiffusion_'+namebase_short+'_velocity.png'
-plotname_velocity_SI = endlocation+'lammpsdiffusion_'+namebase_short+'_velocity_SI.png'
-plotname_parallel_orthogonal = endlocation+'lammpsdiffusion_'+namebase+'_par_ort.png'
-plotname_sectioned_average = endlocation+'lammpsdiffusion_'+namebase+'_sections.png'
+
+endlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/'% damp+parentfolder+'Sigma_bead_' +str(psigma) + '/'
+filestext            = 'seed'+str(seeds[0])+'to'+str(seeds[-1])
+outfilename          = endlocation+'firstfitattempt'+filestext+'.txt'
+outfilename_ds       = endlocation+'av_ds'+filestext+'.txt'
+outfilename_gamma    = endlocation+'zimportance_'+filestext+'.txt'
+outfilename_sections = endlocation+'maxz_az_'+filestext+'.txt'
+plotname             = endlocation+filestext+'_all_and_avg.png'
+plotname_gamma       = endlocation+filestext+'_zimportance.png'
+plotname_SI          = endlocation+filestext+'_baseplot_SI.png'
+plotname_velocity    = endlocation+filestext+'_velocity.png'
+plotname_velocity_SI = endlocation+filestext+'_velocity_SI.png'
+plotname_parallel_orthogonal = endlocation+filestext+'_par_ort.png'
+plotname_sectioned_average = endlocation+filestext+'_sections.png'
 # Setting arrays
 # Prepare for sectioning distance data:
 time_walks_SI, steps, partition_walks, numberofsamples, len_all, lengths, startpoints = datr.partition_holders_averaged(Nsteps,minlength)
@@ -186,10 +183,9 @@ alltimes  = []
 for seed in seeds:
     print('On seed', seed)
     seedstr = str(seed)
-    #infilename_free = endlocation+'pmass'+str(pmass)+'_seed'+seedstr+'.lammpstrj' # Old file name
     infilename_free   = endlocation+'seed'+seedstr+'.lammpstrj'
-    plotname_dirs     = endlocation+'lammpsdiffusion_'+namebase_short+'_dxdydzR2_seed'+seedstr+'.png'
-    plotname_testsect = endlocation+'lammpsdiffusion_'+namebase_short+'_testsectioned_seed'+seedstr+'.png'
+    plotname_dirs     = endlocation+'dxdydzR2_seed'+seedstr+'.png'
+    plotname_testsect = endlocation+'testsectioned_seed'+seedstr+'.png'
     #print('infilename:',infilename_free)
     # Read in:
     #### Automatic part
