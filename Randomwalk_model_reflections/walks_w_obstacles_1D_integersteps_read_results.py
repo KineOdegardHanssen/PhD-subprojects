@@ -11,18 +11,16 @@ ds2      = np.zeros(Nprobs)
 Nsteps   = 100   # Increase #Maybe for other values of hitprob
 Nreal    = 100000
 
-outfilename = 'D_vs_hitprobs_Nsteps%i_Nreal%i.txt' %(Nsteps,Nreal)
-plotname = 'D_vs_hitprobs_Nsteps%i_Nreal%i.png' %(Nsteps,Nreal)
-outfile = open(outfilename,'w')
-
 if hitprobs[0]==0:
-    outfilename = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D_with0.txt' %(Nsteps,Nreal)
-    plotname = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D_with0.png' %(Nsteps,Nreal)
+    outfilename = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D_integersteps_with0.txt' %(Nsteps,Nreal)
+    plotname = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D_integersteps_with0.png' %(Nsteps,Nreal)
 else:
-    outfilename = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D.txt' %(Nsteps,Nreal)
-    plotname = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D.png' %(Nsteps,Nreal)
-plotname2 = 'D_vs_1dsqrthitprobs_Nsteps%i_Nreal%i_1D.png' %(Nsteps,Nreal)
-plotname3 = 'D_vs_1dhitprobs_Nsteps%i_Nreal%i_1D.png' %(Nsteps,Nreal)
+    outfilename = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D_integersteps.txt' %(Nsteps,Nreal)
+    plotname = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D_integersteps.png' %(Nsteps,Nreal)
+plotname2 = 'D_vs_1dsqrthitprobs_Nsteps%i_Nreal%i_1D_integersteps.png' %(Nsteps,Nreal)
+plotname3 = 'D_vs_1dhitprobs_Nsteps%i_Nreal%i_1D_integersteps.png' %(Nsteps,Nreal)
+
+outfile = open(outfilename,'w')
 
 for i in range(Nprobs):
     infilename = 'hitprob'+str(hitprobs[i])+'_Nsteps%i_Nreal%i_D.txt' %(Nsteps,Nreal)

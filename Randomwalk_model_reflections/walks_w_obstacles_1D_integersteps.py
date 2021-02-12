@@ -5,7 +5,8 @@ import math
 import random                    # Important
 
 # Loop over hitprob? Convert to spacing? (Can always do later)
-hitprob = 0.9 # Probability of hitting obstacle (and be sent back)
+hitprob = 0 # Probability of hitting obstacle (and be sent back)
+print('hitprob:',hitprob)
 
 Nsteps    = 100   # Increase #Maybe for other values of hitprob
 Nreal     = 100000
@@ -23,26 +24,27 @@ filename_msd = 'hitprob'+str(hitprob)+'_Nsteps%i_Nreal%i_msd.txt' %(Nsteps,Nreal
 file_D   = open(filename_D,'w')
 file_msd = open(filename_msd,'w')
 
+
 for j in range(Nreal):
-    step      = 0.5
+    step      = 1
     position  = 0
+    hitprob_running = hitprob
     for i in range(Nsteps):
         moveprob = random.random()
         if hitprev==True: # It hit something last time step, so it has gotten a little kick and will not move back to the obstacle immediately. # Possibly
             hitprev=False
-            #print('hitprev true. i=',i+1, '; step before=',step)
-            step*=random.random()
-            #print('Step after=',step)
+            stepprev = step
+            step=2*random.randint(0,1)-1
+            hitprob_running=hitprob
+            if step==-stepprev: # Going to hit the target again:
+                hitprob_running=1 # HAVE to hit target at next step
         else: # Move normally
-            if moveprob>hitprob:
-                step = 2*random.random()-1 # Return float between -1 and 1. Open for using randint instead (yields -1 and 1)
+            if moveprob>hitprob_running:
+                step = 2*random.randint(0,1)-1 # Return integer -1 or 1
             else: # Hits something NOW
                 hitprev=True
                 step=-step
-                #print('HIT! i=',i+1, '; step=',step)
-                #hit_times.append(i)
-                #hit_times_pos.append(position) # Redundant, but probably not a big deal
-        #print('i=',i+1,'; step:', step)
+                hitprob_running=hitprob
         steps[i+1]+=step
         position+=step
         positions[i+1]+=position
@@ -73,7 +75,7 @@ plt.show()
 #plt.savefig(plotname)
 
 # Fit from 6 onwards actually seems ok. Still, use 10 to be safe
-coeffs, covs = polyfit(times[15:], dist_sq[15:], 1, full=False, cov=True) # Using all the data in the fit # Should probably cut the first part, but I don't know how much to include
+coeffs, covs = polyfit(times[20:], dist_sq[20:], 1, full=False, cov=True) # Using all the data in the fit # Should probably cut the first part, but I don't know how much to include
 a = coeffs[0]
 b = coeffs[1]
 D = a/2.

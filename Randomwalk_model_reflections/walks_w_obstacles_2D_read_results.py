@@ -9,23 +9,20 @@ Ds       = np.zeros(Nprobs)
 ds       = np.zeros(Nprobs)
 ds2      = np.zeros(Nprobs)
 Nsteps   = 100   # Increase #Maybe for other values of hitprob
-Nreal    = 100000
-
-outfilename = 'D_vs_hitprobs_Nsteps%i_Nreal%i.txt' %(Nsteps,Nreal)
-plotname = 'D_vs_hitprobs_Nsteps%i_Nreal%i.png' %(Nsteps,Nreal)
-outfile = open(outfilename,'w')
+Nreal    = 10000
 
 if hitprobs[0]==0:
-    outfilename = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D_with0.txt' %(Nsteps,Nreal)
-    plotname = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D_with0.png' %(Nsteps,Nreal)
+    outfilename = 'D_vs_hitprobs_Nsteps%i_Nreal%i_2D_with0.txt' %(Nsteps,Nreal)
+    plotname = 'D_vs_hitprobs_Nsteps%i_Nreal%i_2D_with0.png' %(Nsteps,Nreal)
 else:
-    outfilename = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D.txt' %(Nsteps,Nreal)
-    plotname = 'D_vs_hitprobs_Nsteps%i_Nreal%i_1D.png' %(Nsteps,Nreal)
-plotname2 = 'D_vs_1dsqrthitprobs_Nsteps%i_Nreal%i_1D.png' %(Nsteps,Nreal)
-plotname3 = 'D_vs_1dhitprobs_Nsteps%i_Nreal%i_1D.png' %(Nsteps,Nreal)
+    outfilename = 'D_vs_hitprobs_Nsteps%i_Nreal%i_2D.txt' %(Nsteps,Nreal)
+    plotname = 'D_vs_hitprobs_Nsteps%i_Nreal%i_2D.png' %(Nsteps,Nreal)
+plotname2 = 'D_vs_1dsqrthitprobs_Nsteps%i_Nreal%i_2D.png' %(Nsteps,Nreal)
+plotname3 = 'D_vs_1dhitprobs_Nsteps%i_Nreal%i_2D.png' %(Nsteps,Nreal)
+outfile = open(outfilename,'w')
 
 for i in range(Nprobs):
-    infilename = 'hitprob'+str(hitprobs[i])+'_Nsteps%i_Nreal%i_D.txt' %(Nsteps,Nreal)
+    infilename = '2D_hitprob'+str(hitprobs[i])+'_Nsteps%i_Nreal%i_D.txt' %(Nsteps,Nreal)
     infile = open(infilename,'r')
     line = infile.readline()
     Ds[i] = float(line.split()[0])
@@ -39,7 +36,7 @@ plt.figure(figsize=(6,5))
 plt.plot(hitprobs,Ds)
 plt.xlabel(r'Probability of hitting obstacle')
 plt.ylabel(r'Diffusion constant $D$')
-plt.title(r'Probability of hitting obstacle vs $D$, 1D')
+plt.title(r'Probability of hitting obstacle vs $D$')
 plt.tight_layout()
 plt.savefig(plotname)
 
