@@ -75,7 +75,7 @@ def main(filename,idelay,idur):
 
 
 if __name__ == '__main__':
-    testmodel = 496497595
+    testmodel = 496497595#488462965 #496497595
     idur   = 1000 # ms
     idelay = 100
     iamp   = 0.41 # nA
@@ -84,9 +84,15 @@ if __name__ == '__main__':
     # Defaulting to original values:
     # DO NOT TOUCH THESE!
     # SET THEM BELOW INSTEAD!
-    cm_soma = [0.01,0.1,0.5,1.14805,2.0,3.0]
-    cm_dend = 9.98231
-    cm_axon = 3.00603
+    if testmodel==496497595:
+        cm_soma = [0.01,0.1,0.5,1.14805,2.0,3.0]
+        cm_dend = 9.98231
+        cm_axon = 3.00603
+    elif testmodel==488462965:
+        cm_soma = [0.01,0.1,0.5,1.0,2.0,3.31732779736,5.0] # Have 10 too, but flatlines
+        cm_dend = 3.31732779736
+        cm_axon = 3.31732779736
+    
     NCms = len(cm_soma)
     
     Nspikes = numpy.zeros(NCms)
@@ -120,7 +126,7 @@ if __name__ == '__main__':
     # Plot results
     plt.figure(figsize=(6,5))
     plt.plot(cm_soma,Nspikes)
-    plt.xlabel(r'$C_{m}$ of axon [$\mu$ F/cm$^2$]')
+    plt.xlabel(r'$C_{m}$ of soma [$\mu$ F/cm$^2$]')
     plt.ylabel(r'$N_{spikes}$')
     plt.title(r'Soma capacitance vs number of spikes')
     plt.tight_layout()
@@ -128,7 +134,7 @@ if __name__ == '__main__':
     
     plt.figure(figsize=(6,5))
     plt.errorbar(cm_soma,avg_AP_ampl, yerr=rms_AP_ampl, capsize=2)
-    plt.xlabel(r'$C_{m}$ of axon [$\mu$ F/cm$^2$]')
+    plt.xlabel(r'$C_{m}$ of soma [$\mu$ F/cm$^2$]')
     plt.ylabel(r'Spike amplitude [mV]')
     plt.title(r'Soma capacitance vs AP amplitude')
     plt.tight_layout()
@@ -136,7 +142,7 @@ if __name__ == '__main__':
     
     plt.figure(figsize=(6,5))
     plt.errorbar(cm_soma,avg_AP_halfwidth, yerr=rms_AP_halfwidth, capsize=2)
-    plt.xlabel(r'$C_{m}$ of axon [$\mu$ F/cm$^2$]')
+    plt.xlabel(r'$C_{m}$ of soma [$\mu$ F/cm$^2$]')
     plt.ylabel(r'AP duration at half width [ms]')
     plt.title(r'Soma capacitance vs AP duration at half with')
     plt.tight_layout()

@@ -5,14 +5,18 @@ import numpy as np
 
 # Choose capacitance values to vary. cm1='Default' yields value in original model
 cm1 = 'Default'
-cm2 = 15.0#0.01
+cm2 = 5.0 #15.0#0.01
 
 # Bools for varying Cmsoma or Cmdend:
 varysoma = False # True:soma,  False:dendrite
+varyall  = True # Hacky solution for varying Cm everywhere. This overrides varysoma
 
 # File/simulation selection:
-testmodel = 496497595
-idur = 1 # ms
+testmodel = 488462965 #496497595
+if testmodel==496497595:
+    idur = 1 # ms
+elif testmodel==488462965:
+    idur = 2 # ms
 iamp = 1.0 # nA
 v_init = -86.5 # mV
 
@@ -20,18 +24,30 @@ v_init = -86.5 # mV
 
 # Defaulting to original values:
 # DO NOT TOUCH THESE!
-cm_soma = 1.14805
-cm_dend = 9.98231
-cm_axon = 3.00603
+if testmodel==496497595:
+    cm_soma = 1.14805
+    cm_dend = 9.98231
+    cm_axon = 3.00603
+elif testmodel==488462965:
+    cm_soma = 3.31732779736 
+    cm_dend = 3.31732779736 
+    cm_axon = 3.31732779736 
 
 cms = []
-if varysoma==True:
+if varysoma==True and varyall==False:
     if cm1!='Default':
         cm_soma = cm1
     cms.append(cm_soma)
-else:
+elif varysoma==False and varyall==False:
     if cm1!='Default':
         cm_dend = cm1
+    cms.append(cm_dend)
+else:
+    cms = []
+    if cm1!='Default':
+        cm_soma = cm1
+        cm_dend = cm1
+        cm_axon = cm1
     cms.append(cm_dend)
      
     
@@ -42,10 +58,12 @@ V2     = []
 
 folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp' % (testmodel,idur)+str(iamp)+'/'
 figname = '/model%i_idur%i_iamp' %(testmodel,idur)+str(iamp)
-if varysoma==True:
+if varysoma==True and varyall==False:
     folder = folder + 'Varycm_soma/'
-else:
+elif varysoma==False and varyall==False:
     folder = folder + 'Varycm_dend/'
+else:
+    folder = folder + 'Varycm_all/'
 
 ### First file ###
 filename = folder+'idur%i_iamp' % idur+str(iamp)+'_cmsoma' + str(cm_soma) + '_cmdend' + str(cm_dend) + '_cmaxon'+ str(cm_axon) + '_vinit'+str(v_init)+'_addedRa.txt'
@@ -60,11 +78,16 @@ for line in lines:
 infile.close()
 
 
-if varysoma==True:
+if varysoma==True and varyall==False:
     cm_soma = cm2
     cms.append(cm_soma)
-else:
+elif varysoma==False and varyall==False:
     cm_dend = cm2
+    cms.append(cm_dend)
+else:
+    cm_soma = cm2
+    cm_dend = cm2
+    cm_axon = cm2
     cms.append(cm_dend)
 
 ### Second file ###
@@ -81,12 +104,16 @@ infile.close()
 
 # Plot names:
 folder = folder+'Compare/'
-if varysoma==True:
-    figname = folder+figname + 'somacm%.5f_%.5f' % (cms[0],cms[1])
+if varysoma==True and varyall==False:
+    figname = folder+figname + '_somacm%.5f_%.5f' % (cms[0],cms[1])
+    figname_2 = figname +'_cut.png'
+    figname   = figname +'.png'
+elif varysoma==False and varyall==False:
+    figname = folder+figname + '_dendcm%.5f_%.5f' % (cms[0],cms[1])
     figname_2 = figname +'_cut.png'
     figname   = figname +'.png'
 else:
-    figname = folder+figname + 'dendcm%.5f_%.5f.png' % (cms[0],cms[1])
+    figname = folder+figname + '_allcm%.5f_%.5f' % (cms[0],cms[1])
     figname_2 = figname +'_cut.png'
     figname   = figname +'.png'
 
@@ -101,6 +128,8 @@ if varysoma==True:
     plt.title('Action potentials for different capacitances of the soma')
 else:
     plt.title('Action potentials for different capacitances of the basal dendrites')
+if varyall==True:
+    plt.title('Action potentials for different capacitances of the neuron')
 plt.legend(loc='upper right')
 plt.tight_layout()
 plt.savefig(figname)
@@ -116,6 +145,8 @@ if varysoma==True:
     plt.title('Action potentials for different capacitances of the soma')
 else:
     plt.title('Action potentials for different capacitances of the basal dendrites')
+if varyall==True:
+    plt.title('Action potentials for different capacitances of the neuron')
 plt.legend(loc='upper right')
 plt.tight_layout()
 plt.savefig(figname_2)

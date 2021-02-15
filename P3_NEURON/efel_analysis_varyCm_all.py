@@ -81,16 +81,16 @@ if __name__ == '__main__':
     iamp   = 0.41 # nA
     v_init = -86.5 # mV
     
+    # Defaulting to original values:
+    # DO NOT TOUCH THESE!
+    # SET THEM BELOW INSTEAD!
     if testmodel==496497595:
-        cm_soma = 1.14805
-        cm_dend = [0.01,0.1,0.5,1.0,2.0,5.0,9.98231,15.0] # 496497595
-        cm_axon = 3.00603
+        cm = [0.01,0.1,0.5,1.14805,2.0,3.0]
     elif testmodel==488462965:
-        cm_soma = 3.31732779736 
-        cm_dend = [0.01,0.1,0.5,1.0,2.0,3.31732779736,5.0] # Have 10 too, but flatlines
-        cm_axon = 3.31732779736
+        # Have, but can't run: 0.01, 0.1 (too rapid?); 10 (flatlines)
+        cm = [0.5,1.0,2.0,3.31732779736,5.0]
     
-    NCms = len(cm_dend)
+    NCms = len(cm)
     
     Nspikes = numpy.zeros(NCms)
     avg_AP_ampl = numpy.zeros(NCms)
@@ -99,49 +99,50 @@ if __name__ == '__main__':
     rms_AP_halfwidth = numpy.zeros(NCms)
     
     # Set names
-    folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp'% (testmodel,idur)+str(iamp)+'/Varycm_dend/'
-    outfilename_Nspikes = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmdend.txt'
-    outfilename_APampl  = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmdend.txt'
-    outfilename_APdhw   = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmdend.txt'
-    plotname_Nspikes    = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmdend.png'
-    plotname_APampl     = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmdend.png'
-    plotname_APdhw      = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmdend.png'
+    folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp'% (testmodel,idur)+str(iamp)+'/Varycm_all/'
+    outfilename_Nspikes = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmall.txt'
+    outfilename_APampl  = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmall.txt'
+    outfilename_APdhw   = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmsoma.txt'
+    plotname_Nspikes    = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmall.png'
+    plotname_APampl     = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmall.png'
+    plotname_APdhw      = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmall.png'
     # make files
     outfile_Nspikes = open(outfilename_Nspikes,'w')
     outfile_APampl  = open(outfilename_APampl,'w')
     outfile_APdhw   = open(outfilename_APdhw,'w')
     for j in range(NCms):
         print('Step ', j+1, ' of', NCms)
-        filename = folder +'idur%i_iamp' % idur+str(iamp)+'_cmsoma' + str(cm_soma) + '_cmdend' + str(cm_dend[j]) + '_cmaxon'+ str(cm_axon) + '_vinit'+str(v_init)+'_addedRa.txt'
+        filename = folder +'idur%i_iamp' % idur+str(iamp)+'_cmsoma' + str(cm[j]) + '_cmdend' + str(cm[j]) + '_cmaxon'+ str(cm[j]) + '_vinit'+str(v_init)+'_addedRa.txt'
         Nspikes[j], avg_AP_ampl[j], rms_AP_ampl[j], avg_AP_halfwidth[j], rms_AP_halfwidth[j] = main(filename,idelay,idur)
-        outfile_Nspikes.write('%.5f %i\n' % (cm_dend[j],Nspikes[j]))
-        outfile_APampl.write('%.5f %.10f %.10f\n' % (cm_dend[j],avg_AP_ampl[j],rms_AP_ampl[j]))
-        outfile_APdhw.write('%.5f %.10f %.10f\n' % (cm_dend[j],avg_AP_halfwidth[j],rms_AP_halfwidth[j]))
+        outfile_Nspikes.write('%.5f %i\n' % (cm[j],Nspikes[j]))
+        outfile_APampl.write('%.5f %.10f %.10f\n' % (cm[j],avg_AP_ampl[j],rms_AP_ampl[j]))
+        outfile_APdhw.write('%.5f %.10f %.10f\n' % (cm[j],avg_AP_halfwidth[j],rms_AP_halfwidth[j]))
     outfile_Nspikes.close()
     outfile_APampl.close()
     outfile_APdhw.close()
+    
     # Plot results
     plt.figure(figsize=(6,5))
-    plt.plot(cm_dend,Nspikes)
-    plt.xlabel(r'$C_{m}$ of dendrite [$\mu$ F/cm$^2$]')
+    plt.plot(cm,Nspikes)
+    plt.xlabel(r'$C_{m}$ [$\mu$ F/cm$^2$]')
     plt.ylabel(r'$N_{spikes}$')
-    plt.title(r'Dendrite capacitance vs number of spikes')
+    plt.title(r'Capacitance vs number of spikes')
     plt.tight_layout()
     plt.savefig(plotname_Nspikes)
     
     plt.figure(figsize=(6,5))
-    plt.errorbar(cm_dend,avg_AP_ampl, yerr=rms_AP_ampl, capsize=2)
-    plt.xlabel(r'$C_{m}$ of dendrite [$\mu$ F/cm$^2$]')
-    plt.ylabel(r'Dendrite amplitude [mV]')
-    plt.title(r'Dendrite capacitance vs AP amplitude')
+    plt.errorbar(cm,avg_AP_ampl, yerr=rms_AP_ampl, capsize=2)
+    plt.xlabel(r'$C_{m}$ [$\mu$ F/cm$^2$]')
+    plt.ylabel(r'Spike amplitude [mV]')
+    plt.title(r'Capacitance vs AP amplitude')
     plt.tight_layout()
     plt.savefig(plotname_APampl)
     
     plt.figure(figsize=(6,5))
-    plt.errorbar(cm_dend,avg_AP_halfwidth, yerr=rms_AP_halfwidth, capsize=2)
-    plt.xlabel(r'$C_{m}$ of dendrite [$\mu$ F/cm$^2$]')
+    plt.errorbar(cm,avg_AP_halfwidth, yerr=rms_AP_halfwidth, capsize=2)
+    plt.xlabel(r'$C_{m} $[$\mu$ F/cm$^2$]')
     plt.ylabel(r'AP duration at half width [ms]')
-    plt.title(r'Dendrite capacitance vs AP duration at half with')
+    plt.title(r'Capacitance vs AP duration at half with')
     plt.tight_layout()
     plt.savefig(plotname_APdhw)
     
