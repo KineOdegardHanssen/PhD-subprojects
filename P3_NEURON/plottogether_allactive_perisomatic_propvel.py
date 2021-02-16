@@ -8,22 +8,26 @@ varywhichcm = 'd' # Dendrite
 
 testmodels = [488462965,496497595]
 Nmodels    = len(testmodels)
-idur   = 1000 # ms # Different idur?
-idelay = 100
-iamp   = 0.41 # nA
+idur   = 2 # ms # Different idur?
+iduraa = 2
+idelay = 20
+iamp   = 1.0 # nA
 v_init = -86.5 # mV
 
 if varywhichcm=='a': # All is probably not that relevant
     subfolder = 'Varycm_all/'
-    textsnippet = 'Cmall'
+    textsnippet = 'varycmall'
+    textsnippetp = 'Cmall'
     plottitletext = 'whole neuron'
 elif varywhichcm=='s':
     subfolder = 'Varycm_soma/'
-    textsnippet = 'Cmsoma'
+    textsnippet = 'varycmsoma'
+    textsnippetp = 'Cmsoma'
     plottitletext = 'soma'
 else:
     subfolder = 'Varycm_dend/'
-    textsnippet = 'Cmdend'
+    textsnippet = 'varycmdend'
+    textsnippetp = 'Cmdend'
     plottitletext = 'dendrites'
 
 outfolder = 'Allen_test_changecapacitance/figures/Comparemodels/'
@@ -31,69 +35,44 @@ cellmodelstring = ''
 for i in range(Nmodels):
     cellmodelstring = cellmodelstring +str(testmodels[i])+'_' # Will get a trailing underscore, but whatever
 outfolder = outfolder + cellmodelstring +'/'+subfolder
+plotname  = outfolder+'cellmodels'+cellmodelstring+'current_idur%i_iamp'% idur+str(iamp) +'_propvels_vs_'+textsnippetp+'.png'
 
-cms_in = []
-cms_out = []
+cms = []
+propvels = []
 # Input: Cm feature
 for j in range(Nmodels):
-    cm_in_temp = []
-    cm_out_temp = []
+    cm_temp = []
+    propvels_temp = []
     testmodel = testmodels[j]
-    folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp'% (testmodel,idur)+str(iamp)+'/'+subfolder
-    infilename_Nspikes = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_'+textsnippet+'.txt'
-    infilename_APampl  = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_'+textsnippet+'.txt'
-    infilename_APdhw   = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_'+textsnippet+'.txt'
     if testmodel==496497595: # Will this cause a problem? Run all active for idur=2 too?
-        idur = 1 # ms
+        idur = iduraa # ms
     elif testmodel==488462965:
         idur = 2 # ms
-    folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp'% (testmodel,idur)+str(iamp)+'/dendritepropagation/'
+    folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp'% (testmodel,idur)+str(iamp)+'/dendritepropagation/'+subfolder
     infilename = folder +'idur%i_iamp' % idur+str(iamp)+ '_'+str(testmodel)+ '_'+ textsnippet+ '_vinit'+str(v_init)+'_addedRa_propvel.txt'
     # Open files
-    infile_Nspikes = open(infilename_Nspikes,'r')
-    infile_APampl  = open(infilename_APampl,'r')
-    infile_APdhw   = open(infilename_APdhw,'r')
+    infile = open(infilename,'r')
     # Read lines
-    lines_Nspikes = infile_Nspikes.readlines()
-    lines_APampl = infile_APampl.readlines()
-    lines_APdhw = infile_APdhw.readlines()
+    lines = infile.readlines()
     # Extract values
-    for i in range(len(lines_Nspikes)):
+    for i in range(len(lines)):
         # Npeaks
-        words = lines_Nspikes[i].split()
+        words = lines[i].split()
         cm_this = float(words[0])
-        Npeaks_this = float(words[1])
-        # AP Amplitude
-        words = lines_APampl[i].split()
-        APampl_this = float(words[1])
-        APampl_rms_this = float(words[2])
-        # AP duration at half width
-        words = lines_APdhw[i].split()
-        APdhw_this = float(words[1])
-        APdhw_rms_this = float(words[2])
+        propvels_this = float(words[1])
         # Append to array
         cm_temp.append(cm_this)
-        Npeaks_temp.append(Npeaks_this)
-        APampl_temp.append(APampl_this)
-        APdhw_temp.append(APdhw_this)
-        APampl_rms_temp.append(APampl_rms_this)
-        APdhw_rms_temp.append(APdhw_rms_this)
+        propvels_temp.append(propvels_this)
     cms.append(cm_temp)
-    Npeaks.append(Npeaks_temp)
-    APampl.append(APampl_temp)
-    APdhw.append(APdhw_temp)
-    APampl_rms.append(APampl_rms_temp)
-    APdhw_rms.append(APdhw_rms_temp)
-    infile_Nspikes.close()
-    infile_APampl.close()
-    infile_APdhw.close()
+    propvels.append(propvels_temp)
+    infile.close()
 
 plt.figure(figsize=(6,5))
 for i in range(Nmodels):
-    plt.plot(cms[i], Npeaks[i], '-o', label='Model %i' % testmodels[i])
+    plt.plot(cms[i], propvels[i], '-o', label='Model %i' % testmodels[i])
 plt.xlabel(r'$C_{m}$ of %s [$\mu$ F/cm$^2$]' % plottitletext)
-plt.ylabel(r'Number of spikes')
-plt.title(r'Number of spikes vs capacitance of %s' % plottitletext)
+plt.ylabel(r'Signal velocity')
+plt.title(r'Signal velocity vs capacitance of %s' % plottitletext)
 plt.legend(loc='upper right')
 plt.tight_layout()
-plt.savefig(plotname_Nspikes)
+plt.savefig(plotname)

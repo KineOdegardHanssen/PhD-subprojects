@@ -4,8 +4,9 @@ import numpy
 ##### Adjustable parameters/specifications #########
 # File/simulation selection:
 testmodel = 488462965 # 496497595 #
+iduraa = 2
 if testmodel==496497595:
-    idur = 1 # ms
+    idur = iduraa # ms
 elif testmodel==488462965:
     idur = 2 # ms
 iamp = 1.0 # nA
@@ -34,8 +35,8 @@ elif testmodel==488462965:
     cm_axon = 3.31732779736
 
 # You can touch these instead:
-cm_soma = 2.0
-#cm_dend = cm_soma #5.0
+#cm_soma = 3.0
+cm_dend = 5.0 #cm_soma #5.0
 #cm_axon = cm_soma #3.00603
 
 peaktimes = numpy.zeros(Nidx)
@@ -44,10 +45,12 @@ peaktimes = numpy.zeros(Nidx)
 folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp' % (testmodel,idur)+str(iamp)+'/dendritepropagation/'
 
 for j in range(Nidx):
-    if testmodel==496497595:
-        filename = folder+'idur%i_iamp' % idur+str(iamp)+'_cmsoma' + str(cm_soma) + '_cmdend' + str(cm_dend) + '_cmaxon'+ str(cm_axon) +'_vinit'+str(v_init)+ '_addedRa_V_dendsec%i_dend%i.txt' % (j,dendnr)
-    else: # Shorter name due to too many decimals
-        filename = folder+"idur%i_iamp" % idur + str(iamp)+"_cms" + str(cm_soma) + "_cmd" + str(cm_dend) + "_cma"+ str(cm_axon) + "_vinit"+str(v_init)+"_wRa_V_dsec%i_d%i.txt" % (j,dendnr)
+    #### OLD: #######
+    #if testmodel==496497595:
+    #    filename = folder+'idur%i_iamp' % idur+str(iamp)+'_cmsoma' + str(cm_soma) + '_cmdend' + str(cm_dend) + '_cmaxon'+ str(cm_axon) +'_vinit'+str(v_init)+ '_addedRa_V_dendsec%i_dend%i.txt' % (j,dendnr)
+    #else: # Shorter name due to too many decimals
+    #################
+    filename = folder+"idur%i_iamp" % idur + str(iamp)+"_cms" + str(cm_soma) + "_cmd" + str(cm_dend) + "_cma"+ str(cm_axon) + "_vinit"+str(v_init)+"_wRa_V_dsec%i_d%i.txt" % (j,dendnr)
     
     times = []
     V     = []

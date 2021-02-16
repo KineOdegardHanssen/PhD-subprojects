@@ -8,10 +8,11 @@ import numpy as np
 varywhichcm = 'd' # Dendrite
 
 ##### Adjustable parameters/specifications #########
+iduraa = 2
 # File/simulation selection:
-testmodel = 488462965 # 496497595 #
+testmodel = 496497595 #488462965 # 
 if testmodel==496497595:
-    idur = 1 # ms
+    idur = iduraa # ms
 elif testmodel==488462965:
     idur = 2 # ms
 iamp = 1.0 # nA
@@ -22,10 +23,10 @@ if testmodel==496497595:
     cm_soma = 1.14805
     cm_dend = 9.98231
     cm_axon = 3.00603
-    if varywhichcm!='s':
-        varycm  = [0.01,1.14805,2.0]
+    if varywhichcm=='s':
+        varycm  = [0.01,0.1,0.5,1.0,1.14805,2.0,3.0]
     else: # Dendrite
-        varycm  = [9.98231,15.0] # 0.01 yields inf
+        varycm  = [0.1,0.5,1.0,2.0,3.0,5.0,9.98231,15.0] # 0.01 yields inf
 elif testmodel==488462965:
     cm_soma = 3.31732779736
     cm_dend = 3.31732779736
@@ -33,7 +34,7 @@ elif testmodel==488462965:
     if varywhichcm!='a':
         varycm  = [0.01,0.1,0.5,1.0,2.0,3.31732779736,5.0]
     else:
-        varycm  = [0.1,0.5,1.0,2.0,3.31732779736,5.0]
+        varycm  = [0.1,0.5,1.0,2.0,3.31732779736,5.0] # Cm=5.0 maybe a bit high for dend
 N = len(varycm)
 
 if varywhichcm=='a':
@@ -55,7 +56,6 @@ outfolder = folder+subfolder
 outfilename = outfolder +'idur%i_iamp' % idur+str(iamp)+ '_'+str(testmodel)+ '_'+ textsnippet+ '_vinit'+str(v_init)+'_addedRa_propvel.txt'
 plotname = outfolder +'idur%i_iamp' % idur+str(iamp)+ '_'+str(testmodel)+ '_'+ textsnippet+ '_vinit'+str(v_init)+'_addedRa_propvel.png'
 outfile = open(outfilename,'w')
-
 propvels = np.zeros(N)
 
 for i in range(N):
@@ -68,7 +68,6 @@ for i in range(N):
         cm_soma = varycm[i]
     else:
         cm_dend = varycm[i]
-    
     # Update file name
     if testmodel==496497595:
         infilename = folder+'idur%i_iamp' % idur+str(iamp)+'_cmsoma' + str(cm_soma) + '_cmdend' + str(cm_dend) + '_cmaxon'+ str(cm_axon) +'_vinit'+str(v_init)+ '_addedRa_V_dend%i_propvel.txt' % dendnr
