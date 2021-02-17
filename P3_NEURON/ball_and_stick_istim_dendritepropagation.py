@@ -68,7 +68,7 @@ def run_sim(cm=1.0,idur=1.0,iamp=1.0,idelay=1.0,v_init=-65.,tstart=0.,tstop=50.,
     return t, v # Do I ACTUALLY need to return something, though?
 
 if __name__ == '__main__':
-    cms = [0.5, 1, 2, 10]
+    cms = [0.5,1,2,3,4,4.5,5,5.5,6,7,8,9,10]
     iamp = 1.0
     idur = 1.0
     idelay  = 1.0
@@ -85,21 +85,3 @@ if __name__ == '__main__':
     ''' 
     for cm in cms:
         t, v = run_sim(cm,idur,iamp,idelay,v_init,tstart,tstop_i,Ra)
-        '''
-        # Remove everything from here on: ##############################################################
-        outfilename = outfolder+'bas_cm'+str(cm)+'_idur%.1f_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+'_V.txt' 
-        outfile = open(outfilename,'w')
-        # Write to 'Results/IStim/'
-
-        Nt   = len(t)
-        for i in range(Nt):
-            outfile.write('%.16f %.16f\n' % (t[i],v[i]))
-        outfile.close()    
-        plt.plot(t, v, label="c$_m$= {:1.2f} µF/cm²".format(cm))
-    plt.xlabel('Time [ms]')
-    plt.ylabel('Voltage [mV]')
-    plt.title(r'Voltage vs time for different cell capacitances $c_m$ (current input)')
-    plt.legend()
-    plt.savefig(plotname)
-    ####################################################################################################
-    '''
