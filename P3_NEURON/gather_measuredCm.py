@@ -8,7 +8,7 @@ varywhichcm = 'a' # All
 
 
 # File/simulation selection:
-testmodel = 488462965 #496497595
+testmodel = 496497595 #488462965 #
 idur = 1000 # ms
 iamp = -0.5 # nA
 idelay = 100
@@ -34,10 +34,12 @@ if testmodel==496497595:
     cm_soma = 1.14805
     cm_dend = 9.98231
     cm_axon = 3.00603
-    if varywhichcm=='s':
-        varycm = [0.01,1.14805,3]
+    if varywhichcm=='a':
+        varycm = [1.0,2.0,3.0]
+    elif varywhichcm=='s':
+        varycm = [0.01,0.1,0.5,1.0,1.14805,2.0,3.0]
     elif varywhichcm=='d':
-        varycm = [1.0,9.98231,15.0]
+        varycm = [0.01,0.1,0.5,1.0,2.0,3.0,5.0,9.98231,15.0]
 elif testmodel==488462965:
     A = 479.039 
     cm_soma = 3.31732779736 

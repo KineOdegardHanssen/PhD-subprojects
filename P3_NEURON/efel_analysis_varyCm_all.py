@@ -75,7 +75,7 @@ def main(filename,idelay,idur):
 
 
 if __name__ == '__main__':
-    testmodel = 488462965 #496497595
+    testmodel = 488462965 #496497595 #
     idur   = 1000 # ms
     idelay = 100
     iamp   = 0.41 # nA
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     # DO NOT TOUCH THESE!
     # SET THEM BELOW INSTEAD!
     if testmodel==496497595:
-        cm = [0.01,0.1,0.5,1.14805,2.0,3.0]
+        cm = [1.0,2.0,3.0]
     elif testmodel==488462965:
         # Have, but can't run: 0.01, 0.1 (too rapid?); 10 (flatlines)
         cm = [0.5,1.0,2.0,3.31732779736,5.0]
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp'% (testmodel,idur)+str(iamp)+'/Varycm_all/'
     outfilename_Nspikes = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmall.txt'
     outfilename_APampl  = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmall.txt'
-    outfilename_APdhw   = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmsoma.txt'
+    outfilename_APdhw   = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmall.txt'
     plotname_Nspikes    = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmall.png'
     plotname_APampl     = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmall.png'
     plotname_APdhw      = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmall.png'

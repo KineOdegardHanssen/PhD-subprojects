@@ -3,9 +3,7 @@ import matplotlib.pyplot as plt
 
 
 # Varycm: All, soma or dendrite
-varywhichcm = 'a' # All # Only for perisomatic so far
-#varywhichcm = 's' # Soma
-#varywhichcm = 'd' # Dendrite
+varywhichcm = 'a' # All
 
 testmodels = [488462965,496497595]
 Nmodels    = len(testmodels)
@@ -14,24 +12,16 @@ idelay = 100
 iamp   = 0.41 # nA
 v_init = -86.5 # mV
 
-if varywhichcm=='a': # All is probably not that relevant
-    subfolder = 'Varycm_all/'
-    textsnippet = 'Cmall'
-    plottitletext = 'whole neuron'
-elif varywhichcm=='s':
-    subfolder = 'Varycm_soma/'
-    textsnippet = 'Cmsoma'
-    plottitletext = 'soma'
-else:
-    subfolder = 'Varycm_dend/'
-    textsnippet = 'Cmdend'
-    plottitletext = 'dendrites'
+subfolder = 'Varycm_all/'
+textsnippet = 'Cmall'
+plottitletext = 'whole neuron'
 
-outfolder = 'Allen_test_changecapacitance/figures/Comparemodels/'
+outfolder = 'Comparemodels/'
 cellmodelstring = ''
 for i in range(Nmodels):
     cellmodelstring = cellmodelstring +str(testmodels[i])+'_' # Will get a trailing underscore, but whatever
-outfolder = outfolder + cellmodelstring +'/'+subfolder
+cellmodelstring = cellmodelstring + 'ball-and-stick'
+outfolder = outfolder + cellmodelstring +'/'
 
 # No use for text outputfiles, I think. Maybe?
 plotname_Nspikes    = outfolder+'cellmodels'+cellmodelstring+'current_idur%i_iamp'% idur+str(iamp) +'_Nspikes_vs_'+textsnippet+'.png'
@@ -96,9 +86,54 @@ for j in range(Nmodels):
     infile_APampl.close()
     infile_APdhw.close()
 
+## Extract from ball-and-stick
+cms_bas = []
+Npeaks_bas = []
+APampl_bas = []
+APdhw_bas = []
+APampl_rms_bas = []
+APdhw_rms_bas  = []
+
+# Set names
+folder = 'Ball_and_stick/Results/IStim/current_idur%.1f_iamp'%idur+str(iamp)+'/'
+infilename_Nspikes = folder+'bas_idur%.1f_iamp'% (idur)+str(iamp) +'_Nspikes_vs_Cm.txt'
+infilename_APampl  = folder+'bas_idur%.1f_iamp'% (idur)+str(iamp) +'_APampl_vs_Cm.txt'
+infilename_APdhw   = folder+'bas_idur%.1f_iamp'% (idur)+str(iamp) +'_APdurhalfwidth_vs_Cm.txt'
+
+infile_Nspikes = open(infilename_Nspikes,'r')
+infile_APampl = open(infilename_APampl,'r')
+infile_APdhw = open(infilename_APdhw,'r')
+
+lines_Nspikes = infile_Nspikes.readlines()
+lines_APampl = infile_APampl.readlines()
+lines_APdhw = infile_APdhw.readlines()
+Nlines = len(lines_Nspikes)
+
+# Could have made arrays here... well, well
+
+for i in range(Nlines):
+    # Npeaks
+    words = lines_Nspikes[i].split()
+    if len(words)!=0:
+        cms_bas.append(float(words[0]))
+        Npeaks_bas.append(float(words[1]))
+        # AP Amplitude
+        words = lines_APampl[i].split()
+        APampl_bas.append(float(words[1]))
+        APampl_rms_bas.append(float(words[2]))
+        # AP duration at half width
+        words = lines_APdhw[i].split()
+        APdhw_bas.append(float(words[1]))
+        APdhw_rms_bas.append(float(words[2]))
+infile_Nspikes.close()
+infile_APampl.close()
+infile_APdhw.close()
+
+
 plt.figure(figsize=(6,5))
 for i in range(Nmodels):
     plt.plot(cms[i], Npeaks[i], '-o', label='Model %i' % testmodels[i])
+plt.plot(cms_bas, Npeaks_bas, '-o', label='Ball-and-stick')
 plt.xlabel(r'$C_{m}$ of %s [$\mu$ F/cm$^2$]' % plottitletext)
 plt.ylabel(r'Number of spikes')
 plt.title(r'Number of spikes vs capacitance of %s' % plottitletext)
@@ -109,6 +144,7 @@ plt.savefig(plotname_Nspikes)
 plt.figure(figsize=(6,5))
 for i in range(Nmodels):
     plt.errorbar(cms[i], APampl[i], yerr=APampl_rms[i], capsize=2, label='Model %i' % testmodels[i])
+plt.errorbar(cms_bas, APampl_bas, yerr=APampl_rms_bas, capsize=2, label='Ball-and-stick')
 plt.xlabel(r'$C_{m}$ of %s [$\mu$ F/cm$^2$]' % plottitletext)
 plt.ylabel(r'Amplitude')
 plt.title(r'Number of spikes vs capacitance of %s' % plottitletext)
@@ -119,6 +155,7 @@ plt.savefig(plotname_APampl)
 plt.figure(figsize=(6,5))
 for i in range(Nmodels):
     plt.errorbar(cms[i], APdhw[i], yerr=APdhw_rms[i], capsize=2, label='Model %i' % testmodels[i])
+plt.errorbar(cms_bas, APdhw_bas, yerr=APdhw_rms_bas, capsize=2, label='Ball-and-stick')
 plt.xlabel(r'$C_{m}$ of %s [$\mu$ F/cm$^2$]' % plottitletext)
 plt.ylabel(r'AP duration at half width [ms]')
 plt.title(r'AP duration at half with vs capacitance of %s' % plottitletext)

@@ -82,7 +82,7 @@ def main(filename,idelay,idur,iamp):
     return capacitance
 
 if __name__ == '__main__':
-    testmodel = 488462965 #496497595
+    testmodel = 496497595 #488462965 #
     idur = 1000 # ms
     iamp = -0.5 # nA
     idelay = 100
@@ -102,8 +102,8 @@ if __name__ == '__main__':
         cm_axon = 3.31732779736
     
     # Changing values of membrane capacitance:
-    cm_soma = 0.01
-    cm_dend = cm_soma #10.0
+    cm_soma = 0.5
+    cm_dend = cm_soma #5.0 #10.0
     cm_axon = cm_soma #10.0
     
     folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp' % (testmodel,idur)+str(iamp)+'/'

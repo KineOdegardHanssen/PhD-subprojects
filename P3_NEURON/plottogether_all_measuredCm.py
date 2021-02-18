@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Varycm: All, soma or dendrite
-varywhichcm = 'a' # All # Only for perisomatic so far
-#varywhichcm = 's' # Soma
+#varywhichcm = 'a' # All # Only for perisomatic so far
+varywhichcm = 's' # Soma
 #varywhichcm = 'd' # Dendrite
 
 testmodels = [488462965,496497595]
@@ -29,11 +29,13 @@ else:
     textsnippetp = 'Cmdend'
     plottitletext = 'dendrites'
 
-outfolder = 'Allen_test_changecapacitance/figures/Comparemodels/'
+outfolder = 'Comparemodels/'
 cellmodelstring = ''
 for i in range(Nmodels):
     cellmodelstring = cellmodelstring +str(testmodels[i])+'_' # Will get a trailing underscore, but whatever
-outfolder = outfolder + cellmodelstring +'/'+subfolder
+cellmodelstring = cellmodelstring + 'ball-and-stick'
+outfolder = outfolder + cellmodelstring +'/'
+
 
 plotname = outfolder +'idur%i_iamp' % idur+str(iamp)+ '_'+cellmodelstring+ textsnippet+ '_vinit'+str(v_init)+'_addedRa_Cm.png'
 
@@ -63,15 +65,38 @@ for j in range(Nmodels):
     cms_out.append(cm_out_temp)
     infile.close()
 
+# Finding results from ball-and-stick model:
+## Extract from ball-and-stick
+cms_in_bas  = []
+cms_out_bas = []
+
+# Set names
+Ra = 150
+v_init = -65 
+folder = 'Ball_and_stick/Results/IStim/current_idur%.1f_iamp'%idur+str(iamp)+'/'
+infilename = folder +'bas_varycm_idur%.1f_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+'_Cm.txt' 
+infile = open(infilename,'r')
+
+lines = infile.readlines()
+Nlines = len(lines)
+
+# Could have made arrays here... well, well
+
+for i in range(Nlines):
+    # Npeaks
+    words = lines[i].split()
+    if len(words)!=0:
+        cms_in_bas.append(float(words[0]))
+        cms_out_bas.append(float(words[1]))
+infile.close()
+
 plt.figure(figsize=(6,5))
 for i in range(Nmodels):
     plt.plot(cms_in[i], cms_out[i], '-o', label='Model %i' % testmodels[i])
+plt.plot(cms_in_bas, cms_out_bas, '-o', label='Ball-and-stick')
 plt.xlabel(r'Parameter $C_{m}$ [$\mu$ F/cm$^2$]')
 plt.ylabel(r'Output $C_{m}$ [$\mu$ F/cm$^2$]')
 plt.title(r'Input $C_{m}$ vs measured $C_{m}$, %s' % plottitletext)
-if varywhichcm=='s': # Soma
-    plt.legend(loc='upper right')
-elif varywhichcm=='d': # Dendrite
-    plt.legend(loc='lower right')
+plt.legend(loc='center right')
 plt.tight_layout()
 plt.savefig(plotname)

@@ -30,11 +30,13 @@ else:
     textsnippetp = 'Cmdend'
     plottitletext = 'dendrites'
 
-outfolder = 'Allen_test_changecapacitance/figures/Comparemodels/'
+outfolder = 'Comparemodels/'
 cellmodelstring = ''
 for i in range(Nmodels):
     cellmodelstring = cellmodelstring +str(testmodels[i])+'_' # Will get a trailing underscore, but whatever
-outfolder = outfolder + cellmodelstring +'/'+subfolder
+cellmodelstring = cellmodelstring + 'ball-and-stick'
+outfolder = outfolder + cellmodelstring +'/'
+
 plotname  = outfolder+'cellmodels'+cellmodelstring+'current_idur%i_iamp'% idur+str(iamp) +'_propvels_vs_'+textsnippetp+'.png'
 
 cms = []
@@ -67,9 +69,34 @@ for j in range(Nmodels):
     propvels.append(propvels_temp)
     infile.close()
 
+## Read in values from ball-and-stick model
+cms_bas  = []
+propvels_bas = []
+
+# Set names
+Ra = 150
+v_init = -65 
+folder = 'Ball_and_stick/Results/IStim/current_idur%.1f_iamp'%idur+str(iamp)+'/dendritepropagation/'
+infilename = folder+'bas_varycm_idur%.1f_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+'_propvel_vs_cm.txt'
+infile = open(infilename,'r')
+
+lines = infile.readlines()
+Nlines = len(lines)
+
+# Could have made arrays here... well, well
+
+for i in range(Nlines):
+    # Npeaks
+    words = lines[i].split()
+    if len(words)!=0:
+        cms_bas.append(float(words[0]))
+        propvels_bas.append(float(words[1]))
+infile.close()
+
 plt.figure(figsize=(6,5))
 for i in range(Nmodels):
     plt.plot(cms[i], propvels[i], '-o', label='Model %i' % testmodels[i])
+plt.plot(cms_bas, propvels_bas, '-o', label='Ball-and-stick')
 plt.xlabel(r'$C_{m}$ of %s [$\mu$ F/cm$^2$]' % plottitletext)
 plt.ylabel(r'Signal velocity')
 plt.title(r'Signal velocity vs capacitance of %s' % plottitletext)

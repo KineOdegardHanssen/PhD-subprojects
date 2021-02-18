@@ -1,0 +1,81 @@
+Run in NEURON:
+Model 496497595:
+Cell ID 487667205
+VISp, Layer 4
+(Perisomatic model, ID: 488462965)
+
+Model 501282059:
+Cell ID 488501071
+VISp, Layer 2/3
+
+Model 515175347:
+Cell ID 485184849 # Er denne passiv?
+VISp, Layer 2/3
+---------------------------------------------------------------------------------------------------
+Downloaded, but not run in NEURON: # I think more of these are run now
+Model 497230463:
+Cell ID: 341442651
+Layer 2/3
+(Perisomatic model, ID: 480633479)
+
+Model 496538958:
+Cell ID: 484742372
+Layer 5
+
+Model 496538965:
+Cell ID: 484635029
+Layer 2/3
+
+Model 497232392: 
+Cell ID: 482516713
+Layer 5
+
+Model 497232557:
+Cell ID: 478793814
+Layer 4
+
+Model 497232617:
+Cell ID: 478058328
+Layer 6a 
+
+Model 497232848:
+Cell ID: 475888653
+Layer 4
+
+Model 497233061:
+Cell ID: 471087830
+Layer 6a
+
+Model 497233068:
+Cell ID: 471085676
+Layer 5
+
+Model 497233075:
+Cell ID: 471077857
+Layer 5
+(Perisomatic model: 478513437)
+
+Model 497233089:
+Cell ID: 469801569
+Layer 5
+
+Model 497233117:
+Cell ID: 469610831
+Layer 5
+
+Model 497233271:
+Cell ID: 396608557
+Layer 5
+(Perisomatic model: 478513407)
+
+Model 497230490:
+Cell ID: 333604946
+Layer 2/3
+
+Model 497230497:
+Cell ID: 330080937
+Layer 5
+
+Model 497229103:
+Cell ID: 318331342
+Layer 4

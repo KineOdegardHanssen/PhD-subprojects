@@ -3,9 +3,9 @@ import numpy as np
 
 
 # Varycm: All, soma or dendrite
-#varywhichcm = 'a' # All # Only for perisomatic so far
+varywhichcm = 'a' # All # Only for perisomatic so far
 #varywhichcm = 's' # Soma
-varywhichcm = 'd' # Dendrite
+#varywhichcm = 'd' # Dendrite
 
 ##### Adjustable parameters/specifications #########
 iduraa = 2
@@ -23,8 +23,10 @@ if testmodel==496497595:
     cm_soma = 1.14805
     cm_dend = 9.98231
     cm_axon = 3.00603
-    if varywhichcm=='s':
-        varycm  = [0.01,0.1,0.5,1.0,1.14805,2.0,3.0]
+    if varywhichcm=='a':
+        varycm = [0.01,0.1,0.5,1.0,2.0,3.0]
+    elif varywhichcm=='s':
+        varycm = [0.01,0.1,0.5,1.0,1.14805,2.0,3.0]
     else: # Dendrite
         varycm  = [0.1,0.5,1.0,2.0,3.0,5.0,9.98231,15.0] # 0.01 yields inf
 elif testmodel==488462965:

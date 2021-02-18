@@ -3,7 +3,7 @@ import numpy
 
 ##### Adjustable parameters/specifications #########
 # File/simulation selection:
-testmodel = 488462965 # 496497595 #
+testmodel = 496497595 # 488462965 # 
 iduraa = 2
 if testmodel==496497595:
     idur = iduraa # ms
@@ -35,9 +35,9 @@ elif testmodel==488462965:
     cm_axon = 3.31732779736
 
 # You can touch these instead:
-#cm_soma = 3.0
-cm_dend = 5.0 #cm_soma #5.0
-#cm_axon = cm_soma #3.00603
+cm_soma = 0.1
+cm_dend = cm_soma #5.0
+cm_axon = cm_soma #3.00603
 
 peaktimes = numpy.zeros(Nidx)
 
