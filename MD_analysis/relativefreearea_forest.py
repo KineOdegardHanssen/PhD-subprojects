@@ -18,6 +18,7 @@ import copy
 lx = 0.5  # nm. Want this smaller than sigma.
 ly = lx
 thr = 0.002 # Revisit this after first run
+autothr = True # Determines the implementation
 
 #
 damp = 10
@@ -54,15 +55,21 @@ outcounter      = 0
 
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 outlocation          = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_forest/Projected_trajectories/'
-plotfilename         = outlocation +'relativefreearea_lx'+str(lx)+'_thr'+str(thr)+'_nocut.png'
-plotfilename_smalld  = outlocation +'relativefreearea_lx'+str(lx)+'_thr'+str(thr)+'_nocut_smalld.png'
-
+if autothr==True:
+    plotfilename         = outlocation +'relativefreearea_lx'+str(lx)+'_autothr.png'
+    plotfilename_smalld  = outlocation +'relativefreearea_lx'+str(lx)+'_autothr.png'
+else:
+    plotfilename         = outlocation +'relativefreearea_lx'+str(lx)+'_thr'+str(thr)+'_nocut.png'
+    plotfilename_smalld  = outlocation +'relativefreearea_lx'+str(lx)+'_thr'+str(thr)+'_nocut_smalld.png'
 
 relfreeareas = []
 for spacing in spacings:
     endlocation_in = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_forest/Spacing'+str(spacing)+'/'
     endlocation = endlocation_in + 'Results/' # Nocut is default
-    infilename  = endlocation+'relativefreearea_'+filestext+'_d'+str(spacing)+'_lx'+str(lx)+'_thr'+str(thr)+'_nocut.txt'
+    if autothr==True:
+        infilename  = endlocation+'relativefreearea_'+filestext+'_d'+str(spacing)+'_lx'+str(lx)+'_autothr.txt'
+    else:
+        infilename  = endlocation+'relativefreearea_'+filestext+'_d'+str(spacing)+'_lx'+str(lx)+'_thr'+str(thr)+'_nocut.txt'
     infile = open(infilename,'r')
     lines  = infile.readlines()
     for line in lines:
