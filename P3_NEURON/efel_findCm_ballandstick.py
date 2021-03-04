@@ -73,7 +73,7 @@ def main(filename,idelay,idur,iamp):
     
     # Capacitance in Farads.
     capacitance = (time_constant*10**-3)/(input_res*10**6)
-    capacitance = capacitance*10**12 # in pF
+    capacitance = capacitance*10**12*100 # in pF
     
     # Do I need this?
     # Stim Current sample index for detecting current of stimulation step
@@ -87,8 +87,10 @@ if __name__ == '__main__':
     Ra   = 150
     idelay = 100
     v_init = -65
-    d = 2          # Soma diameter
-    A = numpy.pi*d**2 # Soma area
+    d = 20    # Soma diameter and length
+    L = 980   # Length, dendrite
+    dd = 2    # Diameter, dendrite 
+    A = numpy.pi*(d**2+L*dd) # Cell area
     
     cms = [0.5,1,2,3,4,4.5,5,5.5,6,7,8,9,10]
     Ncm = len(cms)

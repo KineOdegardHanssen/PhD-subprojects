@@ -74,6 +74,7 @@ def main(filename,idelay,idur,iamp):
     # Capacitance in Farads.
     capacitance = (time_constant*10**-3)/(input_res*10**6)
     capacitance = capacitance*10**12 # in pF
+    capacitance = capacitance*100 # To get the answer in uF/cm2 when I divide by um2
     
     # Do I need this?
     # Stim Current sample index for detecting current of stimulation step
@@ -102,9 +103,9 @@ if __name__ == '__main__':
         cm_axon = 3.31732779736
     
     # Changing values of membrane capacitance:
-    cm_soma = 0.5
-    cm_dend = cm_soma #5.0 #10.0
-    cm_axon = cm_soma #10.0
+    #cm_soma = 3.0
+    cm_dend = 2.0 #cm_soma # 15.0 #10.0
+    #cm_axon = cm_soma #10.0
     
     folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp' % (testmodel,idur)+str(iamp)+'/'
     filename = folder+'idur%i_iamp' % idur+str(iamp)+'_cmsoma' + str(cm_soma) + '_cmdend' + str(cm_dend) + '_cmaxon'+ str(cm_axon) + '_vinit'+str(v_init)+'_addedRa.txt'
