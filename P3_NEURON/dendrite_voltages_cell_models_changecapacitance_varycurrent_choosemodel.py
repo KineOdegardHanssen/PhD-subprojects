@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import json
 import neuron
 import numpy as np
+import math
 
 import LFPy
 
@@ -16,30 +17,38 @@ import LFPy
 testmodel = 496497595 #Developmentcell (One short axon, branched dendrites, everything seems to be connected, no errors)
 #testmodel = 497232392
 #testmodel = 496538958
+#testmodel = 488462965 # PERISOMATIC model of Developmentcell
+
 testmodelname = 'neur_%i' % testmodel
 all_models    = [testmodelname]
 
 v_init = -86.5#-90#
 
 # Change this! Or come up with some automated solution.
-dendnr = 6
-idxs = [37,38,39,40,41,42,43,44,45,46]
-Nidx = len(idxs)
+dendnr = 6 # Implementation changes, so I always find this. Need the variable, though
+#idxs = [50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66]# get indices in NEURON[37,38,39,40,41,42,43,44,45,46] 
+#Nidx = len(idxs)
 
 # Defaulting to original values:
 # DO NOT TOUCH THESE!
 # SET THEM BELOW INSTEAD!
-cm_soma = 1.14805
-cm_dend = 9.98231
-cm_axon = 3.00603
+if testmodel==496497595:
+    cm_soma = 1.14805
+    cm_dend = 9.98231
+    cm_axon = 3.00603
+elif testmodel==488462965:
+    cm_soma = 3.31732779736 # Strange values, right?
+    cm_dend = 3.31732779736
+    cm_axon = 3.31732779736
+
 
 # Changing values of membrane capacitance:
-#cm_soma = 2.0
-#cm_dend = 15.0
-#cm_axon = 0.01
+#cm_soma = 0.01
+#cm_dend = cm_soma # 15.0
+#cm_axon = cm_soma # 0.01
 
 # Change current:
-idur = 1 #100    #1000 # ms #100 #
+idur = 2 # 1 #100    #1000 # ms #100 #
 iamp = 1.0 #0.271  #0.41 # nA #0.5 #
 
 idelay = 1  #100 # ms # 1
@@ -141,16 +150,22 @@ for model_idx in range(len(all_models)):
     time = cell.tvec # time
     Nt   = len(time)
     
+    idxs = cell.get_idx(section="dend[6]")
+    Nidx = len(idxs)
+    
     folder = "figures/%i/current_idur%i_iamp" % (testmodel,idur) + str(iamp)+"/dendritepropagation/"
     for j in range(Nidx):
-        outfilename = folder+"idur%i_iamp" % idur + str(iamp)+"_cmsoma" + str(cm_soma) + "_cmdend" + str(cm_dend) + "_cmaxon"+ str(cm_axon) + "_vinit"+str(v_init)+"_addedRa_V_dendsec%i_dend%i.txt" % (j,dendnr)
+        outfilename = folder+"idur%i_iamp" % idur + str(iamp)+"_cms" + str(cm_soma) + "_cmd" + str(cm_dend) + "_cma"+ str(cm_axon) + "_vinit"+str(v_init)+"_wRa_V_dsec%i_d%i.txt" % (j,dendnr)
         outfile = open(outfilename,'w')
         vmem = cell.vmem[idxs[j],:]   
         
         for i in range(Nt):
             outfile.write('%.16f %.16f\n' % (time[i],vmem[i]))
         outfile.close()  
-    plotname = folder+"idur%i_iamp" % idur + str(iamp)+"_cmsoma" + str(cm_soma) + "_cmdend" + str(cm_dend) + "_cmaxon"+ str(cm_axon) + "_vinit"+str(v_init)+"_addedRa_V_dend%i.png" % dendnr 
+    plotname = folder+"idur%i_iamp" % idur + str(iamp)+"_cms" + str(cm_soma) + "_cmd" + str(cm_dend) + "_cma"+ str(cm_axon) + "_vin"+str(v_init)+"_wRa_V_d%i.png" % dendnr 
+    plotname_few = folder+"idur%i_iamp" % idur + str(iamp)+"_cms" + str(cm_soma) + "_cmd" + str(cm_dend) + "_cma"+ str(cm_axon) + "_vin"+str(v_init)+"_wRa_V_d%i_few.png" % dendnr 
+    plotname_withpos = folder+"idur%i_iamp" % idur + str(iamp)+"_cms" + str(cm_soma) + "_cmd" + str(cm_dend) + "_cma"+ str(cm_axon) + "_vin"+str(v_init)+"_wRa_V_d%i_wp.png" % dendnr 
+
     fig = plt.figure(figsize=[12, 8])
     [plt.plot(cell.tvec, cell.vmem[idx, :], label='%i' % idx) for idx in idxs]
     plt.xlabel('Time (ms)')
@@ -158,5 +173,44 @@ for model_idx in range(len(all_models)):
     plt.title('Membrane potential along dendrite %i' % dendnr)
     plt.legend(loc='upper right')
     plt.savefig(plotname)  
+    
+    fig = plt.figure(figsize=[12, 8])
+    plt.plot(cell.tvec, cell.vmem[0, :], label='Soma')
+    plt.plot(cell.tvec, cell.vmem[idxs[0], :], label='%i' % idxs[0])
+    plt.plot(cell.tvec, cell.vmem[idxs[int(math.floor(Nidx/2))], :], label='%i' % idxs[int(math.floor(Nidx/2))])
+    plt.plot(cell.tvec, cell.vmem[idxs[Nidx-1], :], label='%i' % idxs[Nidx-1])
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Potential (mV)')
+    plt.title('Membrane potential along dendrite %i' % dendnr)
+    plt.legend(loc='upper right')
+    plt.savefig(plotname_few)  
+    
+    fig = plt.figure(figsize=[19, 9])
+    fig.subplots_adjust(wspace=0.5)
+    ax_morph = fig.add_subplot(121, aspect=1, xlabel="x", ylabel="y", title="Morphology and section names")
+    ax_v = fig.add_subplot(122, ylabel="membrane potential (mV)", xlabel="time (ms)", title="Membrane potential vs time")
+    
+    [ax_morph.plot([cell.xstart[idx], cell.xend[idx]],
+                   [cell.ystart[idx], cell.yend[idx]], c='k', lw=cell.diam[idx])
+    for idx in range(cell.totnsegs)]
+    
+    ax_v.plot(cell.tvec, cell.somav)
+    
+    path_idx_clrs = lambda num: plt.cm.viridis(num / len(idxs))
+    
+    for num, idx in enumerate(idxs):
+        ax_v.plot(cell.tvec, cell.vmem[idx], c=path_idx_clrs(num))
+        ax_morph.plot(cell.xmid[idx], cell.ymid[idx], 'o', c=path_idx_clrs(num), ms=12)
+    
+    for sec in neuron.h.allsec():
+        sec_name = sec.name()
+        sec_idxs = cell.get_idx(sec_name)
+        plot_idx = sec_idxs[-1]
+        ax_morph.text(cell.xend[plot_idx], cell.yend[plot_idx], sec.name(), color='r')
+    
+    fig.savefig(plotname_withpos)
+    
+    print('testmodel:',testmodel)
+    print('idxs, dend6:', cell.get_idx(section="dend[6]"))
 
     sys.exit()
