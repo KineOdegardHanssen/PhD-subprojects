@@ -120,12 +120,16 @@ for model_idx in range(len(all_models)):
     print('len(idxs6):',len(idxs6))
     
     counter=0
+    lengths=[]
     for sec in neuron.h.allsec():
         counter+=1
         neuron.h.psection()
+        lengths.append(sec.L)
+        #print('sec.L:',sec.L)
     print('counter:',counter)
     counter-=2 # We have one soma section and one axon section. The rest are dendrites
-    #          # Maybe run a test to check in case I suddenly have a longer axon
+    lengths = lengths[2:] # Don't need the soma and axon lengths
+    #          # Maybe run a test to check in case I suddenly have a longer axon!!
     
     # Can write to file.
     #Give file name. Include model-ID. Put in appropriate folder.
@@ -137,7 +141,7 @@ for model_idx in range(len(all_models)):
         istr = str(i)
         idxs = cell.get_idx(section="dend[%s]"%istr)
         Nidx = len(idxs)
-        outfile.write('%i %i\n' % (i,Nidx))
+        outfile.write('%i %i %.16f\n' % (i,Nidx,lengths[i]))
     outfile.close()
     print('idxs6:',idxs6)
     print('len(idxs6):',len(idxs6))
