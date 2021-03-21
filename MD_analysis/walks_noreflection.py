@@ -4,13 +4,13 @@ import numpy as np
 import math
 import random                    # Important
 
-r_hardsphere = 0.8    # Not entirely sure what this should be
+r_hardsphere = 1.0   # Not entirely sure what this should be
 rh2 = r_hardsphere**2 # Should be a little bit faster to work with squared values
 reflfac = 1.2
 
 # Setting the system. Nx=Ny=3.
 N = 3; Nx = N; Ny = N; Ntarget = Nx*Ny # In case I want to extend my script later
-d = 25 # Spacing. Also determines the system size
+d = 2.5 # Spacing. Also determines the system size
 xmin = -Nx/2*d
 xmax = Nx/2*d
 ymin = -Ny/2*d
@@ -81,6 +81,8 @@ for k in range(Nreal):
                 # Do not move:
                 thisx=positions[i-1,0]
                 thisy=positions[i-1,1]
+                stepx=0
+                stepy=0
                 break # Cannot hit more than one obstacle in a round
         positions[i,0]=thisx
         positions[i,1]=thisy
@@ -160,7 +162,21 @@ for i in range(Ntarget):
     ax.add_artist(circle) #???
 plt.xlabel('x')
 plt.ylabel('y')
-plt.title('Trajectory')
+plt.title('Trajectory, unwrapped')
+plt.tight_layout()
+plt.show()
+
+fig, ax = plt.subplots()
+#plt.figure(figsize=(6,5))
+plt.plot(positions[:,0],positions[:,1], '-o')
+# The alpha parameter makes the color transparent
+for i in range(Ntarget):
+    circle = plt.Circle((targets[i,0], targets[i,1]), r_hardsphere, color='r', alpha=0.7)
+    ax.add_artist(circle) #???
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Trajectory, wrapped')
 plt.tight_layout()
 plt.show()
 '''
+

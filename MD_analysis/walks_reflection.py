@@ -4,7 +4,7 @@ import numpy as np
 import math
 import random                    # Important
 
-r_hardsphere = 0.8    # Not entirely sure what this should be
+r_hardsphere = 0.65 #1.0    # Not entirely sure what this should be
 rh2 = r_hardsphere**2 # Should be a little bit faster to work with squared values
 reflfac = 1.2
 

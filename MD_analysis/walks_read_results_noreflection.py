@@ -3,18 +3,18 @@ import matplotlib.pyplot as plt  # To plot
 import numpy as np
 import math
 
-r_hardsphere = 0.8
+r_hardsphere = 1.0
 reflfac      = 1.2
 Nsteps       = 1000
 Nreal        = 10000
 
-ds = np.array([2,3,4,5,6,7,8,10,15,25,50,75,100])
+ds = [2,2.5,3,4,5,6,7,8,10,15,25,50,75,100]
 Nd = len(ds)
 Ds = np.zeros(Nd)
 Ds_rms = np.zeros(Nd)
 
-outfilename = 'D_vs_d_Nsteps%i_Nreal%i_rsphere'+str(r_hardsphere)+'_norefl.txt'
-plotname    = 'D_vs_d_Nsteps%i_Nreal%i_rsphere'+str(r_hardsphere)+'_norefl.png'
+outfilename = 'D_vs_d_Nsteps%i_Nreal%i_rsphere' %(Nsteps,Nreal)+str(r_hardsphere)+'_norefl.txt'
+plotname    = 'D_vs_d_Nsteps%i_Nreal%i_rsphere' %(Nsteps,Nreal)+str(r_hardsphere)+'_norefl.png'
 outfile     = open(outfilename,'w')
 
 for i in range(Nd):
