@@ -15,7 +15,7 @@ def avg_and_rms(x):
 
 ##### Adjustable parameters/specifications #########
 # File/simulation selection:
-testmodel = 496497595 # 488462965 # 
+testmodel = 488462965 # 480633479 # 496497595 #  
 iduraa = 2
 if testmodel==496497595:
     idur = iduraa # ms
@@ -37,10 +37,14 @@ elif testmodel==488462965:
     cm_soma = 3.31732779736
     cm_dend = 3.31732779736
     cm_axon = 3.31732779736
+elif testmodel==480633479:
+    cm_soma = 0.704866 # 0.704866118957
+    cm_dend = 0.704866 # 0.704866118957
+    cm_axon = 0.704866 # 0.704866118957
 
 # You can touch these instead:
-#cm_soma = 0.01
-cm_dend = 10.0 #cm_soma #5.0
+cm_soma = 0.01
+#cm_dend = cm_soma #5.0
 #cm_axon = cm_soma #3.00603
 
 

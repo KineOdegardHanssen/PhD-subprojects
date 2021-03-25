@@ -16,10 +16,12 @@ import LFPy
 testmodel = 496497595 #Developmentcell (One short axon, branched dendrites, everything seems to be connected, no errors)
 #testmodel = 497232392
 #testmodel = 496538958
+#testmodel = 480633479
+testmodel = 488462965
 testmodelname = 'neur_%i' % testmodel
 all_models    = [testmodelname]
 
-v_init = -86.5#-90#
+v_init = -93.3#-86.5#-90#
 
 # Change this! Or come up with some automated solution.
 idxs = [0,6,25,39,58]
@@ -69,10 +71,14 @@ def return_allen_cell_model(model_folder):
 
     cell = LFPy.Cell(**cell_parameters)
     cell.set_rotation(z=np.pi/1.25)
-
+    
+    Ndendsecs = 0
     for sec in neuron.h.allsec():
         sec.insert("pas")
         sectype = sec.name().split("[")[0]
+        if sectype=="dend":
+            Ndendsecs+=1
+        
         for sec_dict in active_mechs:
             if sec_dict["section"] == sectype:
                 if sectype=="soma": # Works
@@ -91,7 +97,7 @@ def return_allen_cell_model(model_folder):
                 for key in sec_dict.keys():
                     if not key == "section":
                         exec("sec.{} = {}".format(key, sec_dict[key]))
-    return cell
+    return cell, Ndendsecs
 
 cell_models_folder = "cell_models" #"cell_models_Arkhipov_et_al" #"all_cell_models"
 
@@ -111,7 +117,7 @@ for model_idx in range(len(all_models)):
     #print(model_idx, model_name)
     model_folder = join("cell_models", model_name)
 
-    cell = return_allen_cell_model(model_folder)
+    cell, Ndendsecs = return_allen_cell_model(model_folder)
     
     #idxs = cell.get_idx(section="axon")
     
@@ -133,17 +139,21 @@ for model_idx in range(len(all_models)):
     
     # Can write to file.
     #Give file name. Include model-ID. Put in appropriate folder.
+    '''# This is wrong. Different segmentations at play
     folder = 'figures/%i/' % testmodel # this is all I need.
     outfilename = folder+'%i_dendrites_section_segments.txt' % testmodel
     outfile = open(outfilename,'w')
     # Can automate this pretty well:
-    for i in range(counter):
+    for i in range(Ndendsecs):
         istr = str(i)
         idxs = cell.get_idx(section="dend[%s]"%istr)
         Nidx = len(idxs)
+        print('Dendrite', i, ', Nidx:', Nidx)
         outfile.write('%i %i %.16f\n' % (i,Nidx,lengths[i]))
     outfile.close()
+    '''
     print('idxs6:',idxs6)
     print('len(idxs6):',len(idxs6))
+    print('Ndendsecs:',Ndendsecs)
 
     sys.exit()
