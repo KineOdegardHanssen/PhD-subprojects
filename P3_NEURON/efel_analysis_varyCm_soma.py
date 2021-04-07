@@ -75,23 +75,53 @@ def main(filename,idelay,idur):
 
 
 if __name__ == '__main__':
-    testmodel = 496497595#488462965 #496497595
+    smallCms = True
+    testmodel = 478513407#488462965#480633479#478513437# #496497595
     idur   = 1000 # ms
     idelay = 100
-    iamp   = 0.41 # nA
+    iamp   = 0.41 # 0.17# nA # Should be 0.17 for 478513407
     v_init = -86.5 # mV
     
     # Defaulting to original values:
     # DO NOT TOUCH THESE!
     # SET THEM BELOW INSTEAD!
     if testmodel==496497595:
-        cm_soma = [0.01,0.1,0.5,1.14805,2.0,3.0]
+        if smallCms==True:
+            cm_soma = [0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+        else:
+            cm_soma = [0.01,0.1,0.5,1.14805,2.0,3.0]
         cm_dend = 9.98231
         cm_axon = 3.00603
+        v_init = -86.5 # mV
     elif testmodel==488462965:
-        cm_soma = [0.01,0.1,0.5,1.0,2.0,3.31732779736,5.0] # Have 10 too, but flatlines
+        if smallCms==True:
+            cm_soma = [0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+        else:
+            cm_soma = [0.01,0.1,0.5,1.0,2.0,3.31732779736,4.0,5.0] # Have 10 too, but flatlines
         cm_dend = 3.31732779736
         cm_axon = 3.31732779736
+        v_init = -86.5 # mV
+    elif testmodel==478513407: # Should have I=0.17
+        if smallCms==True:
+            cm_soma = [0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+        else:
+            cm_soma = [0.01,0.1,0.5,1.0,2.0,3.0]
+        cm_dend = 1.0
+        cm_axon = 1.0
+        v_init = -83.7
+    elif testmodel==480633479:
+        cm_soma = [0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.704866,0.8,0.9,1.0]
+        cm_dend = 0.704866 # 0.704866118957
+        cm_axon = 0.704866 # 0.704866118957
+        v_init = -96.8
+    elif testmodel==478513437:
+        if smallCms==True:
+            cm_soma = [0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+        else:
+            cm_soma = [0.01,0.1,0.5,1.0,2.0,2.34539964752,3.0,4.0]
+        cm_dend = 2.34539964752
+        cm_axon = 2.34539964752
+        v_init = -86.8
     
     NCms = len(cm_soma)
     
@@ -103,12 +133,20 @@ if __name__ == '__main__':
     
     # Set names
     folder = 'Allen_test_changecapacitance/figures/%i/current_idur%i_iamp'% (testmodel,idur)+str(iamp)+'/Varycm_soma/'
-    outfilename_Nspikes = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmsoma.txt'
-    outfilename_APampl  = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmsoma.txt'
-    outfilename_APdhw   = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmsoma.txt'
-    plotname_Nspikes    = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmsoma.png'
-    plotname_APampl     = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmsoma.png'
-    plotname_APdhw      = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmsoma.png'
+    if smallCms==True:
+        outfilename_Nspikes = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmsoma_smallCm.txt'
+        outfilename_APampl  = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmsoma_smallCm.txt'
+        outfilename_APdhw   = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmsoma_smallCm.txt'
+        plotname_Nspikes    = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmsoma_smallCm.png'
+        plotname_APampl     = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmsoma_smallCm.png'
+        plotname_APdhw      = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmsoma_smallCm.png'
+    else:
+        outfilename_Nspikes = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmsoma.txt'
+        outfilename_APampl  = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmsoma.txt'
+        outfilename_APdhw   = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmsoma.txt'
+        plotname_Nspikes    = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_Nspikes_vs_Cmsoma.png'
+        plotname_APampl     = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APampl_vs_Cmsoma.png'
+        plotname_APdhw      = folder+'cellmodel%i_current_idur%i_iamp'% (testmodel,idur)+str(iamp) +'_APdurhalfwidth_vs_Cmsoma.png'
     # make files
     outfile_Nspikes = open(outfilename_Nspikes,'w')
     outfile_APampl  = open(outfilename_APampl,'w')
