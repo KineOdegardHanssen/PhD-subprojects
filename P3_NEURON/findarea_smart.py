@@ -166,24 +166,12 @@ for model_idx in range(len(all_models)):
     print('Ndendsecs:',Ndendsecs)
     
     # print out section information: # Works even though I do everything through LFPy
-    diams  = []
-    lengths= []
+    area = 0
     for sec in neuron.h.allsec():
         neuron.h.psection()
-        lengths.append(sec.L)
-        j=0
+        seglength = sec.L/sec.nseg # Length of one segment
         for seg in sec:
-            if j==0:
-                diams.append(seg.diam)
-                j=1
-            print('seg:', seg, '; diam:', seg.diam)
-    
-    print('len(lengths):',len(lengths))
-    print('len(diams):',len(diams))
-    area = 0
-    N = len(diams)
-    for i in range(N):
-        area+=lengths[i]*diams[i]
+            area+=seg.diam*seglength
     area*=np.pi
     
     print('Cell model:', testmodel)
