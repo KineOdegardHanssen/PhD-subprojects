@@ -65,12 +65,25 @@ def main(filename,idelay,idur):
                 (feature_name, ', '.join([str(x) for x in feature_values])))
     '''
     #####################################################################################
-    trace_results = traces_results[0] # Because I am only looping over one cell, I guess
+    trace_results = traces_results[0] # Because I am only looping over one cell
+    #------------------------ Basic data analysis --------------------------------------------------#
     # treat data and perform avg,rms where needed
     avg_AP_ampl, rms_AP_ampl = avg_and_rms(trace_results["AP_amplitude"])
     avg_AP_halfwidth, rms_AP_halfwidth = avg_and_rms(trace_results["AP_duration_half_width"])
     Nspikes = trace_results["Spikecount"]
     Nspikes = Nspikes[0]
+    #--------------------------- Safeguards --------------------------------------------------------#
+    # Duration of APs: Two conditions need to be met: AP dur under 3ms and no more than 3stdv>avg
+    AP_dur_ok = []
+    basic_AP_dur = trace_results["AP_duration_half_width"]
+    rms_threshold = avg_AP_halfwidth+3.*rms_AP_halfwidth
+    for i in range(len(basic_AP_dur)):
+        tempdur = basic_AP_dur[i]
+        if tempdur<3 and tempdur<rms_threshold: # Not too large deviation from the rest
+            AP_dur_ok.append(tempdur)
+    AP_dur_ok = numpy.array(AP_dur_ok)
+    avg_AP_ampl, rms_AP_ampl = avg_and_rms(AP_dur_ok)
+    
     return Nspikes, avg_AP_ampl, rms_AP_ampl, avg_AP_halfwidth, rms_AP_halfwidth
 
 
