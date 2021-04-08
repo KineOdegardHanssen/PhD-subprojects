@@ -4,20 +4,21 @@ import numpy as np
 ##### Adjustable parameters/specifications #########
 
 # Choose capacitance values to vary. cm1='Default' yields value in original model
-cm1 = 'Default'
-cm2 = 5.0 #15.0#0.01
+cm1 = 0.1 #'Default'
+cm2 = 0.2 #0.01 #5.0 #15.0#0.01
 
 # Bools for varying Cmsoma or Cmdend:
-varysoma = False # True:soma,  False:dendrite
-varyall  = True # Hacky solution for varying Cm everywhere. This overrides varysoma
+varysoma = True # True:soma,  False:dendrite
+varyall  = False # Hacky solution for varying Cm everywhere. This overrides varysoma
 
 # File/simulation selection:
-testmodel = 488462965 #496497595
+testmodel = 480633479#478513437#478513407#488462965 #496497595
 if testmodel==496497595:
     idur = 1 # ms
-elif testmodel==488462965:
+else: #elif testmodel==488462965:
     idur = 2 # ms
-iamp = 1.0 # nA
+idur = 1000
+iamp = 0.41 #1.0 # nA
 v_init = -86.5 # mV
 
 ####################################################
@@ -29,9 +30,25 @@ if testmodel==496497595:
     cm_dend = 9.98231
     cm_axon = 3.00603
 elif testmodel==488462965:
-    cm_soma = 3.31732779736 
-    cm_dend = 3.31732779736 
-    cm_axon = 3.31732779736 
+    cm_soma = 3.31732779736
+    cm_dend = 3.31732779736
+    cm_axon = 3.31732779736
+    v_init = -86.5 # mV
+elif testmodel==480633479:
+    cm_soma = 0.704866 # 0.704866118957
+    cm_dend = 0.704866 # 0.704866118957
+    cm_axon = 0.704866 # 0.704866118957
+    v_init = -96.8
+elif testmodel==478513407: # Should have I=0.17
+    cm_soma = 1.0
+    cm_dend = 1.0
+    cm_axon = 1.0
+    v_init = -83.7
+elif testmodel==478513437:
+    cm_soma = 2.34539964752
+    cm_dend = 2.34539964752
+    cm_axon = 2.34539964752
+    v_init = -86.8
 
 cms = []
 if varysoma==True and varyall==False:
@@ -130,7 +147,10 @@ else:
     plt.title('Action potentials for different capacitances of the basal dendrites')
 if varyall==True:
     plt.title('Action potentials for different capacitances of the neuron')
-plt.legend(loc='upper right')
+if idur>10:
+    plt.legend(loc='lower center')
+else:
+    plt.legend(loc='upper right')
 plt.tight_layout()
 plt.savefig(figname)
 
@@ -147,6 +167,10 @@ else:
     plt.title('Action potentials for different capacitances of the basal dendrites')
 if varyall==True:
     plt.title('Action potentials for different capacitances of the neuron')
-plt.legend(loc='upper right')
+if idur>10:
+    plt.legend(loc='lower center')
+else:
+    plt.legend(loc='upper right')
 plt.tight_layout()
 plt.savefig(figname_2)
+plt.show()

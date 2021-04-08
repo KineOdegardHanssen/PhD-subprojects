@@ -72,8 +72,9 @@ def main(filename,idelay,idur):
     avg_AP_halfwidth, rms_AP_halfwidth = avg_and_rms(trace_results["AP_duration_half_width"])
     Nspikes = trace_results["Spikecount"]
     Nspikes = Nspikes[0]
+    Nampl   = Nspikes
     #--------------------------- Safeguards --------------------------------------------------------#
-    # Duration of APs: Two conditions need to be met: AP dur under 3ms and no more than 3stdv>avg
+    ## Duration of APs: Two conditions need to be met: AP dur under 3ms and no more than 3stdv>avg
     AP_dur_ok = []
     basic_AP_dur = trace_results["AP_duration_half_width"]
     rms_threshold = avg_AP_halfwidth+3.*rms_AP_halfwidth
@@ -82,17 +83,22 @@ def main(filename,idelay,idur):
         if tempdur<3 and tempdur<rms_threshold: # Not too large deviation from the rest
             AP_dur_ok.append(tempdur)
     AP_dur_ok = numpy.array(AP_dur_ok)
-    avg_AP_ampl, rms_AP_ampl = avg_and_rms(AP_dur_ok)
-    
-    return Nspikes, avg_AP_ampl, rms_AP_ampl, avg_AP_halfwidth, rms_AP_halfwidth
+    avg_AP_halfwidth, rms_AP_halfwidth = avg_and_rms(AP_dur_ok)
+    Ndur = len(AP_dur_ok)
+    ## First spike gets overestimated amplitude (happens to every sim., but best not to use bad data)
+    ampl_data = trace_results["AP_amplitude"]
+    if len(ampl_data)>1: # Don't want to throw away everything
+        avg_AP_ampl, rms_AP_ampl = avg_and_rms(ampl_data[1:]) # Skipping the first peak
+        Nampl -=1    
+    return Nspikes, avg_AP_ampl, rms_AP_ampl, avg_AP_halfwidth, rms_AP_halfwidth, Nampl, Ndur
 
 
 if __name__ == '__main__':
-    smallCms = True
-    testmodel = 478513407#488462965#480633479#478513437# #496497595
+    smallCms = False#True#
+    testmodel = 478513407#478513437#488462965#480633479# #496497595
     idur   = 1000 # ms
     idelay = 100
-    iamp   = 0.41 # 0.17# nA # Should be 0.17 for 478513407
+    iamp   = 0.41 # 0.17 #  nA # Should be 0.17 for 478513407
     v_init = -86.5 # mV
     
     # Defaulting to original values:
@@ -118,12 +124,15 @@ if __name__ == '__main__':
         if smallCms==True:
             cm_soma = [0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
         else:
-            cm_soma = [0.01,0.1,0.5,1.0,2.0,3.0]
+            if iamp==0.17:
+                cm_soma = [0.01,0.1,0.5,1.0,2.0,3.0]
+            else:
+                cm_soma = [0.01,0.1,0.5,1.0,2.0]
         cm_dend = 1.0
         cm_axon = 1.0
         v_init = -83.7
     elif testmodel==480633479:
-        cm_soma = [0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.704866,0.8,0.9,1.0]
+        cm_soma = [0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0] #[0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.704866,0.8,0.9,1.0]
         cm_dend = 0.704866 # 0.704866118957
         cm_axon = 0.704866 # 0.704866118957
         v_init = -96.8
@@ -139,6 +148,8 @@ if __name__ == '__main__':
     NCms = len(cm_soma)
     
     Nspikes = numpy.zeros(NCms)
+    Nampl   = numpy.zeros(NCms)
+    Ndur    = numpy.zeros(NCms)
     avg_AP_ampl = numpy.zeros(NCms)
     rms_AP_ampl = numpy.zeros(NCms)
     avg_AP_halfwidth = numpy.zeros(NCms)
@@ -167,10 +178,10 @@ if __name__ == '__main__':
     for j in range(NCms):
         print('Step ', j+1, ' of', NCms)
         filename = folder +'idur%i_iamp' % idur+str(iamp)+'_cmsoma' + str(cm_soma[j]) + '_cmdend' + str(cm_dend) + '_cmaxon'+ str(cm_axon) + '_vinit'+str(v_init)+'_addedRa.txt'
-        Nspikes[j], avg_AP_ampl[j], rms_AP_ampl[j], avg_AP_halfwidth[j], rms_AP_halfwidth[j] = main(filename,idelay,idur)
+        Nspikes[j], avg_AP_ampl[j], rms_AP_ampl[j], avg_AP_halfwidth[j], rms_AP_halfwidth[j], Nampl[j], Ndur[j] = main(filename,idelay,idur)
         outfile_Nspikes.write('%.5f %i\n' % (cm_soma[j],Nspikes[j]))
-        outfile_APampl.write('%.5f %.10f %.10f\n' % (cm_soma[j],avg_AP_ampl[j],rms_AP_ampl[j]))
-        outfile_APdhw.write('%.5f %.10f %.10f\n' % (cm_soma[j],avg_AP_halfwidth[j],rms_AP_halfwidth[j]))
+        outfile_APampl.write('%.5f %.10f %.10f %.10f\n' % (cm_soma[j],avg_AP_ampl[j],rms_AP_ampl[j],Nampl[j]))
+        outfile_APdhw.write('%.5f %.10f %.10f %.10f\n' % (cm_soma[j],avg_AP_halfwidth[j],rms_AP_halfwidth[j],Ndur[j]))
     outfile_Nspikes.close()
     outfile_APampl.close()
     outfile_APdhw.close()
