@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-######################################### IMPORTING DATA ##############################################
 ######################################### MULTIPLE MODELS #############################################
+######################################### IMPORTING DATA ##############################################
 # Varycm: All, soma or dendrite
 varywhichcm = 'a' # All
 
@@ -133,7 +133,30 @@ infile_Nspikes.close()
 infile_APampl.close()
 infile_APdhw.close()
 
-######################################## AVERAGE AND RMS ##############################################
+#################################### SKELETON FOR SUBPLOTTING #########################################
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(10,4)) # ???
+###fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,4)) # ???
+ax1.set_title('Number of spikes vs capacitance of %s' % plottitletext)#, fontsize=28, y=1.03)
+for i in range(Nmodels):
+    ax1.plot(cms[i], Npeaks[i], '-o', label='Model %i, I=%.2f nA' % (testmodels[i],iamps[i]))
+ax1.plot(cms_bas, Npeaks_bas, '-o', label='Ball-and-stick')
+ax1.set(xlabel=r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext, ylabel='Number of spikes')#, fontsize=20)
+ax1.legend(loc='center right')
+
+ax2.set_title(r'Amplitude vs capacitance of %s' % plottitletext)
+for i in range(Nmodels):
+    ax2.errorbar(cms[i], APampl[i], yerr=APampl_rms[i], capsize=2, label='Model %i, I=%.2f nA' % (testmodels[i],iamps[i]))
+ax2.errorbar(cms_bas, APampl_bas, yerr=APampl_rms_bas, capsize=2, label='Ball-and-stick')
+ax2.set(xlabel=r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext, ylabel='Amplitude [mV]')#, fontsize=20)
+
+ax3.set_title('AP width at half amplitude vs capacitance of %s' % plottitletext)
+for i in range(Nmodels):
+    ax3.errorbar(cms[i], APdhw[i], yerr=APdhw_rms[i], capsize=2, label='Model %i, I=%.2f nA' % (testmodels[i],iamps[i]))
+ax3.errorbar(cms_bas, APdhw_bas, yerr=APdhw_rms_bas, capsize=2, label='Ball-and-stick')
+ax3.set(xlabel=r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext, ylabel='AP width at half amplitude [ms]')
+
+######################################### AVERAGE AND RMS #############################################
+######################################### IMPORTING DATA ##############################################
 # Varycm: All, soma or dendrite
 varywhichcm = 'a' # All
 
@@ -159,14 +182,14 @@ plotname_Nspikes    = outfolder+'cellmodels'+cellmodelstring+'current_idur%i_Nsp
 plotname_APampl     = outfolder+'cellmodels'+cellmodelstring+'current_idur%i_APampl_vs_'% idur+textsnippet+'_smallCm_avgrms.png'
 plotname_APdhw      = outfolder+'cellmodels'+cellmodelstring+'current_idur%i_APdurhalfwidth_vs_'% idur+textsnippet+'_smallCm_avgrms.png' 
 
-cms_avg = []
-Npeaks_avg = []
-Nampl_avg  = []
-Ndur_avg   = []
-APampl_avg = []
-APdhw_avg = []
-APampl_avg_rms = []
-APdhw_avg_rms  = []
+cms = []
+Npeaks = []
+Nampl  = []
+Ndur   = []
+APampl = []
+APdhw = []
+APampl_rms = []
+APdhw_rms  = []
 # Input: Cm feature (rms)
 for j in range(Nmodels):
     iamp = iamps[j]
@@ -216,75 +239,80 @@ for j in range(Nmodels):
         APampl_rms_temp.append(APampl_rms_this)
         APdhw_temp.append(APdhw_this)
         APdhw_rms_temp.append(APdhw_rms_this)
-    cms_avg.append(cm_temp)
-    Npeaks_avg.append(Npeaks_temp)
-    Nampl_avg.append(Nampl_temp)
-    Ndur_avg.append(Ndur_temp)
-    APampl_avg.append(APampl_temp)
-    APdhw_avg.append(APdhw_temp)
-    APampl_avg_rms.append(APampl_rms_temp)
-    APdhw_avg_rms.append(APdhw_rms_temp)
+    cms.append(cm_temp)
+    Npeaks.append(Npeaks_temp)
+    Nampl.append(Nampl_temp)
+    Ndur.append(Ndur_temp)
+    APampl.append(APampl_temp)
+    APdhw.append(APdhw_temp)
+    APampl_rms.append(APampl_rms_temp)
+    APdhw_rms.append(APdhw_rms_temp)
     infile_Nspikes.close()
     infile_APampl.close()
     infile_APdhw.close()
 
 
-cms_avg = cms_avg[0] # Run for the same values
+cms = cms[0] # Run for the same values
 Ncms = len(cms)
-Npeaks_all_avg = np.zeros((Ncms,Nmodels))
-Npeaks_avg_avg = np.zeros(Ncms)
-Nampl_avg_avg  = np.zeros(Ncms)
-Ndur_avg_avg   = np.zeros(Ncms)
-APampl_avg_avg = np.zeros(Ncms)
-APdhw_avg_avg  = np.zeros(Ncms)
-Npeaks_avg_rms = np.zeros(Ncms)
-APampl_all_avg_rms = np.zeros(Ncms)
-APdhw_all_avg_rms  = np.zeros(Ncms)
+Npeaks_all = np.zeros((Ncms,Nmodels))
+Npeaks_avg = np.zeros(Ncms)
+Nampl_avg  = np.zeros(Ncms)
+Ndur_avg   = np.zeros(Ncms)
+APampl_avg = np.zeros(Ncms)
+APdhw_avg  = np.zeros(Ncms)
+Npeaks_rms = np.zeros(Ncms)
+APampl_all_rms = np.zeros(Ncms)
+APdhw_all_rms  = np.zeros(Ncms)
 
 for i in range(Nmodels):
-    Npeaks_these     = Npeaks_avg[i]
-    Nampl_these      = Nampl_avg[i]
-    Ndur_these       = Ndur_avg[i]
-    APampl_these     = APampl_avg[i]
-    APdhw_these      = APdhw_avg[i]
-    APampl_these_rms = APampl_avg_rms[i]
-    APdhw_these_rms  = APdhw_avg_rms[i]
+    Npeaks_these     = Npeaks[i]
+    Nampl_these      = Nampl[i]
+    Ndur_these       = Ndur[i]
+    APampl_these     = APampl[i]
+    APdhw_these      = APdhw[i]
+    APampl_these_rms = APampl_rms[i]
+    APdhw_these_rms  = APdhw_rms[i]
     for j in range(Ncms):
         Npeaks_this = Npeaks_these[j]
         Nampl_this  = Nampl_these[j]
         Ndur_this   = Ndur_these[j]
         APampl_this = APampl_these[j]
         APdhw_this  = APdhw_these[j]
-        Npeaks_avg_avg[j] += Npeaks_this
-        Nampl_avg_avg[j]  += Nampl_this
-        Ndur_avg_avg[j]   += Ndur_this
-        APampl_avg_avg[j] += APampl_this*Nampl_this # Weight it
-        APdhw_avg_avg[j]  += APdhw_this*Ndur_this   # Weight it
-        APampl_all_avg_rms[j] += (APampl_these_rms[j]*Nampl_this)**2
-        APdhw_all_avg_rms[j]  += (APdhw_these_rms[j]*Ndur_this)**2
-        Npeaks_all_avg[j,i] = Npeaks_this
+        Npeaks_avg[j] += Npeaks_this
+        Nampl_avg[j]  += Nampl_this
+        Ndur_avg[j]   += Ndur_this
+        APampl_avg[j] += APampl_this*Nampl_this # Weight it
+        APdhw_avg[j]  += APdhw_this*Ndur_this   # Weight it
+        APampl_all_rms[j] += (APampl_these_rms[j]*Nampl_this)**2
+        APdhw_all_rms[j]  += (APdhw_these_rms[j]*Ndur_this)**2
+        Npeaks_all[j,i] = Npeaks_this
 
 
 for i in range(Ncms):
-    APampl_avg_avg[i] /= Nampl_avg_avg[i] # Divide by number of peaks
-    APdhw_avg_avg[i]  /= Ndur_avg_avg[i]
-    APampl_all_avg_rms[i] /= Nampl_avg_avg[i]**2
-    APdhw_all_avg_rms[i]  /= Ndur_avg_avg[i]**2
-    APampl_all_avg_rms[i]  = np.sqrt(APampl_all_avg_rms[i])
-    APdhw_all_avg_rms[i]   = np.sqrt(APdhw_all_avg_rms[i])
-    Npeaks_avg_avg[i] /= Nmodels       # Get average number of peaks
-    Nampl_avg_avg[i]  /= Nmodels       # Get average number of amplitudes ## Don't think I need these two
-    Ndur_avg_avg[i]   /= Nmodels       # Get average number of durations  ## Don't think I need these two
-    Npeaks_temp = Npeaks_all_avg[i,:]
+    APampl_avg[i] /= Nampl_avg[i] # Divide by number of peaks
+    APdhw_avg[i]  /= Ndur_avg[i]
+    APampl_all_rms[i] /= Nampl_avg[i]**2
+    APdhw_all_rms[i]  /= Ndur_avg[i]**2
+    APampl_all_rms[i]  = np.sqrt(APampl_all_rms[i])
+    APdhw_all_rms[i]   = np.sqrt(APdhw_all_rms[i])
+    Npeaks_avg[i] /= Nmodels       # Get average number of peaks
+    Nampl_avg[i]  /= Nmodels       # Get average number of amplitudes ## Don't think I need these two
+    Ndur_avg[i]   /= Nmodels       # Get average number of durations  ## Don't think I need these two
+    Npeaks_temp = Npeaks_all[i,:]
     for j in range(Nmodels):
-        Npeaks_avg_rms[i] += (Npeaks_avg_avg[i]-Npeaks_temp[j])**2
-    Npeaks_avg_rms[i] = np.sqrt(Npeaks_avg_rms[i]/(Nmodels-1))
-#################################### SKELETON FOR SUBPLOTTING #########################################
-##########################
-
+        Npeaks_rms[i] += (Npeaks_avg[i]-Npeaks_temp[j])**2
+    Npeaks_rms[i] = np.sqrt(Npeaks_rms[i]/(Nmodels-1))
 
 plt.figure(figsize=(6,5))
-plt.errorbar(cms_avg, APampl_avg_avg, yerr=APampl_all_avg_rms, capsize=2)
+plt.errorbar(cms, Npeaks_avg, yerr=Npeaks_rms, capsize=2)
+plt.xlabel(r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext)
+plt.ylabel(r'Number of spikes')
+plt.title(r'Number of spikes vs capacitance of %s' % plottitletext)
+plt.tight_layout()
+plt.savefig(plotname_Nspikes)
+
+plt.figure(figsize=(6,5))
+plt.errorbar(cms, APampl_avg, yerr=APampl_all_rms, capsize=2)
 plt.xlabel(r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext)
 plt.ylabel(r'Amplitude [mV]')
 plt.title(r'Amplitude vs capacitance of %s' % plottitletext)
@@ -292,44 +320,16 @@ plt.tight_layout()
 plt.savefig(plotname_APampl)
 
 plt.figure(figsize=(6,5))
-plt.errorbar(cms_avg, APdhw_avg_avg, yerr=APdhw_all_avg_rms, capsize=2)
+plt.errorbar(cms, APdhw_avg, yerr=APdhw_all_rms, capsize=2)
 plt.xlabel(r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext)
 plt.ylabel(r'AP width at half amplitude [ms]')
 plt.title(r'AP width at half amplitude vs capacitance of %s' % plottitletext)
 plt.tight_layout()
 plt.savefig(plotname_APdhw)
 plt.show()
-##################
-
-
-
-
-
-fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(10,4)) # ???
-###fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,4)) # ???
-ax1.set_title('Number of spikes vs capacitance of %s' % plottitletext)#, fontsize=28, y=1.03)
-for i in range(Nmodels):
-    ax1.plot(cms[i], Npeaks[i], '-o', label='Model %i, I=%.2f nA' % (testmodels[i],iamps[i]))
-ax1.plot(cms_bas, Npeaks_bas, '-o', label='Ball-and-stick')
-ax1.set(xlabel=r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext, ylabel='Number of spikes')#, fontsize=20)
-ax1.legend(loc='center right')
-
-ax2.set_title(r'Amplitude vs capacitance of %s' % plottitletext)
-for i in range(Nmodels):
-    ax2.errorbar(cms[i], APampl[i], yerr=APampl_rms[i], capsize=2, label='Model %i, I=%.2f nA' % (testmodels[i],iamps[i]))
-ax2.errorbar(cms_bas, APampl_bas, yerr=APampl_rms_bas, capsize=2, label='Ball-and-stick')
-ax2.set(xlabel=r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext, ylabel='Amplitude [mV]')#, fontsize=20)
-
-ax3.set_title('AP width at half amplitude vs capacitance of %s' % plottitletext)
-for i in range(Nmodels):
-    ax3.errorbar(cms[i], APdhw[i], yerr=APdhw_rms[i], capsize=2, label='Model %i, I=%.2f nA' % (testmodels[i],iamps[i]))
-ax3.errorbar(cms_bas, APdhw_bas, yerr=APdhw_rms_bas, capsize=2, label='Ball-and-stick')
-ax3.set(xlabel=r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext, ylabel='AP width at half amplitude [ms]')
-
-
 
 ax4.set_title('Number of spikes vs capacitance of %s' % plottitletext)
-ax4.errorbar(cms_avg, Npeaks_avg_avg, yerr=Npeaks_avg_rms, capsize=2)
+ax4.errorbar(cms, Npeaks_avg, yerr=Npeaks_rms, capsize=2)
 ax4.set(xlabel=r'$C_{m}$ of %s [$\mu$F/cm$^2$]',ylabel='Number of spikes')
 
 
