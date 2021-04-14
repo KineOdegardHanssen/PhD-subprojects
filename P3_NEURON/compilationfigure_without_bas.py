@@ -148,20 +148,20 @@ fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6), (ax7, ax8)) = plt.subplots(4, 2, figsi
 ax1.set_title('Number of spikes vs capacitance of %s for different models' % plottitletext)#, fontsize=28, y=1.03)
 for i in range(Nmodels):
     ax1.plot(cms[i], Npeaks[i], '-o', label='Model %i, I=%.2f nA' % (testmodels[i],iamps[i]))
-ax1.plot(cms_bas, Npeaks_bas, '-o', label='Ball-and-stick')
+#ax1.plot(cms_bas, Npeaks_bas, '-o', label='Ball-and-stick')
 ax1.set(ylabel='Number of spikes')#, fontsize=20)
 ax1.legend(loc='lower left')
 
 ax3.set_title(r'Amplitude vs capacitance of %s for different models' % plottitletext)
 for i in range(Nmodels):
     ax3.errorbar(cms[i], APampl[i], yerr=APampl_rms[i], capsize=2, label='Model %i, I=%.2f nA' % (testmodels[i],iamps[i]))
-ax3.errorbar(cms_bas, APampl_bas, yerr=APampl_rms_bas, capsize=2, label='Ball-and-stick')
+#ax3.errorbar(cms_bas, APampl_bas, yerr=APampl_rms_bas, capsize=2, label='Ball-and-stick')
 ax3.set(ylabel='Amplitude [mV]')#, fontsize=20)
 
 ax5.set_title('AP width at half amplitude vs capacitance of %s for different models' % plottitletext)
 for i in range(Nmodels):
     ax5.errorbar(cms[i], APdhw[i], yerr=APdhw_rms[i], capsize=2, label='Model %i, I=%.2f nA' % (testmodels[i],iamps[i]))
-ax5.errorbar(cms_bas, APdhw_bas, yerr=APdhw_rms_bas, capsize=2, label='Ball-and-stick')
+#ax5.errorbar(cms_bas, APdhw_bas, yerr=APdhw_rms_bas, capsize=2, label='Ball-and-stick')
 ax5.set(ylabel='AP width at half amplitude [ms]')
 
 ######################################### AVERAGE AND RMS #############################################
@@ -433,7 +433,7 @@ infile.close()
 ax7.set_title(r'Signal velocity vs capacitance of %s for different models' % plottitletext)
 for i in range(Nmodels):
     ax7.errorbar(cms[i], propvels[i], yerr=propvels_rms[i], capsize=2, label='Model %i' % testmodels[i])
-ax7.plot(cms_bas, propvels_bas, '-o', label='Ball-and-stick')
+#ax7.plot(cms_bas, propvels_bas, '-o', label='Ball-and-stick')
 ax7.set(xlabel=r'$C_{m}$ of %s [$\mu$ F/cm$^2$]' % plottitletext, ylabel=r'Signal velocity [m/s]')
 plt.legend(loc='upper right')
 
@@ -533,7 +533,8 @@ for i in range(N):
 outfile.close()
 
 # Plot results
-ax8.set_title(r'Average signal velocity vs %s $C_{m}$' % plottitletext)
+#ax8.set_title(r'Average signal velocity vs %s $C_{m}$' % plottitletext)
+ax8.set_title(r'Average signal velocity vs capacitance of %s' % plottitletext)
 ax8.errorbar(varycm,propvels,yerr=propvel_rmss,capsize=2)
 ax8.set(xlabel=r'$C_{m}$ of %s [$\mu$ F/cm$^2$]' % plottitletext,ylabel='Signal velocity along dendrites [m/s]')
 
