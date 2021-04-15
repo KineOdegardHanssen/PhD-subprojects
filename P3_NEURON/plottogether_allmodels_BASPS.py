@@ -112,6 +112,10 @@ if __name__ == '__main__':
     Ncms = NCms  # Typo a lot of places.
     Nmodels = len(testmodels)
     
+    outfolder      = 'Results/Comparemodels/'
+    avgandrmsname  = outfolder+'compiled_avgandrms_BAPS.png'
+    everymodelname = outfolder+'compiled_alltogether_BAPS.png'
+    
     # Model-specific arrays:
     Nspikes_bymodel      = []
     avg_AP_ampl_bymodel      = []
@@ -229,64 +233,94 @@ if __name__ == '__main__':
         for j in range(Nmodels):
             Nspikes_rms[i] += (Nspikes_avg[i]-Nspikes_temp[j])**2
         Nspikes_rms[i] = np.sqrt(Nspikes_rms[i]/(Nmodels-1))
+    
+    ############################ Dendritepropagation #############################################
+    idur = 2
+    iamp = 1.0
+    v_init = -65
+    cms_dp = [0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
+    Ncms_dp = len(cms_dp)
+    propvels_avg = np.zeros(Ncms_dp)
+    propvels_rms = np.zeros(Ncms_dp)
+    propvels_all = np.zeros((Ncms_dp,Nmodels))
+    i=0
+    for testmodel in testmodels:
+        Radp = 150
+        if testmodel==488462965:
+            Radp = 29
+        elif testmodel==478513407:
+            Radp = 100
+        elif testmodel==478513437:
+            Radp = 352
+        dendfolder = 'Results/%i/IStim/current_idur'%testmodel+str(idur)+'_iamp'+str(iamp)+'/dendritepropagation/'
+        filename_cms = dendfolder+'basps_varycm_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Radp+str(v_init)+'_propvel_vs_cm_smallCm.txt'
+        
+        propvels_temp = []
+        
+        file_cms = open(filename_cms,'r')
+        lines = file_cms.readlines()
+    
+        j=0
+        for line in lines:
+            words = line.split()
+            if len(words)>1:
+                propvels_all[j,i] = float(words[1])
+            j+=1
+        i+=1
+        file_cms.close()
+    
+    for i in range(Ncms_dp):
+        propvels_avg[i],propvels_rms[i] = avg_and_rms(propvels_all[i,:])
+
 
     ########### Plot, rms and avg. ######################################################
     plottitletext = 'soma'
-    plt.figure(figsize=(6,5))
-    plt.errorbar(cms, Nspikes_avg, yerr=Nspikes_rms, capsize=2)
-    plt.xlabel(r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext)
-    plt.ylabel(r'Number of spikes')
-    plt.title(r'Number of spikes vs capacitance of %s' % plottitletext)
-    plt.tight_layout()
-    plt.savefig(plotname_Nspikes_avgrms)
+    print('cms:',cms)
+    print('Nspikes_avg:',Nspikes_avg)
+    print('len(cms):',len(cms))
+    print('len(Nspikes_avg):',len(Nspikes_avg))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(17,15))
+    ax1.errorbar(cms, Nspikes_avg, yerr=Nspikes_rms, capsize=2)
+    ax1.set(ylabel=r'Number of spikes')
+    ax1.set_title(r'Number of spikes vs %s capacitance' % plottitletext)
     
-    plt.figure(figsize=(6,5))
-    plt.errorbar(cms, AP_ampl_avg, yerr=AP_ampl_rms, capsize=2)
-    plt.xlabel(r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext)
-    plt.ylabel(r'Amplitude [mV]')
-    plt.title(r'Amplitude vs capacitance of %s' % plottitletext)
-    plt.tight_layout()
-    plt.savefig(plotname_APampl_avgrms)
+    ax2.errorbar(cms, AP_ampl_avg, yerr=AP_ampl_rms, capsize=2)
+    ax2.set(ylabel=r'Amplitude [mV]')
+    ax2.set_title(r'Amplitude vs %s capacitance' % plottitletext)
     
-    plt.figure(figsize=(6,5))
-    plt.errorbar(cms, AP_halfwidth_avg, yerr=AP_halfwidth_rms, capsize=2)
-    plt.xlabel(r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext)
-    plt.ylabel(r'AP width at half amplitude [ms]')
-    plt.title(r'AP width at half amplitude vs capacitance of %s' % plottitletext)
-    plt.tight_layout()
-    plt.savefig(plotname_APdhw_avgrms)
+    ax3.errorbar(cms, AP_halfwidth_avg, yerr=AP_halfwidth_rms, capsize=2)
+    ax3.set(xlabel=r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext,ylabel=r'AP width at half amplitude [ms]')
+    ax3.set_title(r'AP width at half amplitude vs %s capacitance' % plottitletext)
+    
+    ax4.errorbar(cms_dp, propvels_avg, yerr=propvels_rms, capsize=2)
+    ax4.set(xlabel=r'$C_{m}$ of %s [$\mu$F/cm$^2$]' % plottitletext,ylabel=r'AP width at half amplitude [ms]')
+    ax4.set_title(r'AP width at half amplitude vs %s capacitance' % plottitletext)
+    
+    plt.savefig(avgandrmsname)
     
     ###################### Plot, every model ############################################
-    print('testmodels[1]:',testmodels[1])
-    plt.figure(figsize=(6,5))
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(17,15))
     for i in range(Nmodels):
-        plt.plot(cms,Nspikes_bymodel[i],'-o',label='%i' % testmodels[i])
-    plt.xlabel(r'$C_{m}$ [$\mu$ F/cm$^2$]')
-    plt.ylabel(r'$N_{spikes}$')
-    plt.title(r'Capacitance vs number of spikes')
-    plt.legend(loc='lower right')
-    plt.tight_layout()
-    plt.savefig(plotname_Nspikes)
+        ax1.plot(cms,Nspikes_bymodel[i],'-o',label='%i' % testmodels[i])
+    ax1.set(ylabel=r'$N_{spikes}$')
+    ax1.set_title(r'Number of spikes vs soma capacitance')
+    ax1.legend(loc='lower right')
         
-    plt.figure(figsize=(6,5))
     for i in range(Nmodels):
-        plt.errorbar(cms,avg_AP_ampl_bymodel[i], yerr=rms_AP_ampl_bymodel[i], capsize=2,label='%i' % testmodels[i])
-    plt.xlabel(r'$C_{m}$ [$\mu$ F/cm$^2$]')
-    plt.ylabel(r'Spike amplitude [mV]')
-    plt.title(r'Capacitance vs AP amplitude')
-    plt.legend(loc='upper right')
-    plt.tight_layout()
-    plt.savefig(plotname_APampl)
+        ax2.errorbar(cms,avg_AP_ampl_bymodel[i], yerr=rms_AP_ampl_bymodel[i], capsize=2,label='%i' % testmodels[i])
+    ax2.set(ylabel='Spike amplitude [mV]')
+    ax2.set_title(r'AP amplitude vs soma capacitance')
     
-    plt.figure(figsize=(6,5))
     for i in range(Nmodels):
-        plt.errorbar(cms,avg_AP_halfwidth_bymodel[i], yerr=rms_AP_halfwidth_bymodel[i], capsize=2,label='%i' % testmodels[i])
-    plt.xlabel(r'$C_{m} $[$\mu$ F/cm$^2$]')
-    plt.ylabel(r'AP duration at half width [ms]')
-    plt.title(r'Capacitance vs AP duration at half with')
-    plt.legend(loc='upper right')
-    plt.tight_layout()
-    plt.savefig(plotname_APdhw)
-    plt.show()
+        ax3.errorbar(cms,avg_AP_halfwidth_bymodel[i], yerr=rms_AP_halfwidth_bymodel[i], capsize=2,label='%i' % testmodels[i])
+    ax3.set(xlabel=r'$C_{m} $[$\mu$ F/cm$^2$]',ylabel=r'AP duration at half width [ms]')
+    ax3.set_title(r'AP duration at half width vs soma capacitance')
+    
+    for i in range(Nmodels):
+        ax4.plot(cms_dp,propvels_all[:,i], '-o', label='%i' % testmodels[i])
+    ax4.set(xlabel=r'$C_{m} $[$\mu$ F/cm$^2$]',ylabel=r'Signal velocity [m/s]')
+    ax4.set_title(r'Propagation velocity along dendrite vs soma capacitance')
+    
+    plt.savefig(everymodelname)
 
     
