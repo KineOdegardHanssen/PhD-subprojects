@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 import json
 import neuron
 import LFPy
+import math
 
-def run_sim(dendlen=1000, cm=1.0, idur=1.0, iamp=1.0, idelay=1.0, v_init=-86.5, tstart=0., tstop=50., Ra=150, testmodel=496497595):
+def run_sim(dendlen=1000, cm=1.0, idur=1.0, iamp=1.0, idelay=1.0, v_init=-86.5, tstart=0., tstop=50., Ra=150, testmodel=496497595,nsegments=65):
     
     ### Copy-pasted, more or less, from the test_allan_cell_models-script
     testmodelname = 'neur_%i' % testmodel
@@ -49,6 +50,7 @@ def run_sim(dendlen=1000, cm=1.0, idur=1.0, iamp=1.0, idelay=1.0, v_init=-86.5, 
                     exec("sec.{} = {}".format(sec_dict["name"], sec_dict["value"]))
                 if sectype=="dend":
                     sec.L = dendlen
+                    sec.nseg = nsegments
 
         for sec_dict in reversal_potentials:
             if sec_dict["section"] == sectype:
@@ -100,16 +102,20 @@ if __name__ == '__main__':
     tstop   = idur+afteri+idelay
     v_init  = -86.5
     Ra      = 150
-    outfolder = 'Results/%i/IStim/Vary_dendrite_thickness/' % testmodel
+    outfolder = 'Results/%i/IStim/Vary_dendrite_length/' % testmodel
     currentfolder = 'current_idur'+str(idur)+'_iamp'+str(iamp)+'/'
     outfolder = outfolder+currentfolder
+    
+    #lambda = 180 #np.sqrt(1000*2e-4/(4*150))
+    maxlen = 15. # Improving the accuracy somewhat. 8.3333..% of lambda. About the accuracy of the original model
      
     for dendlen in dendlens:
         plt.figure(figsize=(6,5))
         outfolder_dl = outfolder + 'dendlen%i/' % dendlen
         plotname = outfolder_dl+'basps_varycm_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit'%Ra+str(v_init)+'_dendlen%i_V.png'% dendlen
+        nsegments = int(math.ceil(dendlen/maxlen))
         for cm in cms:
-            t, v = run_sim(dendlen,cm, idur, iamp, idelay, v_init, tstart, tstop, Ra, testmodel)
+            t, v = run_sim(dendlen,cm, idur, iamp, idelay, v_init, tstart, tstop, Ra, testmodel,nsegments)
             outfilename = outfolder_dl+'basps_cm'+str(cm)+'_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+'_dendlen%i_V.txt' % dendlen
             outfile = open(outfilename,'w')
             # Write to 'Results/IStim/'
