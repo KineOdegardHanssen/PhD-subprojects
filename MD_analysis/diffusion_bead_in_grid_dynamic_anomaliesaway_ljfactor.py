@@ -26,12 +26,12 @@ def rmsd(x,y):
     delta = np.sqrt(delta/(Nx-1))
     return delta
 
-ljfactor = 10
+ljfactor = 0.01
 #
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-spacing = 4.5
+spacing = 3
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)
@@ -49,7 +49,7 @@ confignrs    = np.arange(1,1001)
 Nseeds       = len(confignrs)      # So that I don't have to change that much
 maxz_av      = 0
 filescounter = 0
-Nsteps   = 2001 # 20001 before
+Nsteps       = 2001 # 20001 before
 #writeevery  = 10                  # I'm writing to file every this many time steps
 unitlength   = 1e-9
 unittime     = 2.38e-11 # s
@@ -298,6 +298,9 @@ for confignr in confignrs:
             counter+=1
             i+=1
     infile_free.close()
+    if len(times)!=Nsteps:
+        skippedfiles += 1
+        continue
     dt = (times[1]-times[0])*timestepsize # This might be handy
     #print('dt:', dt)
     #print('times[1]-times[0]:',times[1]-times[0])
@@ -703,9 +706,9 @@ xpos = []
 ypos = []
 zpos = []
 
-outfilename_xoft     = endlocation+'xoft_config%i.txt' % confignr
-outfilename_yoft     = endlocation+'yoft_config%i.txt' % confignr
-outfilename_zoft     = endlocation+'zoft_config%i.txt' % confignr
+outfilename_xoft     = endlocation+'xoft_config%i_ljfactor'+str(ljfactor)+'.txt' % confignr
+outfilename_yoft     = endlocation+'yoft_config%i_ljfactor'+str(ljfactor)+'.txt' % confignr
+outfilename_zoft     = endlocation+'zoft_config%i_ljfactor'+str(ljfactor)+'.txt' % confignr
 
 
 outfile_xoft = open(outfilename_xoft,'w')

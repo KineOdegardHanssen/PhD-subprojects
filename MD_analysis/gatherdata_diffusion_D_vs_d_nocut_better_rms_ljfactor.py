@@ -20,6 +20,7 @@ def rmsd(x,y):
     delta = np.sqrt(delta/(Nx-1))
     return delta
 
+ljfactor   = 0.01 #10
 Nintervals = 10
 
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first

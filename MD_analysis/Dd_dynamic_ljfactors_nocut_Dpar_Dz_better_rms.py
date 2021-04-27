@@ -123,7 +123,7 @@ Dys_stdv_ljfac001 = np.zeros(N_ljfac001)
 Dzs_stdv_ljfac001 = np.zeros(N_ljfac001)
 Dparallel_stdv_ljfac001 = np.zeros(N_ljfac001)
 
-for i in range(1,N_stat+1):
+for i in range(1,N_ljfac001+1):
     words = lines[i].split()
     j = i-1
     
@@ -161,7 +161,7 @@ Dys_stdv_ljfac10 = np.zeros(N_ljfac10)
 Dzs_stdv_ljfac10 = np.zeros(N_ljfac10)
 Dparallel_stdv_ljfac10 = np.zeros(N_ljfac10)
 
-for i in range(1,N_stat+1):
+for i in range(1,N_ljfac10+1):
     words = lines[i].split()
     j = i-1
     
@@ -207,9 +207,9 @@ for i in range(N_ljfac001):
     Dzs_stdv_ljfac001[i] = abs(Dznew)*np.sqrt((Dzs_stdv_ljfac001[i]/Dzs_ljfac001[i])**2+(DRs_stdv_bulk/DRs_bulk)**2)
     Dparallel_stdv_ljfac001[i] = abs(Dparnew)*np.sqrt((Dparallel_stdv_ljfac001[i]/Dparallel_ljfac001[i])**2+(DRs_stdv_bulk/DRs_bulk)**2)
     # Ds
-    DRs_stat[i] = DRnew
-    Dzs_stat[i] = Dznew
-    Dparallel_stat[i] = Dparnew
+    DRs_ljfac001[i] = DRnew
+    Dzs_ljfac001[i] = Dznew
+    Dparallel_ljfac001[i] = Dparnew
 
 for i in range(N_ljfac10):
     DRnew = DRs_ljfac10[i]/DRs_bulk
@@ -220,9 +220,9 @@ for i in range(N_ljfac10):
     Dzs_stdv_ljfac10[i] = abs(Dznew)*np.sqrt((Dzs_stdv_ljfac10[i]/Dzs_ljfac10[i])**2+(DRs_stdv_bulk/DRs_bulk)**2)
     Dparallel_stdv_ljfac10[i] = abs(Dparnew)*np.sqrt((Dparallel_stdv_ljfac10[i]/Dparallel_ljfac10[i])**2+(DRs_stdv_bulk/DRs_bulk)**2)
     # Ds
-    DRs_stat[i] = DRnew
-    Dzs_stat[i] = Dznew
-    Dparallel_stat[i] = Dparnew
+    DRs_ljfac10[i] = DRnew
+    Dzs_ljfac10[i] = Dznew
+    Dparallel_ljfac10[i] = Dparnew
 
 for i in range(N_dyn):
     DRnew = DRs_dyn[i]/DRs_bulk
@@ -245,8 +245,8 @@ if big==False:
     ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, label=r'$D_\parallel$, dyn.')
     ax.errorbar(spacings_ljfac001, Dzs_ljfac001, yerr=Dzs_stdv_ljfac001, color='c', capsize=2, label=r'$D_\perp$, $0.01\epsilon_{LJ}$')
     ax.errorbar(spacings_ljfac001, Dparallel_ljfac001, yerr=Dparallel_stdv_ljfac001, color='limegreen', capsize=2, label=r'$D_\parallel$, $0.01\epsilon_{LJ}$')
-    ax.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='c', capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
-    ax.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='limegreen', capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
+    ax.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='darkblue', capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
+    ax.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='springgreen', capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$')
     else:
@@ -269,8 +269,8 @@ else:
     ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', linewidth=7.0, capsize=2, label=r'$D_\parallel$, $\epsilon_{LJ}$')
     ax.errorbar(spacings_ljfac001, Dzs_ljfac001, yerr=Dzs_stdv_ljfac001, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, $0.01\epsilon_{LJ}$')
     ax.errorbar(spacings_ljfac001, Dparallel_ljfac001, yerr=Dparallel_stdv_ljfac001, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, $0.01\epsilon_{LJ}$')
-    ax.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
-    ax.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
+    ax.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='darkblue', linewidth=7.0, capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
+    ax.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='springgreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$', fontsize=20)
     else:
@@ -293,8 +293,8 @@ if big==False:
     ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, label=r'$D_\parallel$, dyn.')
     ax.errorbar(spacings_ljfac001, Dzs_ljfac001, yerr=Dzs_stdv_ljfac001, color='c', capsize=2, label=r'$D_\perp$, $0.01\epsilon_{LJ}$')
     ax.errorbar(spacings_ljfac001, Dparallel_ljfac001, yerr=Dparallel_stdv_ljfac001, color='limegreen', capsize=2, label=r'$D_\parallel$, $0.01\epsilon_{LJ}$')
-    ax.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='c', capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
-    ax.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='limegreen', capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
+    ax.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='darkblue', capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
+    ax.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='springgreen', capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$')
     else:
@@ -304,7 +304,7 @@ if big==False:
         plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic brushes with different $\epsilon_{LJ}$', y=1.03)
     else:
         plt.title('Diffusion constant $D$ vs $d$ for dynamic brushes with different $\epsilon_{LJ}$', y=1.03)
-    ax.axis([0,10,0,0.7]) # 6e-7 before we divided by Dbulk
+    ax.axis([0,15.2,0,1.1]) # 6e-7 before we divided by Dbulk
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -316,8 +316,8 @@ else:
     ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
     ax.errorbar(spacings_ljfac001, Dzs_ljfac001, yerr=Dzs_stdv_ljfac001, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, $0.01\epsilon_{LJ}$')
     ax.errorbar(spacings_ljfac001, Dparallel_ljfac001, yerr=Dparallel_stdv_ljfac001, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, $0.01\epsilon_{LJ}$')
-    ax.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
-    ax.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
+    ax.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='darkblue', linewidth=7.0, capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
+    ax.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='springgreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$', fontsize=20)
     else:
@@ -327,7 +327,7 @@ else:
         plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic brushes with different $\epsilon_{LJ}$', fontsize=28, y=1.03)
     else:
         plt.title('Diffusion constant $D$ vs $d$ for dynamic brushes with different $\epsilon_{LJ}$', fontsize=28, y=1.03)
-    ax.axis([0,10,0,0.7]) # 6e-7 before we divided by Dbulk
+    ax.axis([0,15.2,0,1.1]) # 6e-7 before we divided by Dbulk
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 plt.savefig(plotname_cut)
 
@@ -344,27 +344,28 @@ if big==False:
     ax1.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, label=r'$D_\parallel$, dyn.')
     ax1.errorbar(spacings_ljfac001, Dzs_ljfac001, yerr=Dzs_stdv_ljfac001, color='c', capsize=2, label=r'$D_\perp$, $0.01\epsilon_{LJ}$')
     ax1.errorbar(spacings_ljfac001, Dparallel_ljfac001, yerr=Dparallel_stdv_ljfac001, color='limegreen', capsize=2, label=r'$D_\parallel$, $0.01\epsilon_{LJ}$')
-    ax1.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='c', capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
-    ax1.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='limegreen', capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
+    ax1.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='darkblue', capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
+    ax1.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='springgreen', capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
     if moresigmas==True:
         ax1.set(xlabel=r'$d/\sigma_b$', ylabel='Diffusion constant $D/D_{bulk}$')
     else:
         ax1.set(xlabel=r'$d$', ylabel='Diffusion constant $D/D_{bulk}$')
     ax1.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     ax1.legend(loc="lower right")
-    
+    ax1.axis([0,15.2,0,1.1])
     ax2.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', capsize=2, fmt='.', label=r'$D_\perp$, dyn.')
     ax2.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, fmt='.', label=r'$D_\parallel$, dyn.')
     ax2.errorbar(spacings_ljfac001, Dzs_ljfac001, yerr=Dzs_stdv_ljfac001, color='c', capsize=2, fmt='.', label=r'$D_\perp$, $0.01\epsilon_{LJ}$')
     ax2.errorbar(spacings_ljfac001, Dparallel_ljfac001, yerr=Dparallel_stdv_ljfac001, color='limegreen', capsize=2, fmt='.', label=r'$D_\parallel$, $0.01\epsilon_{LJ}$')
-    ax2.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='c', capsize=2, fmt='.', label=r'$D_\perp$, $10\epsilon_{LJ}$')
-    ax2.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='limegreen', capsize=2, fmt='.', label=r'$D_\parallel$, $10\epsilon_{LJ}$')
+    ax2.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='darkblue', capsize=2, fmt='.', label=r'$D_\perp$, $10\epsilon_{LJ}$')
+    ax2.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='springgreen', capsize=2, fmt='.', label=r'$D_\parallel$, $10\epsilon_{LJ}$')
     if moresigmas==True:
         ax2.set(xlabel=r'$d/\sigma_b$', ylabel=r'Diffusion constant $D/D_{bulk}$')
     else:
         ax2.set(xlabel=r'$d$', ylabel=r'Diffusion constant $D/D_{bulk}$')
-    ax2.axis([0,10,0,0.7]) # 6e-7 before we divided by Dbulk
+    ax2.axis([0,15.2,0,1.1])
     #fig.tight_layout()
+    ax2.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     plt.show()
     fig.savefig(plotname_twoinone)
 else:
@@ -378,8 +379,9 @@ else:
     ax1.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
     ax1.errorbar(spacings_ljfac001, Dzs_ljfac001, yerr=Dzs_stdv_ljfac001, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, $0.01\epsilon_{LJ}$')
     ax1.errorbar(spacings_ljfac001, Dparallel_ljfac001, yerr=Dparallel_stdv_ljfac001, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, $0.01\epsilon_{LJ}$')
-    ax1.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
-    ax1.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
+    ax1.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='darkblue', linewidth=7.0, capsize=2, label=r'$D_\perp$, $10\epsilon_{LJ}$')
+    ax1.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='springgreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, $10\epsilon_{LJ}$')
+    ax1.axis([0,15.2,0,0.8]) # 6e-7 before we divided by Dbulk
     if moresigmas==True:
         ax1.set(xlabel=r'$d/\sigma_b$', ylabel=r'Diffusion constant $D/D_{bulk}$', fontsize=20)
     else:
@@ -390,13 +392,13 @@ else:
     ax2.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\parallel$, dyn.')
     ax2.errorbar(spacings_ljfac001, Dzs_ljfac001, yerr=Dzs_stdv_ljfac001, color='c', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\perp$, $0.01\epsilon_{LJ}$')
     ax2.errorbar(spacings_ljfac001, Dparallel_ljfac001, yerr=Dparallel_stdv_ljfac001, color='limegreen', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\parallel$, $0.01\epsilon_{LJ}$')
-    ax2.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='c', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\perp$, $10\epsilon_{LJ}$')
-    ax2.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='limegreen', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\parallel$, $10\epsilon_{LJ}$')
+    ax2.errorbar(spacings_ljfac10, Dzs_ljfac10, yerr=Dzs_stdv_ljfac10, color='darkblue', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\perp$, $10\epsilon_{LJ}$')
+    ax2.errorbar(spacings_ljfac10, Dparallel_ljfac10, yerr=Dparallel_stdv_ljfac10, color='springgreen', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\parallel$, $10\epsilon_{LJ}$')
     if moresigmas==True:
         ax2.set(xlabel=r'$d/\sigma_b$', ylabel=r'Diffusion constant $D/D_{bulk}$', fontsize=20)
     else:
         ax2.set(xlabel=r'$d$', ylabel=r'Diffusion constant $D/D_{bulk}$', fontsize=20)
-    ax2.axis([0,10,0,0.7]) # 6e-7 before we divided by Dbulk
+    ax2.axis([0,15.2,0,1.1])
     ax2.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     #fig.tight_layout()
     plt.show()

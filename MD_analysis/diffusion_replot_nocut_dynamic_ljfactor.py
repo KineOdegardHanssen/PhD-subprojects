@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt                     # To plot
 import numpy as np
 import math
 
-ljfactor = 10
+ljfactor = 10 # 0.01 # 
 
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
-spacing = 4.5
+spacing = 3
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)
