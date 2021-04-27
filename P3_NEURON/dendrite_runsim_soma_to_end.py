@@ -221,7 +221,7 @@ for model_idx in range(len(all_models)):
         neuron.h.psection()
         sectype = sec.name().split("[")[0]
         secname = sec.name()
-        print('sec.name:',sec.name())
+        #print('sec.name:',sec.name())
         if sectype=="dend":
             lengths.append(sec.L)
     time = cell.tvec # time
@@ -236,7 +236,6 @@ for model_idx in range(len(all_models)):
         dendriteindices.append(kpath)
         endindices.append(kpath[-1])
     
-    endlengths   = [] # Use NEURON for this. Need to search.
     finalindices = []
     finaldendrites = [] # For testing
     for jstr in range(Ndendsecs):
@@ -249,7 +248,20 @@ for model_idx in range(len(all_models)):
         if appearances<=1: # Should be 1, at least. More if thisendindex is not a dendrite endpoint
             finalindices.append(thisendindex)
             finaldendrites.append(jstr)
-            #endlengths.append(neuron.h.distance(0,thisendindex)) # Should give the path distance to soma
+            #endlengths.append(neuron.h.distance(0,sec=neuron.h.dend[jstr](1))) # Should give the path distance to soma
+    
+    Nends        = len(finaldendrites) 
+    endlengths   = np.zeros(Nends)
+    for istr in range(Nends): # For all ends
+        tip_sec_name = "dend[%s]"%(finaldendrites[istr])
+        endpath      = return_idxs_on_path(cell, tip_sec_name)
+        for jstr in range(Ndendsecs):
+            if endindices[jstr] in endpath:
+                print('Path',istr,', section',jstr, '; path:',endpath, '; endindex checked:',endindices[jstr], '; tip_sec_name:', tip_sec_name)
+                endlengths[istr]+=lengths[jstr]
+                # Some test accounting for measuring in the middle of last element? (If wee do that...)
+    
+    # But WHERE on the section do we measure the membrane potential?
     
     
     #idxs = cell.get_idx(section="dend[6]")
@@ -363,5 +375,39 @@ for model_idx in range(len(all_models)):
     
     plt.show()#savefig('help.p')
     print('finaldendrites:',finaldendrites)
+    print('endlengths:',endlengths)
+    
+    endind2 = 0
+    running_ind=0
+    distlen = np.zeros(Nends)
+    seglen  = np.zeros(Nends)
+    endlengths_corr = np.zeros(Nends)
+    for sec in neuron.h.allsec():
+        #neuron.h.psection()
+        sectype = sec.name().split("[")[0]
+        secname = sec.name()
+        if sectype=="soma":
+            somasec = sec
+        if sectype=="dend":
+            for fd in finaldendrites:
+                if running_ind==fd:
+                    section = sec
+                    #distlen[endind2] = neuron.h.distance(somasec(0.5),section(1)) # Absolute end
+                    distlen[endind2] = neuron.h.distance(somasec(0.5),section(0.99)) # Midpt of last seg
+                    seglen[endind2]  = sec.L/sec.nseg
+                    endlengths_corr[endind2] = endlengths[endind2]-0.5*seglen[endind2]
+                    endind2+=1
+            running_ind+=1
+    print('endlengths:',endlengths)
+    print('distlen:',distlen)
+    print('endlengths_corr:',endlengths_corr)
+    print('endlengths_corr-distlen:',endlengths_corr-distlen)
+    
+    
+    outfilename = "figures/%i/endlengths.txt" % testmodel
+    outfile     = open(outfilename,'w')
+    for iline in range(Nends):
+        outfile.write('%.16e' % distlen[iline])
+    outfile.close()
     
     #sys.exit()
