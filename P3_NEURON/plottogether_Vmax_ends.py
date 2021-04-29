@@ -95,7 +95,7 @@ for i in range(Nt):
         vmax_totavgs[j] += vmax_totavgs_thismodel[j]
         vmax_totrmss[j] += vmax_totrmss_thismodel[j]**2
         print('In loop: vmax_totavgs:',vmax_totavgs,'; vmax_totrmss:',vmax_totrmss,)
-vmax_totavgs /= Ncm
+vmax_totavgs /= Nt
 vmax_totrmss = np.sqrt(vmax_totrmss/(Nt-1))
 
     
