@@ -145,7 +145,7 @@ def return_allen_cell_model(model_folder):
         sectype = sec.name().split("[")[0]
         if sectype=="soma":
             somasec = sec
-            pnncutoff = 3*sec.L # What Sverre said
+            pnncutoff = 3.5*sec.L # What Sverre said
 
     for sec in neuron.h.allsec():
         sec.insert("pas")
@@ -165,6 +165,10 @@ def return_allen_cell_model(model_folder):
                         exec("sec.cm = {}".format(cm_changecm))
                     else:
                         exec("sec.cm = {}".format(cm_dend))
+                        for seg in sec:
+                            if neuron.h.distance(somasec(0.5),seg)<=pnncutoff: # Have no idea if any of this will work...
+                                exec("seg.cm = {}".format(cm_changecm)) # 
+                                
                 if sectype=="axon": # Works
                     exec("sec.cm = {}".format(cm_axon))
                 if not sec_dict["mechanism"] == "":
@@ -312,4 +316,29 @@ for model_idx in range(len(all_models)):
     t1 = tm.clock()
     print('Run time:', t1-t0)
     print('changecm:',cm_changecm, '; cm_dend:', cm_dend, '; cm_axon:', cm_axon)
+
+    pnncutoff = 0
+    for sec in neuron.h.allsec(): # Extracting soma length
+        sectype = sec.name().split("[")[0]
+        if sectype=="soma":
+            somasec = sec
+            pnncutoff = 3.5*sec.L # What Sverre said
+    
+    for sec in neuron.h.allsec(): # Testing
+        sectype = sec.name().split("[")[0]
+        if sectype=="soma":
+            somasec = sec
+        if sectype=="dend": # Works
+            section = sec
+            dist = neuron.h.distance(somasec(0.5),section(1))
+            if dist<=pnncutoff:
+                print(sec.name(), '; dist:',dist, '; Cm:',sec.cm)
+            else:
+                segnr = 0
+                for seg in sec:
+                    segnr+=1
+                    dist2 = neuron.h.distance(somasec(0.5),seg)
+                    print(sec.name(), '; distsegm:',dist2, '; segnr:',segnr, ' of ',sec.nseg,'; Cm:',seg.cm)
+                print('---------------------')
+                            
     sys.exit()
