@@ -9,7 +9,7 @@ import os
 import glob
 import copy
 
-plottest = False # True
+plottest = False # True # 
 
 Nrms = 10 # Number of averages 
 
@@ -43,13 +43,18 @@ def avg_and_rms(x):
     rmsx = np.sqrt(rmsx/(N-1))
     return avgx,rmsx
 
+# Settings
+Nconfigs    = 1000
+Nplacements = 11
 #
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-long    = False
-spacing = 10
+testmode = False
+long    = False #True
+spacing = 7
 psigma  = 1
+density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 print('spacing:', spacing)
 print('psigma:', psigma)
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
@@ -62,30 +67,39 @@ plotdirs = False
 test_sectioned = False
 zhigh          = 250
 zlow           = -50
-confignrs    = np.arange(1,1001)
-Nseeds       = len(confignrs)      # So that I don't have to change that much
-N_per_rms    = int(Nseeds/Nrms)
-maxz_av      = 0
-filescounter = 0
+confignrs      = np.arange(1,Nconfigs+1)
+beadplacements = np.arange(Nplacements-1,Nplacements+1) # DEPRECATED
+Nconfigs       = len(confignrs)      # So that I don't have to change that much
+Nplacements    = len(beadplacements)
+Nfiles         = Nconfigs*Nplacements
+N_per_rms      = int(Nconfigs/Nrms)
+filescounter   = 0
 if long==True:
-    Nsteps   = 10001
+    Nsteps     = 10001
 else:
-    Nsteps   = 2001 # 20001 before
-#writeevery  = 10                  # I'm writing to file every this many time steps
-unitlength   = 1e-9
-unittime     = 2.38e-11 # s
-timestepsize = 0.00045*unittime#*writeevery
+    Nsteps     = 2001
+#writeevery    = 10                  # I'm writing to file every this many time steps
+unitlength     = 1e-9
+unittime       = 2.38e-11 # s
+timestepsize   = 0.00045*unittime#*writeevery
+Npartitions    = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
+minlength      = int(floor(Nsteps/Npartitions)) # For sectioning the data
+gatheredconfignrs = np.arange(1,Nfiles+1) # For some old printing
 print('timestepsize:', timestepsize)
 
-endlocation_in = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/Brush/Sigma_bead_' % damp+str(psigma) + '/'
-endlocation    = endlocation_in +'Nocut/'
-filestext      = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
-# Text files
-outfilename    = endlocation+'diffusion'+filestext+'_better_rms_Nestimates%i.txt' % Nrms
-metaname       = endlocation+'diffusion_metadata'+filestext+'_better_rms_Nestimates%i.txt' % Nrms
+basepath        = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/Spacing'+str(spacing)+'/'
+location_config = basepath + 'Radius1/Initial_configs/Before_bead/'
+basepath        = basepath + 'Radius' + str(psigma) + '/'
+endlocation     = basepath + 'Nocut/'
 
+print('End location:', endlocation)
+
+filestext   = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(beadplacements[0])+'to'+str(beadplacements[-1])
+
+# Text files
+outfilename = endlocation+'diffusion'+filestext+'_better_rms_Nestimates%i.txt' % Nrms
 # Plots
-plotname       = endlocation+filestext+'_nocut_better_rms_Nestimates%i_compare.png' % Nrms
+plotname    = endlocation+'_nocut_better_rms_Nestimates%i_compare.png' % Nrms
 
 
 ## Getting interval to perform the fit:
@@ -97,9 +111,9 @@ endindex      = int(line.split()[1])
 rangefile.close()
 
 
-## Setting arrays
 # These are all squared:
 # All together:
+allRs     = []
 alldxs    = []
 alldys    = []
 alldzs    = []
@@ -111,17 +125,11 @@ tot_averagedz2s = np.zeros(Nsteps)
 tot_averagedparallel2 = np.zeros(Nsteps) # Distances, squared
 tot_average_counter   = np.zeros(Nsteps)
 
-# Separated by seed:
-Rs_byseed    = []
-dxs_byseed   = []
-dys_byseed   = []
-dzs_byseed   = []
-gamma_byseed = []
-times_byseed = []
-Nins         = []
-#
-# This is not squared, obviously:
-alltimes  = []
+Nins          = []
+
+linestart_data = 22
+skippedfiles = 0
+unphysical   = 0
 
 for j in range(Nrms):
     configbase = N_per_rms*j+1
@@ -137,26 +145,28 @@ for j in range(Nrms):
     for k in range(N_per_rms):
         confignr = k+configbase
         print('On config number:', confignr)
+   
         if long==True:
-            infilename_free = endlocation_in+'long/'+'freeatom_confignr'+str(confignr)+'_long.lammpstrj'
+            infilename_free = basepath+'long/'+'freeatom_confignr'+str(confignr)+'_beadplacement10_long.lammpstrj'
         else:
-            infilename_free = endlocation_in+'freeatom_confignr'+str(confignr)+'.lammpstrj'
-    
-        # Read in:
-        #### Automatic part
-        ## Find the extent of the polymers: Max z-coord of beads in the chains
+            infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement10.lammpstrj'
+        
         try:
             infile_free = open(infilename_free, "r")
         except:
             try:
-                infilename_free = endlocation_in+'long/'+'freeatom_confignr'+str(confignr)+'.lammpstrj'
+                if long==True:
+                    infilename_free = basepath+'long/'+'freeatom_confignr'+str(confignr)+'_beadplacement11_long.lammpstrj'
+                else:
+                   infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement11.lammpstrj'
                 infile_free = open(infilename_free, "r")
             except:
-                print('Oh, lammpstrj-file! Where art thou?')
+                print('file name that failed:', infilename_free)
+                skippedfiles += 1
                 continue # Skipping this file if it does not exist
-        # Moving on, if the file
+        filescounter += 1
         
-        ## Find the position of the free bead: # I reuse quite a bit of code here...
+        # Moving on, if the file exists
         lines = infile_free.readlines() # This takes some time
         # Getting the number of lines, etc.
         totlines = len(lines)         # Total number of lines
@@ -176,6 +186,9 @@ for j in range(Nrms):
         # Setting arrays for treatment:
         
         # Setting arrays for treatment:
+        vx = [] # x-component of the velocity. 
+        vy = []
+        vz = []
         positions = [] # Fill with xu,yu,zu-coordinates. One position for each time step. # We have the same time step for the whole of the simulation. Can bother with time later
         times     = [] # Not useful anymore?
         
@@ -187,16 +200,16 @@ for j in range(Nrms):
         zs_fortesting = []
         while i<totlines:
             words = lines[i].split()
-            if (words[0]=='ITEM:'):
+            if words[0]=='ITEM:':
                 if words[1]=='TIMESTEP':
                     words2 = lines[i+1].split() # The time step is on the next line
                     t = float(words2[0])
                     times.append(t)
                     i+=skiplines
                 elif words[1]=='NUMBER': # These will never kick in. 
-                    i+=1
+                    i+=7
                 elif words[1]=='BOX':
-                    i+=1
+                    i+=5
                 elif words[1]=='ATOMS':
                     i+=1
             elif len(words)<8:
@@ -212,6 +225,9 @@ for j in range(Nrms):
                 y        = float(words[4])
                 z        = float(words[5])
                 positions.append(np.array([x,y,z]))
+                vx.append(float(words[6]))
+                vy.append(float(words[7]))
+                vz.append(float(words[8]))
                 zs_fortesting.append(z)
                 counter+=1
                 i+=1
@@ -225,15 +241,22 @@ for j in range(Nrms):
         time_end = time.process_time()
         
         if max(zs_fortesting)>zhigh:
+            if testmode==True:
+                print('Cut, max')
+            unphysical+=1
             continue
         if min(zs_fortesting)<zlow:
+            if testmode==True:
+                print('Cut, min')
+            unphysical+=1
             continue
         
-        filescounter += 1
-        
-        # I do not take into account that the free bead can enter the polymer grid and then exit again. If that happens, there might be discontinuities or weird kinks in the data (if you look at the graphs...) # I do not have this in my test-dataset. Maybe make the bead lighter and see what happens?
-        
+        if len(zs_fortesting)!=Nsteps: # Something is wrong with the file. Skip
+            print('Warning! File error!')
+            skippedfiles+=1
+            continue
         Nin   = Nsteps
+        
         #######
         # Will divide into several walks with different starting points later on
         # Should store for RMS too? ... Then I need to have more starting points or more time frames.
@@ -264,7 +287,12 @@ for j in range(Nrms):
             dx2  = dx*dx
             dy2  = dy*dy
             dz2  = dz*dz
-            # Averages, this batch of files:
+            # All together:
+            allRs.append(R2)
+            alldxs.append(dx2)
+            alldys.append(dy2)
+            alldzs.append(dz2)
+            # Averages:
             averageR2s[i] +=R2   # Distance
             averagedx2s[i]+=dx2
             averagedy2s[i]+=dy2
@@ -282,19 +310,11 @@ for j in range(Nrms):
             tot_averagedparallel2[i] += dx2+dy2 # Distances, squared
             tot_average_counter[i]+=1
             ################################
-            # Separated by seed:
-            R_temp.append(R2)
-            dx_temp.append(dx2)
-            dy_temp.append(dy2)
-            dz_temp.append(dz2)
-            step_temp.append(i)
+        
         
         Nins.append(Nin)
-    
-    print('filescounter:', filescounter)
-    
-    # Calculating averages:
-    
+
+
     Ninbrush = Nsteps # Default, in case it does not exit the brush
     for i in range(1,Nsteps):
         counter = average_counter[i]
@@ -310,8 +330,8 @@ for j in range(Nrms):
             averagedys[i]/=counter
             averagedzs[i]/=counter
         else:
-           Ninbrush = i-1
-           break
+            Ninbrush = i-1
+            break
     
     times_single      = times_single[0:Ninbrush]
     times_single_real = times_single_real[0:Ninbrush]
@@ -325,7 +345,7 @@ for j in range(Nrms):
     averagedxs = averagedxs[0:Ninbrush]
     averagedys = averagedys[0:Ninbrush]
     averagedzs = averagedzs[0:Ninbrush]
-    
+
     print('len(averageR2s):',len(averageR2s))
     print('Nsteps:', Nsteps)
     
@@ -456,9 +476,17 @@ plt.tight_layout()
 plt.legend(loc='upper left')
 plt.savefig(plotname)
 
-plt.show()
 
-#print('counters:',average_counter)
+print('counters:',tot_average_counter)
 
 print('spacing:', spacing)
 print('psigma:', psigma)
+
+print('Testing/error search:')
+print('average_counter[1]:', average_counter[1])
+'''
+for i in range(len(average_counter)):
+    print(i,' average_counter:', average_counter[i])
+'''
+print('unphysical:',unphysical)
+plt.show()
