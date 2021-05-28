@@ -51,17 +51,17 @@ else:
     bulkfilename = bulkfilename +'_uncut.txt'
 
 ## Files to read
-brushfilename_dyn  = endlocation + 'D_vs_d_better_rms_Nintervals%i.txt' % Nintervals
-brushfilename_stat = endlocation_static + 'D_vs_d_static_better_rms_Nintervals%i.txt' % Nintervals
+brushfilename_dyn  = endlocation + 'D_vs_d_better_rms_Nestimates%i.txt' % Nintervals
+brushfilename_stat = endlocation_static + 'D_vs_d_static_better_rms_Nestimates%i.txt' % Nintervals
 ## Files to write to
 if big==False:
-    plotname     = endlocation_static+'Dd_dyn_vs_stat_noDR_better_rms_Nintervals%i.png' % Nintervals
-    plotname_cut = endlocation_static+'Dd_dyn_vs_stat_cut_noDR_better_rms_Nintervals%i.png' % Nintervals
-    plotname_twoinone = endlocation_static+'Dd_dyn_vs_stat_noDR_twoinone_better_rms_Nintervals%i.png' % Nintervals
+    plotname     = endlocation_static+'Dd_dyn_vs_stat_noDR_better_rms_Nestimates%i.png' % Nintervals
+    plotname_cut = endlocation_static+'Dd_dyn_vs_stat_cut_noDR_better_rms_Nestimates%i.png' % Nintervals
+    plotname_twoinone = endlocation_static+'Dd_dyn_vs_stat_noDR_twoinone_better_rms_Nestimates%i.png' % Nintervals
 else:
-    plotname     = endlocation_static+'Dd_dyn_vs_stat_big_noDR_better_rms_Nintervals%i.png' % Nintervals
-    plotname_cut = endlocation_static+'Dd_dyn_vs_stat_cut_big_noDR_better_rms_Nintervals%i.png' % Nintervals
-    plotname_twoinone = endlocation_static+'Dd_dyn_vs_stat_big_noDR_twoinone_better_rms_Nintervals%i.png' % Nintervals
+    plotname     = endlocation_static+'Dd_dyn_vs_stat_big_noDR_better_rms_Nestimates%i.png' % Nintervals
+    plotname_cut = endlocation_static+'Dd_dyn_vs_stat_cut_big_noDR_better_rms_Nestimates%i.png' % Nintervals
+    plotname_twoinone = endlocation_static+'Dd_dyn_vs_stat_big_noDR_twoinone_better_rms_Nestimates%i.png' % Nintervals
 
 # Dynamic sims:
 brushfile_dyn = open(brushfilename_dyn, 'r')

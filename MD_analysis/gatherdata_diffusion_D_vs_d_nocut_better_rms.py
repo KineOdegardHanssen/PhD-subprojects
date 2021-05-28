@@ -71,13 +71,13 @@ if bulkdiffusion==True:
 else:
     parentfolder = 'Brush/'
     systemtype   = 'brush'
-    filestext    = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])
+    filestext    = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])
 
 endlocation_out = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/'+parentfolder+'Sigma_bead_' +str(psigma) + '/Nocut/'
-outfilename  = endlocation_out+'D_vs_d_better_rms_Nintervals%i.txt' % Nintervals
-plotname     = endlocation_out+'D_vs_d_better_rms_Nintervals%i.png' % Nintervals
-plotname_fit = endlocation_out+'D_vs_d_fit_better_rms_Nintervals%i.png' % Nintervals
-indfilename  = endlocation_out+'D_vs_d_fitindices_better_rms_Nintervals%i.txt' % Nintervals
+outfilename  = endlocation_out+'D_vs_d_better_rms_Nestimates%i.txt' % Nintervals
+plotname     = endlocation_out+'D_vs_d_better_rms_Nestimates%i.png' % Nintervals
+plotname_fit = endlocation_out+'D_vs_d_fit_better_rms_Nestimates%i.png' % Nintervals
+indfilename  = endlocation_out+'D_vs_d_fitindices_better_rms_Nestimates%i.txt' % Nintervals
 
 outfile = open(outfilename, 'w')
 outfile.write('d   D_R2   sigmaD_R2  b_R2 sigmab_R2; D_z2  sigmaD_z2 b_z2  sigmaD_z2; D_par2 sigmaD_par2  b_par2  sigmab_par2\n')
@@ -88,8 +88,8 @@ indexfile.write('Start_index_R     end_index_R     Start_index_ort     end_index
 for i in range(N):
     spacing = spacings[i]
     endlocation_in   = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/Spacing'+str(spacing)+'/damp%i_diffseedLgv/' % damp +parentfolder+ 'Sigma_bead_' +str(psigma) + '/Nocut/'
-    infilename = endlocation_in+'diffusion'+filestext+'_nocut_better_rms_Nintervals%i.txt' % Nintervals
-    metaname   = endlocation_in+'diffusion_metadata'+filestext+'_nocut_better_rms_Nintervals%i.txt' % Nintervals
+    infilename = endlocation_in+'diffusion'+filestext+'_better_rms_Nestimates%i.txt' % Nintervals
+    metaname   = endlocation_in+'indices_for_fit_better_rms.txt'
 
     #print('infilename_all:',infilename_all)
     
@@ -116,9 +116,9 @@ for i in range(N):
     outfile.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacing, DRs[i], DRs_stdv[i],  Dzs[i], Dzs_stdv[i], Dparallel[i], Dparallel_stdv[i]))
     
     metafile   = open(metaname, 'r')
-    mlines     = metafile.readlines()
-    startindex = int(mlines[0].split()[1])
-    endindex   = int(mlines[1].split()[1])
+    mline      = metafile.readlines()[0]
+    startindex = int(mline.split()[0])
+    endindex   = int(mline.split()[1])
     metafile.close()
     indexfile.write('%.2f %i %i\n' % (spacing, startindex, endindex))
 

@@ -26,14 +26,14 @@ def rmsd(x,y):
     delta = np.sqrt(delta/(Nx-1))
     return delta
 # Settings
-Nconfigs    = 100
-Nplacements = 10
+Nconfigs    = 1000
+Nplacements = 11
 #
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-long    = True
-spacing = 4.5
+long    = False # True # 
+spacing = 1.25
 psigma  = 1
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 print('spacing:', spacing)
@@ -50,7 +50,7 @@ zlow           = -50
 testh          = 20     # For transport measurements
 test_sectioned = False
 confignrs      = np.arange(1,Nconfigs+1)
-beadplacements = np.arange(1,Nplacements+1)
+beadplacements = np.arange(Nplacements-1,Nplacements+1)
 Nconfigs       = len(confignrs)      # So that I don't have to change that much
 Nplacements    = len(beadplacements)
 Nfiles         = Nconfigs*Nplacements
@@ -60,13 +60,15 @@ if long==True:
     Nsteps   = 10001
 else:
     Nsteps   = 2001 # 20001 before
-#writeevery   = 10                  # I'm writing to file every this many time steps
+Nshort         = 2001
+#writeevery    = 10                  # I'm writing to file every this many time steps
 unitlength     = 1e-9
 unittime       = 2.38e-11 # s
 timestepsize   = 0.00045*unittime#*writeevery
 Npartitions    = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
 minlength      = int(floor(Nsteps/Npartitions)) # For sectioning the data
 gatheredconfignrs = np.arange(1,Nfiles+1) # For some old printing
+Nunphys        = 0
 print('timestepsize:', timestepsize)
 
 basepath        = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/Spacing'+str(spacing)+'/'
@@ -85,6 +87,7 @@ outfilename_noexit       = endlocation+'noexitzs'
 outfilename_skippedfiles = endlocation+'skippedfiles'
 outfilename_exittimes    = endlocation+'exittimes'
 outfilename_th           = endlocation+'ths_h%i' % testh +filestext
+outfilename_unphys       = endlocation+'Nunphysical'
 
 # Plots
 plotname             = endlocation+filestext
@@ -120,6 +123,7 @@ if long==True:
     outfilename_skippedfiles = outfilename_skippedfiles +'_long.txt'
     outfilename_exittimes    = outfilename_exittimes +'_long.txt'
     outfilename_th           = outfilename_th +'_long.txt'
+    outfilename_unphys       = outfilename_unphys + '_long.txt'
     
     # Plots
     plotname             = plotname +'_long.png'
@@ -154,6 +158,7 @@ else:
     outfilename_skippedfiles = outfilename_skippedfiles +'.txt'
     outfilename_exittimes    = outfilename_exittimes +'.txt'
     outfilename_th           = outfilename_th +'.txt'
+    outfilename_unphys       = outfilename_unphys + '.txt'
     
     # Plots
     plotname             = plotname +'.png'
@@ -251,6 +256,8 @@ outfile_noexit.write('confignr zs\n')
 
 outfile_skippedfiles = open(outfilename_skippedfiles, 'w')
 
+outfile_unphys       = open(outfilename_unphys, 'w')
+
 for confignr in confignrs:
     print('On config number:', confignr)
     
@@ -327,7 +334,7 @@ for confignr in confignrs:
         except:
             if long==True:
                 try:
-                    infilename_free = basepath+'long/'+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'.lammpstrj'
+                    infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'.lammpstrj'
                     infile_free = open(infilename_free, "r")
                 except:
                     print('Oh, data-file! Where art thou?')
@@ -404,6 +411,9 @@ for confignr in confignrs:
                 counter+=1
                 i+=1
         infile_free.close()
+        if len(times)<Nshort:
+            skippedfiles+=1
+            continue
         dt = (times[1]-times[0])*timestepsize # This might be handy
         #print('dt:', dt)
         #print('times[1]-times[0]:',times[1]-times[0])
@@ -413,8 +423,15 @@ for confignr in confignrs:
         time_end = time.process_time()
         
         if max(zs_fortesting)>zhigh:
+            Nunphys+=1
             continue
         if min(zs_fortesting)<zlow:
+            Nunphys+=1
+            continue
+        
+        if len(zs_fortesting)<Nshort: # So that we don't have to manually delete broken files
+            print('Warning! File error!')
+            skippedfiles+=1
             continue
             
         Nread += 1 # Counting the number of files we analyze
@@ -627,6 +644,8 @@ for confignr in confignrs:
         #time_afterpartition = time.process_time()
         #print('Time, partitioning:',time_afterpartition-time_beforepartition)
 
+outfile_unphys.write('%i' % Nunphys)
+outfile_unphys.close()
 outfile_cuts.close()
 outfile_noexit.close()
 outfile_skippedfiles.close()
@@ -853,7 +872,7 @@ Nloop = len(positions)
 if len(times_single)<Nloop:
     Nloop = len(times_single)
 '''
-for i in range(len(times_single)):
+for i in range(Nshort):
     pos = positions[i]
     xthis = pos[0]
     ythis = pos[1]
@@ -897,7 +916,7 @@ plt.savefig(plotname_traj_yz)
 
 ### x, y, z vs t
 plt.figure(figsize=(6,5))
-plt.plot(times_single, xpos, '.')
+plt.plot(xpos, '.')#(times_single, xpos, '.')
 plt.xlabel(r't')
 plt.ylabel(r'x')
 plt.title('x(t)')
@@ -905,7 +924,7 @@ plt.tight_layout()
 plt.savefig(plotname_traj_xt)
 
 plt.figure(figsize=(6,5))
-plt.plot(times_single, ypos, '.')
+plt.plot(ypos, '.')#(times_single, ypos, '.')
 plt.xlabel(r't')
 plt.ylabel(r'y')
 plt.title('y(t)')
@@ -913,7 +932,7 @@ plt.tight_layout()
 plt.savefig(plotname_traj_yt)
 
 plt.figure(figsize=(6,5))
-plt.plot(times_single, zpos, '.')
+plt.plot(zpos, '.')#(times_single, zpos, '.')
 plt.xlabel(r't')
 plt.ylabel(r'z')
 plt.title('z(t)')
@@ -1236,3 +1255,5 @@ plt.xlabel(r'$t_h$ [s]')
 plt.ylabel(r'No. of exits/$N_{sims}$') 
 plt.title('$t_h$ in system size by d = %i nm, h = %.1f' % (spacing,testh)) 
 plt.savefig(plotname_th_hist)
+
+print('Spacing:',spacing,', Nunphys:',Nunphys)

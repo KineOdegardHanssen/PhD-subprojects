@@ -51,8 +51,8 @@ damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
 testmode = False
-long    = False #True
-spacing = 7
+long    = True #False #
+spacing = 4.5
 psigma  = 1
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
 print('spacing:', spacing)
@@ -78,12 +78,13 @@ if long==True:
     Nsteps     = 10001
 else:
     Nsteps     = 2001
+Nshort         = 2001
 #writeevery    = 10                  # I'm writing to file every this many time steps
 unitlength     = 1e-9
 unittime       = 2.38e-11 # s
 timestepsize   = 0.00045*unittime#*writeevery
 Npartitions    = 5 # For extracting more walks from one file (but is it really such a random walk here...?)
-minlength      = int(floor(Nsteps/Npartitions)) # For sectioning the data
+minlength      = int(floor(Nshort/Npartitions)) # For sectioning the data
 gatheredconfignrs = np.arange(1,Nfiles+1) # For some old printing
 print('timestepsize:', timestepsize)
 
@@ -118,12 +119,12 @@ alldxs    = []
 alldys    = []
 alldzs    = []
 # Averages:
-tot_averageR2s  = np.zeros(Nsteps)   # Distances, squared
-tot_averagedx2s = np.zeros(Nsteps)
-tot_averagedy2s = np.zeros(Nsteps)
-tot_averagedz2s = np.zeros(Nsteps)
-tot_averagedparallel2 = np.zeros(Nsteps) # Distances, squared
-tot_average_counter   = np.zeros(Nsteps)
+tot_averageR2s  = np.zeros(Nshort)   # Distances, squared
+tot_averagedx2s = np.zeros(Nshort)
+tot_averagedy2s = np.zeros(Nshort)
+tot_averagedz2s = np.zeros(Nshort)
+tot_averagedparallel2 = np.zeros(Nshort) # Distances, squared
+tot_average_counter   = np.zeros(Nshort)
 
 Nins          = []
 
@@ -133,15 +134,15 @@ unphysical   = 0
 
 for j in range(Nrms):
     configbase = N_per_rms*j+1
-    averageR2s  = np.zeros(Nsteps)   # Distances, squared
-    averagedx2s = np.zeros(Nsteps)
-    averagedy2s = np.zeros(Nsteps)
-    averagedz2s = np.zeros(Nsteps)
-    averagedxs  = np.zeros(Nsteps)   # Distances, non-squared
-    averagedys  = np.zeros(Nsteps)
-    averagedzs  = np.zeros(Nsteps)
-    averagedparallel2 = np.zeros(Nsteps) # Distances, squared
-    average_counter   = np.zeros(Nsteps)
+    averageR2s  = np.zeros(Nshort)   # Distances, squared
+    averagedx2s = np.zeros(Nshort)
+    averagedy2s = np.zeros(Nshort)
+    averagedz2s = np.zeros(Nshort)
+    averagedxs  = np.zeros(Nshort)   # Distances, non-squared
+    averagedys  = np.zeros(Nshort)
+    averagedzs  = np.zeros(Nshort)
+    averagedparallel2 = np.zeros(Nshort) # Distances, squared
+    average_counter   = np.zeros(Nshort)
     for k in range(N_per_rms):
         confignr = k+configbase
         print('On config number:', confignr)
@@ -151,19 +152,23 @@ for j in range(Nrms):
         else:
             infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement10.lammpstrj'
         
-        try:
+        if confignr>100:
+            infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement11.lammpstrj'
+        
+        try: # A lot of nested try and excepts. Some are unneccessary now.
             infile_free = open(infilename_free, "r")
         except:
             try:
-                if long==True:
-                    infilename_free = basepath+'long/'+'freeatom_confignr'+str(confignr)+'_beadplacement11_long.lammpstrj'
-                else:
-                   infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement11.lammpstrj'
+                infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement11.lammpstrj'
                 infile_free = open(infilename_free, "r")
             except:
-                print('file name that failed:', infilename_free)
-                skippedfiles += 1
-                continue # Skipping this file if it does not exist
+                try:
+                    infilename_free = basepath+'long/freeatom_confignr'+str(confignr)+'_beadplacement10.lammpstrj'
+                    infile_free = open(infilename_free, "r")
+                except:
+                    print('file name that failed:', infilename_free)
+                    skippedfiles += 1
+                    continue # Skipping this file if it does not exist
         filescounter += 1
         
         # Moving on, if the file exists
@@ -232,11 +237,15 @@ for j in range(Nrms):
                 counter+=1
                 i+=1
         infile_free.close()
+        if len(zs_fortesting)<Nshort: # Something is wrong with the file. Skip
+            print('Warning! File error!')
+            skippedfiles+=1
+            continue
         dt = (times[1]-times[0])*timestepsize # This might be handy
         #print('dt:', dt)
         #print('times[1]-times[0]:',times[1]-times[0])
-        times_single = np.arange(Nsteps)#*dt
-        times_single_real = np.arange(Nsteps)*dt
+        times_single = np.arange(Nshort)#*dt
+        times_single_real = np.arange(Nshort)*dt
         
         time_end = time.process_time()
         
@@ -251,11 +260,7 @@ for j in range(Nrms):
             unphysical+=1
             continue
         
-        if len(zs_fortesting)!=Nsteps: # Something is wrong with the file. Skip
-            print('Warning! File error!')
-            skippedfiles+=1
-            continue
-        Nin   = Nsteps
+        Nin   = Nshort #Nsteps ## No need for quite so many steps.
         
         #######
         # Will divide into several walks with different starting points later on
@@ -315,8 +320,8 @@ for j in range(Nrms):
         Nins.append(Nin)
 
 
-    Ninbrush = Nsteps # Default, in case it does not exit the brush
-    for i in range(1,Nsteps):
+    Ninbrush = Nshort # Default, in case it does not exit the brush
+    for i in range(1,Nshort):
         counter = average_counter[i]
         if counter!=0:
             # Distance squared
@@ -347,7 +352,7 @@ for j in range(Nrms):
     averagedzs = averagedzs[0:Ninbrush]
 
     print('len(averageR2s):',len(averageR2s))
-    print('Nsteps:', Nsteps)
+    print('Nshort:', Nshort)
     
     ## Average, SI units:
     # Distance:
@@ -421,7 +426,7 @@ for j in range(Nrms):
        plt.title('Test, z')
        plt.show()
     
-for i in range(1,Nsteps):
+for i in range(1,Nshort):
     counter = tot_average_counter[i]
     if counter!=0:
         # Distance squared

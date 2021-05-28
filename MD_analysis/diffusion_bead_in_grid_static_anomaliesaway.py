@@ -21,19 +21,19 @@ def rmsd(x,y):
         delta += (x[i]-y[i])*(x[i]-y[i])
     delta = np.sqrt(delta/(Nx-1))
     return delta
+
 # Settings
-Nconfigs    = 100#100
-Nplacements = 10#10
+Nconfigs    = 1000
+Nplacements = 11
 #
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
 testmode = False
-long    = True
-spacing = 4.5
-psigma  = 1   #.5
+long    = False #  True # 
+spacing = 1
+psigma  = 1
 density = 0.238732414637843 # Yields mass 1 for bead of radius 1 nm
-#pmass   = 1.5
 print('spacing:', spacing)
 print('psigma:', psigma)
 # I need to set the file name in an easier way, but for now I just use this:  ## Might want to add a loop too, if I have more files...
@@ -46,18 +46,20 @@ plotdirs = False
 test_sectioned = False
 zhigh          = 250
 zlow           = -50
-confignrs      = np.arange(1,Nconfigs+1)#300)#20)#101)#1001)#22)
-beadplacements = np.arange(1,Nplacements+1)
+confignrs      = np.arange(1,Nconfigs+1)
+beadplacements = np.arange(Nplacements-1,Nplacements+1)
 Nconfigs       = len(confignrs)      # So that I don't have to change that much
 Nplacements    = len(beadplacements)
 Nfiles         = Nconfigs*Nplacements
 maxz_av        = 0
 filescounter   = 0
 if long==True:
-    Nsteps         = 10001
+    Nsteps     = 10001
 else:
-    Nsteps         = 2001
-#writeevery   = 10                  # I'm writing to file every this many time steps
+    Nsteps     = 2001
+Nshort         = 2001
+Nthis          = Nsteps
+#writeevery    = 10                  # I'm writing to file every this many time steps
 unitlength     = 1e-9
 unittime       = 2.38e-11 # s
 timestepsize   = 0.00045*unittime#*writeevery
@@ -243,6 +245,7 @@ alltimes  = []
 
 linestart_data = 22
 skippedfiles = 0
+unphysical   = 0
 
 outfile_alltrajs_z   = open(outfilename_alltrajs_z, 'w')
 outfile_alltrajs_R2  = open(outfilename_alltrajs_R2, 'w')
@@ -281,7 +284,7 @@ for confignr in confignrs:
     Nall = int(words[0])
     N    = Nall
     
-    i           = linestart_data
+    i    = linestart_data
     
     # For now: Only find the largest z-position among the beads in the chain. # Otherwise I must read off the atom number (will do that with the free bead anyways.)
     maxz = -1000 # No z-position is this small.
@@ -290,26 +293,30 @@ for confignr in confignrs:
     counter = 0
     while i<totlines:
         words = lines[i].split()
-        if len(words)!=0: # Some double testing going on...
+        i+=1
+        if len(words)!=0:
+            if words[0]=='Velocities':
+                break
+            #print('words:',words)
             # Find properties
-            # Order:  id  type mol ux  uy  uz  vx  vy   vz
-            #         [0] [1]  [2] [3] [4] [5] [6] [7]  [8]
+            # Order:  id  mol type charge ux  uy  uz  shiftx shifty shiftz
+            #         [0] [1] [2]   [3]   [4] [5] [6]  [7]    [8]    [9]
             ind      = int(words[0])-1 # Atom ids go from zero to N-1.
+            #molID   = int(words[1])
             atomtype = int(words[2]) 
-            #molID    = int(words[2])
             z        = float(words[6])
             if atomtype==2: # Moving polymer bead. Test if this is larger than maxz:
+                #print('ind:',ind,'; atomtype:',atomtype, '; z:',z)
                 if z>maxz:
                     maxz = z
-            i+=1
-        else:
-            break
+        #else: # Seems like this goes wrong, somehow, so I'm trying the thing above instead
+        #    break # Maybe this works fine after all... But so does the above code
     extent_polymers = maxz
     maxz_av += maxz
     infile_config.close()
     
     for beadplacement in beadplacements:
-        #print('beadplacement:', beadplacement, ' of', Nplacements)
+        Nthis = Nsteps
         print('config nr', confignr,', beadplacement:', beadplacement, ' of', Nplacements)
         ## Find the position of the free bead:
         if long==True:
@@ -320,10 +327,15 @@ for confignr in confignrs:
         try:
             infile_free = open(infilename_free, "r")
         except:
-            print('Oh, data-file! Where art thou?')
-            print('file name that failed:', infilename_config)
-            skippedfiles += 1
-            continue # Skipping this file if it does not exist
+            try:
+                infilename_free = basepath+'freeatom_confignr'+str(confignr)+'_beadplacement'+str(beadplacement)+'.lammpstrj'
+                infile_free = open(infilename_free, "r")
+                Nthis = Nshort
+            except:
+                print('Oh, traj-file! Where art thou?')
+                print('file name that failed:', infilename_free)
+                skippedfiles += 1
+                continue # Skipping this file if it does not exist
         filescounter += 1
         
         # Moving on, if the file exists
@@ -392,6 +404,9 @@ for confignr in confignrs:
                 counter+=1
                 i+=1
         infile_free.close()
+        if len(times)<Nshort:
+            skippedfiles+=1
+            continue
         dt = (times[1]-times[0])*timestepsize # This might be handy
         #print('dt:', dt)
         #print('times[1]-times[0]:',times[1]-times[0])
@@ -403,13 +418,21 @@ for confignr in confignrs:
         if max(zs_fortesting)>zhigh:
             if testmode==True:
                 print('Cut, max')
+            unphysical+=1
             continue
         if min(zs_fortesting)<zlow:
             if testmode==True:
                 print('Cut, min')
+            unphysical+=1
             continue
-         
-        Nin   = Nsteps
+        print('confignr', confignr, 'works')
+        
+        ####if len(zs_fortesting)!=Nsteps: # Something is wrong with the file. Skip
+        if len(zs_fortesting)<Nshort: # So that we don't have to manually delete broken files
+            print('Warning! File error!')
+            skippedfiles+=1
+            continue
+        Nin   = Nthis
         
         #######
         # Will divide into several walks with different starting points later on
@@ -811,7 +834,9 @@ Nloop = len(positions)
 if len(times_single)<Nloop:
     Nloop = len(times_single)
 '''
-for i in range(len(times_single)):
+
+print('len(times_single):',len(times_single))
+for i in range(Nshort-1):
     pos = positions[i]
     xthis = pos[0]
     ythis = pos[1]
@@ -855,24 +880,24 @@ plt.savefig(plotname_traj_yz)
 
 ### x, y, z vs t
 plt.figure(figsize=(6,5))
-plt.plot(times_single, xpos, '.')
-plt.xlabel(r't')
+plt.plot(xpos, '.')#(times_single, xpos, '.')
+plt.xlabel(r'time index')
 plt.ylabel(r'x')
 plt.title('x(t)')
 plt.tight_layout()
 plt.savefig(plotname_traj_xt)
 
 plt.figure(figsize=(6,5))
-plt.plot(times_single, ypos, '.')
-plt.xlabel(r't')
+plt.plot(ypos, '.')#(times_single, ypos, '.')
+plt.xlabel(r'time index')
 plt.ylabel(r'y')
 plt.title('y(t)')
 plt.tight_layout()
 plt.savefig(plotname_traj_yt)
 
 plt.figure(figsize=(6,5))
-plt.plot(times_single, zpos, '.')
-plt.xlabel(r't')
+plt.plot(zpos, '.')#(times_single, zpos, '.')
+plt.xlabel(r'time index')
 plt.ylabel(r'z')
 plt.title('z(t)')
 plt.tight_layout()
@@ -1141,8 +1166,10 @@ print('spacing:', spacing)
 print('psigma:', psigma)
 
 print('Testing/error search:')
-print('average_counter[1):', average_counter[1])
+print('average_counter[1]:', average_counter[1])
 '''
 for i in range(len(average_counter)):
     print(i,' average_counter:', average_counter[i])
 '''
+print('unphysical:',unphysical)
+#plt.show()

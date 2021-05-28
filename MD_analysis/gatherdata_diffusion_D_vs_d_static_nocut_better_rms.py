@@ -31,8 +31,8 @@ N        = len(spacings)
 # Input booleans for file selection:
 bulkdiffusion = False
 substrate     = False
-confignrs     = np.arange(1,101)
-bpl           = np.arange(1,11)
+confignrs     = np.arange(1,1001)
+bpl           = np.arange(10,12)
 
 # Ds
 DRs = np.zeros(N)
@@ -71,14 +71,14 @@ if bulkdiffusion==True:
 else:
     parentfolder = 'Brush/'
     systemtype   = 'brush'
-    filestext    = '_config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(bpl[0])+'to'+str(bpl[-1])
+    filestext    = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_placements'+str(bpl[0])+'to'+str(bpl[-1])
 
 basepath_base   = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_staticbrush/'
 endlocation_out = basepath_base+'D_vs_d/Nocut/'
-outfilename  = endlocation_out+'D_vs_d_static_better_rms_Nintervals%i.txt' % Nintervals
-plotname     = endlocation_out+'D_vs_d_static_better_rms_Nintervals%i.png' % Nintervals
-plotname_fit = endlocation_out+'D_vs_d_fit_static_better_rms_Nintervals%i.png' % Nintervals
-indfilename  = endlocation_out+'D_vs_d_fitindices_static_better_rms_Nintervals%i.txt' % Nintervals
+outfilename  = endlocation_out+'D_vs_d_static_better_rms_Nestimates%i.txt' % Nintervals
+plotname     = endlocation_out+'D_vs_d_static_better_rms_Nestimates%i.png' % Nintervals
+plotname_fit = endlocation_out+'D_vs_d_fit_static_better_rms_Nestimates%i.png' % Nintervals
+indfilename  = endlocation_out+'D_vs_d_fitindices_static_better_rms_Nestimates%i.txt' % Nintervals
 
 outfile = open(outfilename, 'w')
 outfile.write('d   D_R2   sigmaD_R2  b_R2 sigmab_R2; D_z2  sigmaD_z2 b_z2  sigmaD_z2; D_par2 sigmaD_par2  b_par2  sigmab_par2\n')
@@ -91,9 +91,13 @@ for i in range(N):
     basepath        = basepath_base+'Spacing'+str(spacing)+'/Radius' + str(psigma) + '/'
     endlocation_in  = basepath + 'Nocut/'
     
-    infilename = endlocation_in+'diffusion'+filestext+'_better_rms_Nintervals%i.txt' % Nintervals
-    metaname   = endlocation_in+'diffusion_metadata'+filestext+'_better_rms_Nintervals%i.txt' % Nintervals
-
+    infilename = endlocation_in+'diffusion'+filestext+'_better_rms_Nestimates%i.txt' % Nintervals
+    metaname   = endlocation_in+'indices_for_fit_better_rms.txt'
+    ## Old: ####
+    #infilename = endlocation_in+'diffusion'+filestext+'_better_rms_Nintervals%i.txt' % Nintervals
+    #metaname   = endlocation_in+'diffusion_metadata'+filestext+'_better_rms_Nintervals%i.txt' % Nintervals
+    ############
+    
     #print('infilename_all:',infilename_all)
     
     # Read in:
@@ -119,9 +123,9 @@ for i in range(N):
     outfile.write('%.5e %.5e %.5e %.5e %.5e %.5e %.5e\n' % (spacing, DRs[i], DRs_stdv[i],  Dzs[i], Dzs_stdv[i], Dparallel[i], Dparallel_stdv[i]))
     
     metafile = open(metaname, 'r')
-    mlines   = metafile.readlines()
-    startindex   = int(mlines[0].split()[1])
-    endindex     = int(mlines[1].split()[1])
+    mline    = metafile.readlines()[0]
+    startindex   = int(mline.split()[0])
+    endindex     = int(mline.split()[1])
     metafile.close()
     indexfile.write('%.2f %i %i\n' % (spacing,startindex, endindex))
 

@@ -47,8 +47,8 @@ def avg_and_rms(x):
 damp = 10
 # Input parameters for file selection: # I will probably add more, but I want to make sure the program is running first
 popup_plots = False
-long    = False
-spacing = 10
+long    = False # True # 
+spacing = 8 
 psigma  = 1
 print('spacing:', spacing)
 print('psigma:', psigma)
@@ -216,6 +216,8 @@ for j in range(Nrms):
                 counter+=1
                 i+=1
         infile_free.close()
+        if len(zs_fortesting)<Nsteps:
+            continue
         dt = (times[1]-times[0])*timestepsize # This might be handy
         #print('dt:', dt)
         #print('times[1]-times[0]:',times[1]-times[0])
