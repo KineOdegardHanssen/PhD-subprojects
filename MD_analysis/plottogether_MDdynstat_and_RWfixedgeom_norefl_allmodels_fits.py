@@ -587,25 +587,29 @@ Ds_rm_stat_perp = catex_resin_membr(fitds,sigma_rm_stat_perp)
 Ds_rm_dyn_perp  = catex_resin_membr(fitds,sigma_rm_dyn_perp)
 Ds_rm_f_perp    = catex_resin_membr(fitds,sigma_rm_f_perp)
 
-#### : Did not have in this plot before (only before I did curve_fit)
-## Plotting:# Need fancy plotting. Find code and redo fancy plotting.
-plt.figure(figsize=(8,5))
+#### Plotting:
+##params = {'mathtext.default': 'regular' }  # Ditch this.   
+###plt.rcParams.update(params)
+
+plt.figure(figsize=(6,4))
 ax = plt.subplot(111)
-ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, label=r'$D_\parallel$, dyn.')
+ax.plot(spacings_dyn, Dparallel_dyn, color='g', label=r'$D_\parallel$, dyn.')
+ax.fill_between(spacings_dyn, Dparallel_dyn+Dparallel_stdv_dyn, Dparallel_dyn-Dparallel_stdv_dyn, facecolor='g', alpha=0.2)
 #ax.plot(dg,DRW, color='b', label='Random walk, fixed geom., no refl.')
-ax.plot(fitds,Ds_op_dyn, '--', label=r'Ordered packings, $\sigma=$%.2f' % sigma_op_dyn) # I have most values for the dynamic brush
-ax.plot(fitds,Ds_hr_dyn, '--', label=r'Hyperbola of revolution, $\sigma=$%.2f' % sigma_hr_dyn) # 2
-#ax.plot(fitds,Ds_nm_dyn, '--', label=r'Not monosized spheres, $\sigma=$%.2f' % sigma_nm_dyn)  ####
-#ax.plot(fitds,Ds_ps_dyn, '--', label=r'Monodisperse sphere packing, $\sigma=$%.2f' % sigma_ps_dyn) ####
-#ax.plot(fitds,Ds_os_dyn, '--', label=r'Overlapping spheres, $\sigma=$%.2f' % sigma_os_dyn) # 5 ####
-#ax.plot(fitds,Ds_oc_dyn, '--', label=r'Overlapping cylinders, $\sigma=$%.2f' % sigma_oc_dyn)  ####
-ax.plot(fitds,Ds_hc_dyn, '--', label=r'Heterogeneous catalyst, $\sigma=$%.2f' % sigma_hc_dyn) 
-ax.plot(fitds,Ds_rm_dyn, '--', label=r'Cation-exchange resin memrane, $\sigma=$%.2f' % sigma_rm_dyn) 
+ax.plot(fitds,Ds_op_dyn, '--', label=r'Ordered packings') # I have most values for the dynamic brush
+ax.plot(fitds,Ds_hr_dyn, '-.', label=r'Hyperbola of revolution') # 2
+#ax.plot(fitds,Ds_nm_dyn, '--', label=r'Not monosized spheres')  ####
+#ax.plot(fitds,Ds_ps_dyn, '--', label=r'Monodisperse sphere packing') ####
+#ax.plot(fitds,Ds_os_dyn, '--', label=r'Overlapping spheres') # 5 ####
+#ax.plot(fitds,Ds_oc_dyn, '--', label=r'Overlapping cylinders')  ####
+ax.plot(fitds,Ds_hc_dyn, ':', label=r'Heterogeneous catalyst') 
+line1, = ax.plot(fitds,Ds_rm_dyn, '--,', label=r'Cation-exchange resin memrane') 
+line1.set_dashes([2, 2, 10, 2])  # 2pt line, 2pt break, 10pt line, 2pt break
 # Add more plotting! # Need to beware of negative porosity for some!
-plt.xlabel(r'$d$ [nm]')
-plt.ylabel(r'$D/D_{bulk}$')
-#plt.title(r'$D/D_{bulk}$ vs $d$')
-plt.legend(loc='lower right', prop={'size': 12})
+plt.xlabel(r'$d$ (nm)', fontsize=12)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+#plt.title(r'$D/D_{\mathregular{bulk}}$ vs $d$')
+plt.legend(loc='lower right', prop={'size': 10})
 plt.tight_layout()
 #box = ax.get_position()
 #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -614,22 +618,24 @@ plt.savefig(plotname_d_dyn)
 
 
 ## Plotting:# Need fancy plotting. Find code and redo fancy plotting.
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(6,4))
 ax = plt.subplot(111)
-ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', capsize=2, label=r'$D_\parallel$, stat.')
-ax.plot(fitds,Ds_op_stat, '--', label=r'Ordered packings, $\sigma=$%.2f' % sigma_op_stat) # I have most values for the dynamic brush
-ax.plot(fitds,Ds_hr_stat, '--', label=r'Hyperbola of revolution, $\sigma=$%.2f' % sigma_hr_stat) # 2
-#ax.plot(fitds,Ds_nm_stat, '--', label=r'Not monosized spheres, $\sigma=$%.2f' % sigma_nm_stat)  ####
-#ax.plot(fitds,Ds_ps_stat, '--', label=r'Monodisperse sphere packing, $\sigma=$%.2f' % sigma_ps_stat) ####
-#ax.plot(fitds,Ds_os_stat, '--', label=r'Overlapping spheres, $\sigma=$%.2f' % sigma_os_stat) # 5 ####
-#ax.plot(fitds,Ds_oc_stat, '--', label=r'Overlapping cylinders, $\sigma=$%.2f' % sigma_oc_stat)  ####
-ax.plot(fitds,Ds_hc_stat, '--', label=r'Heterogeneous catalyst, $\sigma=$%.2f' % sigma_hc_stat) 
-ax.plot(fitds,Ds_rm_stat, '--', label=r'Cation-exchange resin memrane, $\sigma=$%.2f' % sigma_rm_stat) 
+ax.plot(spacings_stat, Dparallel_stat, color='limegreen',label=r'$D_\parallel$, stat.')
+ax.fill_between(spacings_stat, Dparallel_stat+Dparallel_stdv_stat, Dparallel_stat-Dparallel_stdv_stat, facecolor='limegreen', alpha=0.2)
+ax.plot(fitds,Ds_op_stat, '--', label=r'Ordered packings') # I have most values for the dynamic brush
+ax.plot(fitds,Ds_hr_stat, '-.', label=r'Hyperbola of revolution') # 2
+#ax.plot(fitds,Ds_nm_stat, '--', label=r'Not monosized spheres')  ####
+#ax.plot(fitds,Ds_ps_stat, '--', label=r'Monodisperse sphere packing') ####
+#ax.plot(fitds,Ds_os_stat, '--', label=r'Overlapping spheres') # 5 ####
+#ax.plot(fitds,Ds_oc_stat, '--', label=r'Overlapping cylinders')  ####
+ax.plot(fitds,Ds_hc_stat, ':', label=r'Heterogeneous catalyst') 
+line1, = ax.plot(fitds,Ds_rm_stat, '--,', label=r'Cation-exchange resin memrane') 
+line1.set_dashes([2, 2, 10, 2])  # 2pt line, 2pt break, 10pt line, 2pt break
 # Add more plotting! # Need to beware of negative porosity for some!
-plt.xlabel(r'$d$ [nm]')
-plt.ylabel(r'$D/D_{bulk}$')
-#plt.title(r'$D/D_{bulk}$ vs $d$')
-plt.legend(loc='lower right', prop={'size': 12})
+plt.xlabel(r'$d$ (nm)')
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+#plt.title(r'$D/D_{\mathregular{bulk}}$ vs $d$', fontsize=12)
+plt.legend(loc='lower right', prop={'size': 10})
 plt.tight_layout()
 #box = ax.get_position()
 #ax.set_position([box.x0, box.y0, box.width * 0.6, box.height])
@@ -640,21 +646,23 @@ plt.savefig(plotname_d_stat)
 
 
 ## Plotting:# Need fancy plotting. Find code and redo fancy plotting.
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(6,4))
 ax = plt.subplot(111)
-ax.errorbar(spacings_f, Dparallel_f, yerr=Dparallel_stdv_f, color='springgreen', capsize=2, label=r'$D_\parallel$, straight')
-ax.plot(fitds,Ds_op_f, '--', label=r'Ordered packings, $\sigma=$%.2f' % sigma_op_f) # I have most values for the dynamic brush
-ax.plot(fitds,Ds_hr_f, '--', label=r'Hyperbola of revolution, $\sigma=$%.2f' % sigma_hr_f) # 2
-#ax.plot(fitds,Ds_nm_f, '--', label=r'Not monosized spheres, $\sigma=$%.2f' % sigma_nm_f)  ####
-#ax.plot(fitds,Ds_ps_f, '--', label=r'Monodisperse sphere packing, $\sigma=$%.2f' % sigma_ps_f) ####
-#ax.plot(fitds,Ds_os_f, '--', label=r'Overlapping spheres, $\sigma=$%.2f' % sigma_os_f) # 5 ####
-#ax.plot(fitds,Ds_oc_f, '--', label=r'Overlapping cylinders, $\sigma=$%.2f' % sigma_oc_f)  ####
-ax.plot(fitds,Ds_hc_f, '--', label=r'Heterogeneous catalyst, $\sigma=$%.2f' % sigma_hc_f)
-ax.plot(fitds,Ds_rm_f, '--', label=r'Cation-exchange resin memrane, $\sigma=$%.2f' % sigma_rm_f) 
+ax.plot(spacings_f, Dparallel_f, color='springgreen', label=r'$D_\parallel$, straight')
+ax.fill_between(spacings_f, Dparallel_f+Dparallel_stdv_f, Dparallel_f-Dparallel_stdv_f, facecolor='springgreen', alpha=0.2)
+ax.plot(fitds,Ds_op_f, '--', label=r'Ordered packings') # I have most values for the dynamic brush
+ax.plot(fitds,Ds_hr_f, '-.', label=r'Hyperbola of revolution') # 2
+#ax.plot(fitds,Ds_nm_f, '--', label=r'Not monosized spheres')  ####
+#ax.plot(fitds,Ds_ps_f, '--', label=r'Monodisperse sphere packing') ####
+#ax.plot(fitds,Ds_os_f, '--', label=r'Overlapping spheres') # 5 ####
+#ax.plot(fitds,Ds_oc_f, '--', label=r'Overlapping cylinders')  ####
+ax.plot(fitds,Ds_hc_f, ':', label=r'Heterogeneous catalyst')
+line1, = ax.plot(fitds,Ds_rm_f, '--,', label=r'Cation-exchange resin memrane') 
+line1.set_dashes([2, 2, 10, 2])  # 2pt line, 2pt break, 10pt line, 2pt break
 # Add more plotting! # Need to beware of negative porosity for some!
-plt.xlabel(r'$d$ [nm]')
-plt.ylabel(r'$D/D_{bulk}$')
-plt.legend(loc='lower right', prop={'size': 12})
+plt.xlabel(r'$d$ (nm)', fontsize=12)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.legend(loc='lower right', prop={'size': 10})
 plt.tight_layout()
 #box = ax.get_position()
 #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -662,59 +670,65 @@ plt.tight_layout()
 plt.savefig(plotname_d_f)
 
 #... Do the same, men for perp.
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(6,4))
 ax = plt.subplot(111)
-ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='g', capsize=2, label=r'$D_\perp$, dyn.')
-ax.plot(fitds,Ds_op_dyn_perp, '--', label=r'Ordered packings, $\sigma=$%.2f' % sigma_op_dyn_perp) # I have most values for the dynamic brush
-ax.plot(fitds,Ds_hr_dyn_perp, '--', label=r'Hyperbola of revolution, $\sigma=$%.2f' % sigma_hr_dyn_perp) # 2
-#ax.plot(fitds,Ds_nm_dyn_perp, '--', label=r'Not monosized spheres, $\sigma=$%.2f' % sigma_nm_dyn_perp)  ####
-#ax.plot(fitds,Ds_ps_dyn_perp, '--', label=r'Monodisperse sphere packing, $\sigma=$%.2f' % sigma_ps_dyn_perp) ####
-#ax.plot(fitds,Ds_os_dyn_perp, '--', label=r'Overlapping spheres, $\sigma=$%.2f' % sigma_os_dyn_perp) # 5 ####
-#ax.plot(fitds,Ds_oc_dyn_perp, '--', label=r'Overlapping cylinders, $\sigma=$%.2f' % sigma_oc_dyn_perp)  ####
-ax.plot(fitds,Ds_hc_dyn_perp, '--', label=r'Heterogeneous catalyst, $\sigma=$%.2f' % sigma_hc_dyn_perp) 
-ax.plot(fitds,Ds_rm_dyn_perp, '--', label=r'Cation-exchange resin memrane, $\sigma=$%.2f' % sigma_rm_dyn_perp) 
+ax.plot(spacings_dyn, Dzs_dyn, color='g', label=r'$D_\perp$, dyn.')
+ax.fill_between(spacings_dyn, Dzs_dyn+Dzs_stdv_dyn, Dzs_dyn-Dzs_stdv_dyn, facecolor='g', alpha=0.2)
+ax.plot(fitds,Ds_op_dyn_perp, '--', label=r'Ordered packings') # I have most values for the dynamic brush
+ax.plot(fitds,Ds_hr_dyn_perp, '-.', label=r'Hyperbola of revolution') # 2
+#ax.plot(fitds,Ds_nm_dyn_perp, '--', label=r'Not monosized spheres')  ####
+#ax.plot(fitds,Ds_ps_dyn_perp, '--', label=r'Monodisperse sphere packing') ####
+#ax.plot(fitds,Ds_os_dyn_perp, '--', label=r'Overlapping spheres') # 5 ####
+#ax.plot(fitds,Ds_oc_dyn_perp, '--', label=r'Overlapping cylinders')  ####
+ax.plot(fitds,Ds_hc_dyn_perp, ':', label=r'Heterogeneous catalyst') 
+line1, = ax.plot(fitds,Ds_rm_dyn_perp, '--,', label=r'Cation-exchange resin memrane') 
+line1.set_dashes([2, 2, 10, 2])  # 2pt line, 2pt break, 10pt line, 2pt break
 # Add more plotting! # Need to beware of negative porosity for some!
-plt.xlabel(r'$d$ [nm]')
-plt.ylabel(r'$D/D_{bulk}$')
-plt.legend(loc='lower right', prop={'size': 12})
+plt.xlabel(r'$d$ (nm)', fontsize=12)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.legend(loc='lower right', prop={'size': 10})
 plt.tight_layout()
 plt.savefig(plotname_d_dyn_perp)
 
 
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(6,4))
 ax = plt.subplot(111)
-ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='limegreen', capsize=2, label=r'$D_\perp$, stat.')
-ax.plot(fitds,Ds_op_stat_perp, '--', label=r'Ordered packings, $\sigma=$%.2f' % sigma_op_stat_perp) # I have most values for the dynamic brush
-ax.plot(fitds,Ds_hr_stat_perp, '--', label=r'Hyperbola of revolution, $\sigma=$%.2f' % sigma_hr_stat_perp) # 2
-#ax.plot(fitds,Ds_nm_stat_perp, '--', label=r'Not monosized spheres, $\sigma=$%.2f' % sigma_nm_stat_perp)  ####
-#ax.plot(fitds,Ds_ps_stat_perp, '--', label=r'Monodisperse sphere packing, $\sigma=$%.2f' % sigma_ps_stat_perp) ####
-#ax.plot(fitds,Ds_os_stat_perp, '--', label=r'Overlapping spheres, $\sigma=$%.2f' % sigma_os_stat_perp) # 5 ####
-#ax.plot(fitds,Ds_oc_stat_perp, '--', label=r'Overlapping cylinders, $\sigma=$%.2f' % sigma_oc_stat_perp)  ####
-ax.plot(fitds,Ds_hc_stat_perp, '--', label=r'Heterogeneous catalyst, $\sigma=$%.2f' % sigma_hc_stat_perp) 
-ax.plot(fitds,Ds_rm_stat_perp, '--', label=r'Cation-exchange resin memrane, $\sigma=$%.2f' % sigma_rm_stat_perp) 
+ax.errorbar(spacings_stat, Dzs_stat, color='limegreen', label=r'$D_\perp$, stat.')
+ax.fill_between(spacings_stat, Dzs_stat+Dzs_stdv_stat, Dzs_stat-Dzs_stdv_stat, facecolor='limegreen', alpha=0.2)
+ax.plot(fitds,Ds_op_stat_perp, '--', label=r'Ordered packings') # I have most values for the dynamic brush
+ax.plot(fitds,Ds_hr_stat_perp, '-.', label=r'Hyperbola of revolution') # 2
+#ax.plot(fitds,Ds_nm_stat_perp, '--', label=r'Not monosized spheres')  ####
+#ax.plot(fitds,Ds_ps_stat_perp, '--', label=r'Monodisperse sphere packing') ####
+#ax.plot(fitds,Ds_os_stat_perp, '--', label=r'Overlapping spheres') # 5 ####
+#ax.plot(fitds,Ds_oc_stat_perp, '--', label=r'Overlapping cylinders')  ####
+ax.plot(fitds,Ds_hc_stat_perp, ':', label=r'Heterogeneous catalyst') 
+line1, = ax.plot(fitds,Ds_rm_stat_perp, '--,', label=r'Cation-exchange resin memrane') 
+line1.set_dashes([2, 2, 10, 2])  # 2pt line, 2pt break, 10pt line, 2pt break
 # Add more plotting! # Need to beware of negative porosity for some!
-plt.xlabel(r'$d$ [nm]')
-plt.ylabel(r'$D/D_{bulk}$')
-#plt.title(r'$D/D_{bulk}$ vs $d$')
-plt.legend(loc='lower right', prop={'size': 12})
+plt.xlabel(r'$d$ (nm)', fontsize=12)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+#plt.title(r'$D/D_{\mathregular{bulk}}$ vs $d$')
+plt.legend(loc='lower right', prop={'size': 10})
 plt.tight_layout()
 plt.savefig(plotname_d_stat_perp)
 
-plt.figure(figsize=(8,5))
+plt.figure(figsize=(6,4))
 ax = plt.subplot(111)
-ax.errorbar(spacings_f, Dzs_f, yerr=Dzs_stdv_f, color='springgreen', capsize=2, label=r'$D_\perp$, straight')
-ax.plot(fitds,Ds_op_f_perp, '--', label=r'Ordered packings, $\sigma=$%.2f' % sigma_op_f_perp) # I have most values for the dynamic brush
-ax.plot(fitds,Ds_hr_f_perp, '--', label=r'Hyperbola of revolution, $\sigma=$%.2f' % sigma_hr_f_perp) # 2
-#ax.plot(fitds,Ds_nm_f_perp, '--', label=r'Not monosized spheres, $\sigma=$%.2f' % sigma_nm_f_perp)  ####
-#ax.plot(fitds,Ds_ps_f_perp, '--', label=r'Monodisperse sphere packing, $\sigma=$%.2f' % sigma_ps_f_perp) ####
-#ax.plot(fitds,Ds_os_f_perp, '--', label=r'Overlapping spheres, $\sigma=$%.2f' % sigma_os_f_perp) # 5 ####
-#ax.plot(fitds,Ds_oc_f_perp, '--', label=r'Overlapping cylinders, $\sigma=$%.2f' % sigma_oc_f_perp)  ####
-ax.plot(fitds,Ds_hc_f_perp, '--', label=r'Heterogeneous catalyst, $\sigma=$%.2f' % sigma_hc_f_perp)
-ax.plot(fitds,Ds_rm_f_perp, '--', label=r'Cation-exchange resin memrane, $\sigma=$%.2f' % sigma_rm_f_perp) 
+ax.errorbar(spacings_f, Dzs_f, color='springgreen', label=r'$D_\perp$, straight')
+ax.fill_between(spacings_f, Dzs_f+Dzs_stdv_f, Dzs_f-Dzs_stdv_f, facecolor='g', alpha=0.2)
+ax.plot(fitds,Ds_op_f_perp, '--', label=r'Ordered packings') # I have most values for the dynamic brush
+ax.plot(fitds,Ds_hr_f_perp, '-.', label=r'Hyperbola of revolution') # 2
+#ax.plot(fitds,Ds_nm_f_perp, '--', label=r'Not monosized spheres')  ####
+#ax.plot(fitds,Ds_ps_f_perp, '--', label=r'Monodisperse sphere packing') ####
+#ax.plot(fitds,Ds_os_f_perp, '--', label=r'Overlapping spheres') # 5 ####
+#ax.plot(fitds,Ds_oc_f_perp, '--', label=r'Overlapping cylinders')  ####
+ax.plot(fitds,Ds_hc_f_perp, ':', label=r'Heterogeneous catalyst')
+line1, = ax.plot(fitds,Ds_rm_f_perp, '--,', label=r'Cation-exchange resin memrane') 
+line1.set_dashes([2, 2, 10, 2])  # 2pt line, 2pt break, 10pt line, 2pt break
 # Add more plotting! # Need to beware of negative porosity for some!
-plt.xlabel(r'$d$ [nm]')
-plt.ylabel(r'$D/D_{bulk}$')
-plt.legend(loc='lower right', prop={'size': 12})
+plt.xlabel(r'$d$ (nm)', fontsize=12)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.legend(loc='lower right', prop={'size': 10})
 plt.tight_layout()
 #box = ax.get_position()
 #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])

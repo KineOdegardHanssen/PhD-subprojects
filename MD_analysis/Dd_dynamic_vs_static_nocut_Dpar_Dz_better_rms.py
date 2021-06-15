@@ -245,22 +245,30 @@ else:
 maxforsmall*=1.05
 print('maxforsmall:',maxforsmall)
 
+## Put matplotlib setting here?: # No. I do want italics in some equations.
+##params = {'mathtext.default': 'regular' }          
+##plt.rcParams.update(params)
+
 if big==False:
     plt.figure(figsize=(8,5))
-    ax = plt.subplot(111)
-    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', capsize=2, label=r'$D_\perp$, dyn.')
-    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, label=r'$D_\parallel$, dyn.')
-    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', capsize=2, label=r'$D_\perp$, stat.')
-    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', capsize=2, label=r'$D_\parallel$, stat.')
+    ax = plt.subplot(111)    
+    ax.plot(spacings_dyn, Dzs_dyn, '-o' , color='b',label=r'$D_\perp$, dyn.')
+    ax.plot(spacings_dyn, Dparallel_dyn, '-*', color='g', label=r'$D_\parallel$, dyn.')
+    ax.plot(spacings_stat, Dzs_stat, '-s', color='c', label=r'$D_\perp$, stat.')
+    ax.plot(spacings_stat, Dparallel_stat, '-d', color='limegreen',label=r'$D_\parallel$, stat.')
+    ax.fill_between(spacings_dyn, Dzs_dyn+Dzs_stdv_dyn, Dzs_dyn-Dzs_stdv_dyn, facecolor='b',alpha=0.2)
+    ax.fill_between(spacings_dyn, Dparallel_dyn+Dparallel_stdv_dyn, Dparallel_dyn-Dparallel_stdv_dyn, facecolor='g', alpha=0.2)
+    ax.fill_between(spacings_stat, Dzs_stat+Dzs_stdv_stat, Dzs_stat-Dzs_stdv_stat, facecolor='c', alpha=0.2)
+    ax.fill_between(spacings_stat, Dparallel_stat+Dparallel_stdv_stat, Dparallel_stat-Dparallel_stdv_stat, facecolor='limegreen',alpha=0.2)
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$')
     else:
-        plt.xlabel(r'$d$')
-    plt.ylabel(r'Diffusion constant $D$')
-    if moresigmas==True:
-        plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', y=1.03)
-    else:
-        plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', y=1.03)
+        plt.xlabel(r'$d$ (nm)')
+    plt.ylabel(r'$D/D_{\mathregular{bulk}}$')
+    #if moresigmas==True:
+    #    plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', y=1.03)
+    #else:
+    #    plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', y=1.03)
     ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -270,19 +278,23 @@ else:
     plt.rc('xtick', labelsize=20) 
     plt.rc('ytick', labelsize=20) 
     ax = plt.subplot(111)
-    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', linewidth=7.0, capsize=2, label=r'$D_\perp$, dyn.')
-    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
-    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, stat.')
-    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, stat.')
+    ax.plot(spacings_dyn, Dzs_dyn, '-o' , color='b',label=r'$D_\perp$, dyn.')
+    ax.plot(spacings_dyn, Dparallel_dyn, '-*', color='g', label=r'$D_\parallel$, dyn.')
+    ax.plot(spacings_stat, Dzs_stat, '-s', color='c', label=r'$D_\perp$, stat.')
+    ax.plot(spacings_stat, Dparallel_stat, '-d', color='limegreen',label=r'$D_\parallel$, stat.')
+    ax.fill_between(spacings_dyn, Dzs_dyn+Dzs_stdv_dyn, Dzs_dyn-Dzs_stdv_dyn, facecolor='b',alpha=0.2)
+    ax.fill_between(spacings_dyn, Dparallel_dyn+Dparallel_stdv_dyn, Dparallel_dyn-Dparallel_stdv_dyn, facecolor='g', alpha=0.2)
+    ax.fill_between(spacings_stat, Dzs_stat+Dzs_stdv_stat, Dzs_stat-Dzs_stdv_stat, facecolor='c', alpha=0.2)
+    ax.fill_between(spacings_stat, Dparallel_stat+Dparallel_stdv_stat, Dparallel_stat-Dparallel_stdv_stat, facecolor='limegreen',alpha=0.2)
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$', fontsize=20)
     else:
-        plt.xlabel(r'$d$', fontsize=20)
-    plt.ylabel(r'Diffusion constant $D$', fontsize=20)
-    if moresigmas==True:
-        plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', fontsize=28, y=1.03)
-    else:
-        plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', fontsize=28, y=1.03)
+        plt.xlabel(r'$d$ (nm)', fontsize=20)
+    plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=20)
+    #if moresigmas==True:
+    #    plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', fontsize=28, y=1.03)
+    #else:
+    #    plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', fontsize=28, y=1.03)
     ax.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -291,20 +303,24 @@ plt.savefig(plotname)
 
 if big==False:
     plt.figure(figsize=(6.4,5))
-    ax = plt.subplot(111)
-    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', capsize=2, label=r'$D_\perp$, dyn.')
-    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, label=r'$D_\parallel$, dyn.')
-    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', capsize=2, label=r'$D_\perp$, stat.')
-    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', capsize=2, label=r'$D_\parallel$, stat.')
+    ax = plt.subplot(111)    
+    ax.plot(spacings_dyn, Dzs_dyn, '-o' , color='b',label=r'$D_\perp$, dyn.')
+    ax.plot(spacings_dyn, Dparallel_dyn, '-*', color='g', label=r'$D_\parallel$, dyn.')
+    ax.plot(spacings_stat, Dzs_stat, '-s', color='c', label=r'$D_\perp$, stat.')
+    ax.plot(spacings_stat, Dparallel_stat, '-d', color='limegreen',label=r'$D_\parallel$, stat.')
+    ax.fill_between(spacings_dyn, Dzs_dyn+Dzs_stdv_dyn, Dzs_dyn-Dzs_stdv_dyn, facecolor='b',alpha=0.2)
+    ax.fill_between(spacings_dyn, Dparallel_dyn+Dparallel_stdv_dyn, Dparallel_dyn-Dparallel_stdv_dyn, facecolor='g', alpha=0.2)
+    ax.fill_between(spacings_stat, Dzs_stat+Dzs_stdv_stat, Dzs_stat-Dzs_stdv_stat, facecolor='c', alpha=0.2)
+    ax.fill_between(spacings_stat, Dparallel_stat+Dparallel_stdv_stat, Dparallel_stat-Dparallel_stdv_stat, facecolor='limegreen',alpha=0.2)
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$')
     else:
-        plt.xlabel(r'$d$')
-    plt.ylabel(r'Diffusion constant $D$')
-    if moresigmas==True:
-        plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes',  y=1.03)
-    else:
-        plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', y=1.03)
+        plt.xlabel(r'$d$ (nm)')
+    plt.ylabel(r'$D/D_{\mathregular{bulk}}$')
+    #if moresigmas==True:
+    #    plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes',  y=1.03)
+    #else:
+    #    plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', y=1.03)
     ax.axis([0,11,minforsmall,maxforsmall]) # 6e-7 before we divided by Dbulk
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     box = ax.get_position()
@@ -313,19 +329,23 @@ if big==False:
 else:
     plt.figure(figsize=(12.8,10))
     ax = plt.subplot(111)
-    ax.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', linewidth=7.0, capsize=2, label=r'$D_\perp$, dyn.')
-    ax.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
-    ax.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, stat.')
-    ax.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, stat.')
+    ax.plot(spacings_dyn, Dzs_dyn, '-o' , color='b',label=r'$D_\perp$, dyn.')
+    ax.plot(spacings_dyn, Dparallel_dyn, '-*', color='g', label=r'$D_\parallel$, dyn.')
+    ax.plot(spacings_stat, Dzs_stat, '-s', color='c', label=r'$D_\perp$, stat.')
+    ax.plot(spacings_stat, Dparallel_stat, '-d', color='limegreen',label=r'$D_\parallel$, stat.')
+    ax.fill_between(spacings_dyn, Dzs_dyn+Dzs_stdv_dyn, Dzs_dyn-Dzs_stdv_dyn, facecolor='b',alpha=0.2)
+    ax.fill_between(spacings_dyn, Dparallel_dyn+Dparallel_stdv_dyn, Dparallel_dyn-Dparallel_stdv_dyn, facecolor='g', alpha=0.2)
+    ax.fill_between(spacings_stat, Dzs_stat+Dzs_stdv_stat, Dzs_stat-Dzs_stdv_stat, facecolor='c', alpha=0.2)
+    ax.fill_between(spacings_stat, Dparallel_stat+Dparallel_stdv_stat, Dparallel_stat-Dparallel_stdv_stat, facecolor='limegreen',alpha=0.2)
     if moresigmas==True:
         plt.xlabel(r'$d/\sigma_b$', fontsize=20)
     else:
-        plt.xlabel(r'$d$', fontsize=20)
-    plt.ylabel(r'Diffusion constant $D$', fontsize=20)
-    if moresigmas==True:
-        plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', fontsize=28,  y=1.03)
-    else:
-        plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', fontsize=28, y=1.03)
+        plt.xlabel(r'$d$ (nm)', fontsize=20)
+    plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=20)
+    #if moresigmas==True:
+    #    plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', fontsize=28,  y=1.03)
+    #else:
+    #    plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', fontsize=28, y=1.03)
     ax.axis([0,11,minforsmall,maxforsmall]) # 6e-7 before we divided by Dbulk
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 plt.savefig(plotname_cut)
@@ -335,29 +355,36 @@ if big==False:
     print("Plottin it")
     #plt.figure(figsize=(16,5))
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,4))
+    #if moresigmas==True:
+    #    fig.suptitle('Diffusion constant $D/D_{\mathregular{bulk}}$ vs $d/\sigma_b$ for dynamic and static brushes')#, y=1.03)
+    #else:
+    #    fig.suptitle('Diffusion constant $D/D_{\mathregular{bulk}}$ vs $d$ for dynamic and static brushes')#, y=1.03)
+    ax1.plot(spacings_dyn, Dzs_dyn, '-o' , color='b',label=r'$D_\perp$, dyn.')
+    ax1.plot(spacings_dyn, Dparallel_dyn, '-*', color='g', label=r'$D_\parallel$, dyn.')
+    ax1.plot(spacings_stat, Dzs_stat, '-s', color='c', label=r'$D_\perp$, stat.')
+    ax1.plot(spacings_stat, Dparallel_stat, '-d', color='limegreen',label=r'$D_\parallel$, stat.')
+    ax1.fill_between(spacings_dyn, Dzs_dyn+Dzs_stdv_dyn, Dzs_dyn-Dzs_stdv_dyn, facecolor='b',alpha=0.2)
+    ax1.fill_between(spacings_dyn, Dparallel_dyn+Dparallel_stdv_dyn, Dparallel_dyn-Dparallel_stdv_dyn, facecolor='g', alpha=0.2)
+    ax1.fill_between(spacings_stat, Dzs_stat+Dzs_stdv_stat, Dzs_stat-Dzs_stdv_stat, facecolor='c', alpha=0.2)
+    ax1.fill_between(spacings_stat, Dparallel_stat+Dparallel_stdv_stat, Dparallel_stat-Dparallel_stdv_stat, facecolor='limegreen',alpha=0.2)
     if moresigmas==True:
-        fig.suptitle('Diffusion constant $D/D_{bulk}$ vs $d/\sigma_b$ for dynamic and static brushes')#, y=1.03)
+        ax1.set(xlabel=r'$d/\sigma_b$', ylabel='$D/D_{\mathregular{bulk}}$')
     else:
-        fig.suptitle('Diffusion constant $D/D_{bulk}$ vs $d$ for dynamic and static brushes')#, y=1.03)
-    ax1.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', capsize=2, label=r'$D_\perp$, dyn.')
-    ax1.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, label=r'$D_\parallel$, dyn.')
-    ax1.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', capsize=2, label=r'$D_\perp$, stat.')
-    ax1.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', capsize=2, label=r'$D_\parallel$, stat.')
-    if moresigmas==True:
-        ax1.set(xlabel=r'$d/\sigma_b$', ylabel='Diffusion constant $D/D_{bulk}$')
-    else:
-        ax1.set(xlabel=r'$d$', ylabel='Diffusion constant $D/D_{bulk}$')
+        ax1.set(xlabel=r'$d$ (nm)', ylabel='$D/D_{\mathregular{bulk}}$')
     ax1.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     ax1.legend(loc="lower right")
-    
-    ax2.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', capsize=2, fmt='.', label=r'$D_\perp$, dyn.')
-    ax2.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', capsize=2, fmt='.', label=r'$D_\parallel$, dyn.')
-    ax2.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', capsize=2, fmt='.', label=r'$D_\perp$, stat.')
-    ax2.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', capsize=2, fmt='.', label=r'$D_\parallel$, stat.')
+    ax2.plot(spacings_dyn, Dzs_dyn, '-o' , color='b',label=r'$D_\perp$, dyn.')
+    ax2.plot(spacings_dyn, Dparallel_dyn, '-*', color='g', label=r'$D_\parallel$, dyn.')
+    ax2.plot(spacings_stat, Dzs_stat, '-s', color='c', label=r'$D_\perp$, stat.')
+    ax2.plot(spacings_stat, Dparallel_stat, '-d', color='limegreen',label=r'$D_\parallel$, stat.')
+    ax2.fill_between(spacings_dyn, Dzs_dyn+Dzs_stdv_dyn, Dzs_dyn-Dzs_stdv_dyn, facecolor='b',alpha=0.2)
+    ax2.fill_between(spacings_dyn, Dparallel_dyn+Dparallel_stdv_dyn, Dparallel_dyn-Dparallel_stdv_dyn, facecolor='g', alpha=0.2)
+    ax2.fill_between(spacings_stat, Dzs_stat+Dzs_stdv_stat, Dzs_stat-Dzs_stdv_stat, facecolor='c', alpha=0.2)
+    ax2.fill_between(spacings_stat, Dparallel_stat+Dparallel_stdv_stat, Dparallel_stat-Dparallel_stdv_stat, facecolor='limegreen',alpha=0.2)
     if moresigmas==True:
-        ax2.set(xlabel=r'$d/\sigma_b$', ylabel=r'Diffusion constant $D/D_{bulk}$')
+        ax2.set(xlabel=r'$d/\sigma_b$', ylabel=r'$D/D_{\mathregular{bulk}}$')
     else:
-        ax2.set(xlabel=r'$d$', ylabel=r'Diffusion constant $D/D_{bulk}$')
+        ax2.set(xlabel=r'$d$ (nm)', ylabel=r'$D/D_{\mathregular{bulk}}$')
     ax2.axis([0,11,minforsmall,maxforsmall]) # 6e-7 before we divided by Dbulk
     #fig.tight_layout()
     plt.show()
@@ -365,28 +392,35 @@ if big==False:
 else:
     print("Plottin it")
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,4))
+    #if moresigmas==True:
+    #   fig.suptitle('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', fontsize=28, y=1.03)
+    #else:
+    #    fig.suptitle('Diffusion constant $D$ vs $d$ for dynamic and static brushes', fontsize=28, y=1.03)
+    ax1.plot(spacings_dyn, Dzs_dyn, '-o' , color='b',label=r'$D_\perp$, dyn.')
+    ax1.plot(spacings_dyn, Dparallel_dyn, '-*', color='g', label=r'$D_\parallel$, dyn.')
+    ax1.plot(spacings_stat, Dzs_stat, '-s', color='c', label=r'$D_\perp$, stat.')
+    ax1.plot(spacings_stat, Dparallel_stat, '-d', color='limegreen',label=r'$D_\parallel$, stat.')
+    ax1.fill_between(spacings_dyn, Dzs_dyn+Dzs_stdv_dyn, Dzs_dyn-Dzs_stdv_dyn, facecolor='b',alpha=0.2)
+    ax1.fill_between(spacings_dyn, Dparallel_dyn+Dparallel_stdv_dyn, Dparallel_dyn-Dparallel_stdv_dyn, facecolor='g', alpha=0.2)
+    ax1.fill_between(spacings_stat, Dzs_stat+Dzs_stdv_stat, Dzs_stat-Dzs_stdv_stat, facecolor='c', alpha=0.2)
+    ax1.fill_between(spacings_stat, Dparallel_stat+Dparallel_stdv_stat, Dparallel_stat-Dparallel_stdv_stat, facecolor='limegreen',alpha=0.2)
     if moresigmas==True:
-       fig.suptitle('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', fontsize=28, y=1.03)
+        ax1.set(xlabel=r'$d/\sigma_b$', ylabel=r'$D/D_{\mathregular{bulk}}$', fontsize=20)
     else:
-        fig.suptitle('Diffusion constant $D$ vs $d$ for dynamic and static brushes', fontsize=28, y=1.03)
-    ax1.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', linewidth=7.0, capsize=2, label=r'$D_\perp$, dyn.')
-    ax1.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', linewidth=7.0, capsize=2, label=r'$D_\parallel$, dyn.')
-    ax1.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', linewidth=7.0, capsize=2, label=r'$D_\perp$, stat.')
-    ax1.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', linewidth=7.0, capsize=2, label=r'$D_\parallel$, stat.')
-    if moresigmas==True:
-        ax1.set(xlabel=r'$d/\sigma_b$', ylabel=r'Diffusion constant $D/D_{bulk}$', fontsize=20)
-    else:
-        ax1.set(xlabel=r'$d$', ylabel=r'Diffusion constant $D/D_{bulk}$', fontsize=20)
+        ax1.set(xlabel=r'$d$ (nm)', ylabel=r'$D/D_{\mathregular{bulk}}$', fontsize=20)
     ax1.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-    
-    ax2.errorbar(spacings_dyn, Dzs_dyn, yerr=Dzs_stdv_dyn, color='b', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\perp$, dyn.')
-    ax2.errorbar(spacings_dyn, Dparallel_dyn, yerr=Dparallel_stdv_dyn, color='g', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\parallel$, dyn.')
-    ax2.errorbar(spacings_stat, Dzs_stat, yerr=Dzs_stdv_stat, color='c', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\perp$, stat.')
-    ax2.errorbar(spacings_stat, Dparallel_stat, yerr=Dparallel_stdv_stat, color='limegreen', linewidth=7.0, capsize=2, fmt='.', label=r'$D_\parallel$, stat.')
+    ax2.plot(spacings_dyn, Dzs_dyn, '-o' , color='b',label=r'$D_\perp$, dyn.')
+    ax2.plot(spacings_dyn, Dparallel_dyn, '-*', color='g', label=r'$D_\parallel$, dyn.')
+    ax2.plot(spacings_stat, Dzs_stat, '-s', color='c', label=r'$D_\perp$, stat.')
+    ax2.plot(spacings_stat, Dparallel_stat, '-d', color='limegreen',label=r'$D_\parallel$, stat.')
+    ax2.fill_between(spacings_dyn, Dzs_dyn+Dzs_stdv_dyn, Dzs_dyn-Dzs_stdv_dyn, facecolor='b',alpha=0.2)
+    ax2.fill_between(spacings_dyn, Dparallel_dyn+Dparallel_stdv_dyn, Dparallel_dyn-Dparallel_stdv_dyn, facecolor='g', alpha=0.2)
+    ax2.fill_between(spacings_stat, Dzs_stat+Dzs_stdv_stat, Dzs_stat-Dzs_stdv_stat, facecolor='c', alpha=0.2)
+    ax2.fill_between(spacings_stat, Dparallel_stat+Dparallel_stdv_stat, Dparallel_stat-Dparallel_stdv_stat, facecolor='limegreen',alpha=0.2)
     if moresigmas==True:
-        ax2.set(xlabel=r'$d/\sigma_b$', ylabel=r'Diffusion constant $D/D_{bulk}$', fontsize=20)
+        ax2.set(xlabel=r'$d/\sigma_b$', ylabel=r'$D/D_{\mathregular{bulk}}$', fontsize=20)
     else:
-        ax2.set(xlabel=r'$d$', ylabel=r'Diffusion constant $D/D_{bulk}$', fontsize=20)
+        ax2.set(xlabel=r'$d$ (nm)', ylabel=r'$D/D_{\mathregular{bulk}}$', fontsize=20)
     ax2.axis([0,11,minforsmall,maxforsmall]) # 6e-7 before we divided by Dbulk
     ax2.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     #fig.tight_layout()
@@ -394,3 +428,4 @@ else:
     fig.savefig(plotname_twoinone)
 
 print("Done.")
+plt.show()
