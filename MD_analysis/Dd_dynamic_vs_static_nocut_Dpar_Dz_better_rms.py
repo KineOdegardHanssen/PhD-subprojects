@@ -34,7 +34,7 @@ big           = False
 bulk_cut      = False
 confignrs     = np.arange(1,1001)
 filestext     = '_seed'+str(confignrs[0])+'to'+str(confignrs[-1])
-
+old_bulk      = False
 endlocation = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/Brush/Sigma_bead_' +str(psigma) + '/Nocut/'
 if moresigmas==True:
     endlocation = 'C:/Users/Kine/Documents/Projects_PhD/P2_PolymerMD/Planar_brush/Diffusion_bead_near_grid/D_vs_d/Brush/Moresigmas/Nocut/'
@@ -49,6 +49,8 @@ if bulk_cut==True:
     bulkfilename = bulkfilename +'_cut.txt'
 else:
     bulkfilename = bulkfilename +'_uncut.txt'
+if old_bulk==False:
+    bulkfilename  = bulklocation + 'diffusion_bulk'+filestext+'_new.txt'
 
 ## Files to read
 brushfilename_dyn  = endlocation + 'D_vs_d_better_rms_Nestimates%i.txt' % Nintervals
@@ -142,20 +144,35 @@ brushfile_stat.close()
 
 bulkfile  = open(bulkfilename, 'r')
 # D_R2  sigmaD_R2 b_R2 sigmab_R2; D_z2  sigmaD_z2  b_z2  sigmaD_z2; D_par2 sigmaD_par2  b_par2  sigmab_par2
-bulklines = bulkfile.readlines()
-bulkline  = bulklines[1]
-words     = bulkline.split()
-
-# Ds
-DRs_bulk = float(words[0])
-Dzs_bulk = float(words[4])
-Dparallel_bulk = float(words[8])
-
-# Ds, stdv
-DRs_stdv_bulk = float(words[1])
-Dzs_stdv_bulk = float(words[5])
-Dparallel_stdv_bulk = float(words[9])
-
+if old_bulk==True: # Worse rms
+    bulklines = bulkfile.readlines()
+    bulkline  = bulklines[1]
+    words     = bulkline.split()
+    
+    # Ds
+    DRs_bulk = float(words[0])
+    Dzs_bulk = float(words[4])
+    Dparallel_bulk = float(words[8])
+    
+    # Ds, stdv
+    DRs_stdv_bulk = float(words[1])
+    Dzs_stdv_bulk = float(words[5])
+    Dparallel_stdv_bulk = float(words[9])
+else:
+    bulklines = bulkfile.readlines()
+    bulkline  = bulklines[1]
+    words     = bulkline.split()
+    
+    # Ds
+    DRs_bulk = float(words[1])
+    Dzs_bulk = float(words[3])
+    Dparallel_bulk = float(words[5])
+    
+    # Ds, stdv
+    DRs_stdv_bulk = float(words[2])
+    Dzs_stdv_bulk = float(words[4])
+    Dparallel_stdv_bulk = float(words[6])
+    
 bulkfile.close()
 
 # Divide by bulk:
@@ -185,6 +202,48 @@ for i in range(N_dyn):
     Dzs_dyn[i] = Dznew
     Dparallel_dyn[i] =  Dparnew
 
+minforsmall = 0
+maxforsmall = 0
+i = 0
+d = 1
+while d<11:
+    # Max vals:
+    Dthismax_zdyn = Dzs_dyn[i]+Dzs_stdv_dyn[i]
+    Dthismax_pdyn = Dparallel_dyn[i]+Dparallel_stdv_dyn[i]
+    Dthismax_zstat = Dzs_stat[i]+Dzs_stdv_stat[i]
+    Dthismax_pstat = Dparallel_stat[i]+Dparallel_stdv_stat[i]
+    # Min vals:
+    Dthismin_zdyn = Dzs_dyn[i]-Dzs_stdv_dyn[i]
+    Dthismin_pdyn = Dparallel_dyn[i]-Dparallel_stdv_dyn[i]
+    Dthismin_zstat = Dzs_stat[i]-Dzs_stdv_stat[i]
+    Dthismin_pstat = Dparallel_stat[i]-Dparallel_stdv_stat[i]
+    # Testing if larger:
+    if Dthismax_zdyn>maxforsmall:
+        maxforsmall=Dthismax_zdyn
+    if Dthismax_pdyn>maxforsmall:
+        maxforsmall=Dthismax_pdyn
+    if Dthismax_zstat>maxforsmall:
+        maxforsmall=Dthismax_zstat
+    if Dthismax_pstat>maxforsmall:
+        maxforsmall=Dthismax_pstat
+    # Testing if smaller:
+    if Dthismin_zdyn<minforsmall:
+        minforsmall=Dthismin_zdyn
+    if Dthismin_pdyn<minforsmall:
+        minforsmall=Dthismin_pdyn
+    if Dthismin_zstat<minforsmall:
+        minforsmall=Dthismin_zstat
+    if Dthismin_pstat<minforsmall:
+        minforsmall=Dthismin_pstat
+    i+=1
+    d = spacings_dyn[i] 
+
+if minforsmall<0:
+    minforsmall*=1.2
+else:
+    minforsmall*=0.8
+maxforsmall*=1.05
+print('maxforsmall:',maxforsmall)
 
 if big==False:
     plt.figure(figsize=(8,5))
@@ -246,7 +305,7 @@ if big==False:
         plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes',  y=1.03)
     else:
         plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', y=1.03)
-    ax.axis([0,10,0,0.7]) # 6e-7 before we divided by Dbulk
+    ax.axis([0,11,minforsmall,maxforsmall]) # 6e-7 before we divided by Dbulk
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -267,7 +326,7 @@ else:
         plt.title('Diffusion constant $D$ vs $d/\sigma_b$ for dynamic and static brushes', fontsize=28,  y=1.03)
     else:
         plt.title('Diffusion constant $D$ vs $d$ for dynamic and static brushes', fontsize=28, y=1.03)
-    ax.axis([0,10,0,0.7]) # 6e-7 before we divided by Dbulk
+    ax.axis([0,11,minforsmall,maxforsmall]) # 6e-7 before we divided by Dbulk
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 plt.savefig(plotname_cut)
 
@@ -299,7 +358,7 @@ if big==False:
         ax2.set(xlabel=r'$d/\sigma_b$', ylabel=r'Diffusion constant $D/D_{bulk}$')
     else:
         ax2.set(xlabel=r'$d$', ylabel=r'Diffusion constant $D/D_{bulk}$')
-    ax2.axis([0,10,0,0.7]) # 6e-7 before we divided by Dbulk
+    ax2.axis([0,11,minforsmall,maxforsmall]) # 6e-7 before we divided by Dbulk
     #fig.tight_layout()
     plt.show()
     fig.savefig(plotname_twoinone)
@@ -328,7 +387,7 @@ else:
         ax2.set(xlabel=r'$d/\sigma_b$', ylabel=r'Diffusion constant $D/D_{bulk}$', fontsize=20)
     else:
         ax2.set(xlabel=r'$d$', ylabel=r'Diffusion constant $D/D_{bulk}$', fontsize=20)
-    ax2.axis([0,10,0,0.7]) # 6e-7 before we divided by Dbulk
+    ax2.axis([0,11,minforsmall,maxforsmall]) # 6e-7 before we divided by Dbulk
     ax2.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
     #fig.tight_layout()
     plt.show()
