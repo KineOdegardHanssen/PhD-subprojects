@@ -78,18 +78,30 @@ if __name__ == '__main__':
     testmodel = 496497595 # 488462965 #
     idur      = 1000 # ms
     idelay    = 1
-    iamp      = -0.5 # nA
-    v_init    = -70.0 #-86.5 # mV
+    iamp      = 0.1 # nA
+    v_init    = -70 #-86.5 # mV
     Ra        = 100 # -150
-    somasize  = 20
+    somasize  = 10
     
-    # Defaulting to original values:
-    # DO NOT TOUCH THESE!
-    # SET THEM BELOW INSTEAD!
-    cm = []
-    cm = [0.01,0.1,0.5,1.0,1.0] #[0.5,1,2,3,4,4.5,5,5.5,6,7]#,8,9,10]
+    # Default HH values:
+    ena = 50
+    ek = -77
+    el_hh = -54.3
+    gnabar_hh = 0.12
+    gkbar_hh = 0.036
+    gl_hh = 0.0003
     
-    NCms = len(cm)
+    ### Change HH values here: ####
+    #ena = 20
+    #ek = -70
+    #el_hh = -70
+    #gnabar_hh = 0.12*8
+    #gkbar_hh = 0.036*2
+    #gl_hh = 0.000003
+    
+    cms = [0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5]
+    
+    NCms = len(cms)
     
     Nspikes = numpy.zeros(NCms)
     avg_AP_ampl = numpy.zeros(NCms)
@@ -98,31 +110,33 @@ if __name__ == '__main__':
     rms_AP_halfwidth = numpy.zeros(NCms)
     
     # Set names
-    outfolder = 'Results/IStim/Soma%i/current_idur'%somasize+str(idur)+'_iamp'+str(iamp)+'/'
-    outfilename_Nspikes = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_Nspikes_vs_Cmall.txt'
-    outfilename_APampl  = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APampl_vs_Cmall.txt'
-    outfilename_APdhw   = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APdurhalfwidth_vs_Cmall.txt'
-    plotname_Nspikes    = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_Nspikes_vs_Cmall.png'
-    plotname_APampl     = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APampl_vs_Cmall.png'
-    plotname_APdhw      = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APdurhalfwidth_vs_Cmall.png'
+    hhstring = '_ena'+str(ena)+'_ek'+str(ek)+'_el'+str(el_hh)+'_gnabar'+str(gnabar_hh)+'_gkbar'+str(gkbar_hh)+'_gl'+str(gl_hh)
+    folder = 'Results/IStim/Soma%i/current_idur'%somasize+str(idur)+'_iamp'+str(iamp)+'/'
+    outfilename_Nspikes = folder+'somaonly_current_idur%i_iamp'% idur+str(iamp)+hhstring +'_Nspikes_vs_Cmall.txt'
+    outfilename_APampl  = folder+'somaonly_current_idur%i_iamp'% idur+str(iamp)+hhstring+'_APampl_vs_Cmall.txt'
+    outfilename_APdhw   = folder+'somaonly_current_idur%i_iamp'% idur+str(iamp)+hhstring+'_APdurhalfwidth_vs_Cmall.txt'
+    plotname_Nspikes    = folder+'somaonly_current_idur%i_iamp'% idur+str(iamp)+hhstring +'_Nspikes_vs_Cmall.png'
+    plotname_APampl     = folder+'somaonly_current_idur%i_iamp'% idur+str(iamp)+hhstring+'_APampl_vs_Cmall.png'
+    plotname_APdhw      = folder+'somaonly_current_idur%i_iamp'% idur+str(iamp)+hhstring+'_APdurhalfwidth_vs_Cmall.png'
     # make files
     outfile_Nspikes = open(outfilename_Nspikes,'w')
     outfile_APampl  = open(outfilename_APampl,'w')
     outfile_APdhw   = open(outfilename_APdhw,'w')
     for j in range(NCms):
         print('Step ', j+1, ' of', NCms)
-        filename = outfolder+'somaonly_cm'+str(cm[j])+'_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_V.txt' 
+        cm = cms[j]
+        filename = folder+'somaonly_cm'+str(cm)+'_idur%i_iamp'%idur+str(iamp)+hhstring+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_V.txt' 
         Nspikes[j], avg_AP_ampl[j], rms_AP_ampl[j], avg_AP_halfwidth[j], rms_AP_halfwidth[j] = main(filename,idelay,idur)
-        outfile_Nspikes.write('%.5f %i\n' % (cm[j],Nspikes[j]))
-        outfile_APampl.write('%.5f %.10f %.10f\n' % (cm[j],avg_AP_ampl[j],rms_AP_ampl[j]))
-        outfile_APdhw.write('%.5f %.10f %.10f\n' % (cm[j],avg_AP_halfwidth[j],rms_AP_halfwidth[j]))
+        outfile_Nspikes.write('%.5f %i\n' % (cm,Nspikes[j]))
+        outfile_APampl.write('%.5f %.10f %.10f\n' % (cm,avg_AP_ampl[j],rms_AP_ampl[j]))
+        outfile_APdhw.write('%.5f %.10f %.10f\n' % (cm,avg_AP_halfwidth[j],rms_AP_halfwidth[j]))
     outfile_Nspikes.close()
     outfile_APampl.close()
     outfile_APdhw.close()
     
     # Plot results
     plt.figure(figsize=(6,5))
-    plt.plot(cm,Nspikes)
+    plt.plot(cms,Nspikes,'-o')
     plt.xlabel(r'$C_{m}$ [$\mu$ F/cm$^2$]')
     plt.ylabel(r'$N_{spikes}$')
     plt.title(r'Capacitance vs number of spikes')
@@ -130,7 +144,7 @@ if __name__ == '__main__':
     plt.savefig(plotname_Nspikes)
     
     plt.figure(figsize=(6,5))
-    plt.errorbar(cm,avg_AP_ampl, yerr=rms_AP_ampl, capsize=2)
+    plt.errorbar(cms,avg_AP_ampl, yerr=rms_AP_ampl, capsize=2)
     plt.xlabel(r'$C_{m}$ [$\mu$ F/cm$^2$]')
     plt.ylabel(r'Spike amplitude [mV]')
     plt.title(r'Capacitance vs AP amplitude')
@@ -138,7 +152,7 @@ if __name__ == '__main__':
     plt.savefig(plotname_APampl)
     
     plt.figure(figsize=(6,5))
-    plt.errorbar(cm,avg_AP_halfwidth, yerr=rms_AP_halfwidth, capsize=2)
+    plt.errorbar(cms,avg_AP_halfwidth, yerr=rms_AP_halfwidth, capsize=2)
     plt.xlabel(r'$C_{m} $[$\mu$ F/cm$^2$]')
     plt.ylabel(r'AP width at half amplitude [ms]')
     plt.title(r'Capacitance vs AP width at half amplitude')
