@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-varydiam = False # True # 
+varydiam = True # False # 
 
 zoomed = False
 somasize = 10
 dendlen  = 100 # 1 # 2 # 5 # 10 # 20 # 50 # 
-denddiam = 20 # 2 # 5 # 10 # 20 # 
+denddiam = 0.01 # 20 # 2 # 5 # 10 # 20 # 
 if varydiam==True:
     denddiams = [0,0.01,0.1,1,2,5,10,20]
     N = len(denddiams)
@@ -27,6 +27,8 @@ taus_at_1 = []
 taus_at_2 = []
 taus_at_5 = []
 filenames = []
+Rins_at_1 = []
+Cs_at_1   = []
 filenames_Cm = []
 filenames_R  = []
 measured_C   = []
@@ -52,6 +54,9 @@ plotname_2 = plotfolder + 'BAS_vs_onecomp_cm1_idur%i_iamp'%idur+str(iamp)+'_Ra'+
 plotname_3 = plotfolder + 'BAS_cm1and2and5_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas'+otherparamsn+'_tau'+endsnippet+'_percentagediff.png'
 plotname_C = plotfolder + 'BAS_vs_onecomp_cm1_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas'+otherparamsn+'_tau'+endsnippet+'_measureC.png'
 plotname_R = plotfolder + 'BAS_vs_onecomp_cm1_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas'+otherparamsn+'_tau'+endsnippet+'_Rin.png'
+plotname_tau_vs_d = plotfolder + 'BAS_vs_onecomp_cm1_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas'+otherparamsn+'_tau_vs_d'+endsnippet+'.png'
+plotname_R_vs_d = plotfolder + 'BAS_vs_onecomp_cm1_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas'+otherparamsn+'_tau'+endsnippet+'_Rin_vs_d.png'
+plotname_C_vs_d = plotfolder + 'BAS_vs_onecomp_cm1_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas'+otherparamsn+'_tau'+endsnippet+'_C_vs_d.png'
 if zoomed==True:
     plotname=plotname+'_zoomed.png'
 else:
@@ -111,8 +116,12 @@ for i in range(N):
     for line in lines:
         words = line.split()
         if len(words)>0:
-            cms.append(float(words[0]))
-            theseC.append(float(words[1])/A)
+            cm = float(words[0])
+            C = float(words[1])*A
+            cms.append(cm)
+            theseC.append(C)
+            if cm==1:
+                Cs_at_1.append(C)
     measured_C.append(theseC)
     file_Cm.close()
     
@@ -127,6 +136,8 @@ for i in range(N):
             R = float(words[1])
             cms.append(cm)
             theseR.append(R)
+            if cm==1:
+                Rins_at_1.append(R)
     measured_R.append(theseR)
     file_R.close()
 
@@ -198,6 +209,27 @@ if varydiam==True:
     plt.tight_layout()
     plt.legend()
     plt.savefig(plotname_R)
+    # 
+    plt.figure(figsize=(6,5))
+    plt.plot(denddiams,taus_at_1)
+    plt.xlabel('Dendrite diameter (nm)')
+    plt.title(r'$\tau$ vs $d$, dend.len. %i, $C_m=1$' % dendlen)
+    plt.tight_layout()
+    plt.savefig(plotname_tau_vs_d)
+    # 
+    plt.figure(figsize=(6,5))
+    plt.plot(denddiams,Rins_at_1)
+    plt.xlabel('Dendrite diameter (nm)')
+    plt.title(r'$R_{in}$ vs $d$, dend.len. %i, $C_m=1$' % dendlen)
+    plt.tight_layout()
+    plt.savefig(plotname_R_vs_d)
+    # 
+    plt.figure(figsize=(6,5))
+    plt.plot(denddiams,Cs_at_1)
+    plt.xlabel('Dendrite diameter (nm)')
+    plt.title(r'$C$ vs $d$, dend.len. %i, $C_m=1$' % dendlen)
+    plt.tight_layout()
+    plt.savefig(plotname_C_vs_d)
 else:
     ############################## Plotting vs len ####################################################
     print('denddiam=', denddiam, ', varylen:')
@@ -247,4 +279,25 @@ else:
     plt.tight_layout()
     plt.legend()
     plt.savefig(plotname_R)
-#plt.show()
+    #
+    plt.figure(figsize=(6,5))
+    plt.plot(dendlens,taus_at_1)
+    plt.xlabel('Dendrite length (nm)')
+    plt.title(r'$\tau$ vs $l$, dend.diam. %.2f, $C_m=1$' % denddiam)
+    plt.tight_layout()
+    plt.savefig(plotname_tau_vs_d)
+    #
+    plt.figure(figsize=(6,5))
+    plt.plot(dendlens,Rins_at_1)
+    plt.xlabel('Dendrite length (nm)')
+    plt.title(r'$R_{in}$ vs $l$, dend.diam. %.2f, $C_m=1$' % denddiam)
+    plt.tight_layout()
+    plt.savefig(plotname_R_vs_d)
+    #
+    plt.figure(figsize=(6,5))
+    plt.plot(dendlens,Cs_at_1)
+    plt.xlabel('Dendrite length (nm)')
+    plt.title(r'$C$ vs $l$, dend.diam. %.2f, $C_m=1$' % (denddiam))
+    plt.tight_layout()
+    plt.savefig(plotname_C_vs_d)
+plt.show()
