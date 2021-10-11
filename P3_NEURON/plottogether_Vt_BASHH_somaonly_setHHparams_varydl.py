@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-dtexp = -10
+dtexp = -8
 
 plotvsC  = False # True # 
 plotvsd  = True # False # 
@@ -20,7 +20,12 @@ denddiam = 1
 cm     = 1.0
 Ra     = 100
 v_init = -70
+gpas   = 0.0003
+vpas   = -65
 long   = True
+soma_v_init = -65
+dendlen  = 1000
+denddiam = 2
 
 time0 = []
     
@@ -43,9 +48,9 @@ elif plotvsl==True:
 #    cmsstring = cmsstring + '_'+str(cms[i]) # Too long to use
 
 # Change current:
-idur = 1000   # ms
+idur = 100   # ms
 iamp = -0.1   # nA 
-idelay = 100 
+idelay = 10
 
 taus = []
 tauheights = []
@@ -55,31 +60,31 @@ print('Npl:',Npl)
 
 ### Setting file name
 if plotvsC==True:
-    folder = 'Ball-and-stick models/BAS_passive/Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam) +'/current_idur%i_iamp'% idur+str(iamp)+'/'
-    plotname = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt.png'
-    plotname_2 = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_zoomed.png'
-    plotname_norm = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_normalized.png'
-    plotname_crosses = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_withtaus.png'
-    plotname_withfit = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_withfit.png'
+    folder = 'Ball-and-stick models/BAS_somaHH_dendHH/Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam) +'/current_idur%i_iamp'% idur+str(iamp)+'/'
+    plotname = folder +'bashh_cms_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt.png'
+    plotname_2 = folder +'bashh_cms_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_zoomed.png'
+    plotname_norm = folder +'bashh_cms_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_normalized.png'
+    plotname_crosses = folder +'bashh_cms_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_withtaus.png'
+    plotname_withfit = folder +'bashh_cms_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_withfit.png'
     Vcut = 200
 elif plotvsd==True:
-    folder = 'Comparemodels/BAS_vs_somaonly_passive/dtexp%i/Varyds/' % dtexp
-    plotname = folder +'baspass_cm'+str(cm)+'_varyds_dendlen'+str(dendlen)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt.png'
-    plotname_2 = folder +'baspass_cm'+str(cm)+'_varyds_dendlen'+str(dendlen)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_zoomed.png'
-    plotname_norm = folder +'baspass_cm'+str(cm)+'_varyds_dendlen'+str(dendlen)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_normalized.png'
-    plotname_crosses = folder +'baspass_cm'+str(cm)+'_varyds_dendlen'+str(dendlen)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_withtaus.png'
-    plotname_withfit = folder +'baspass_cm'+str(cm)+'_varyds_dendlen'+str(dendlen)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_withfit.png'
-    Vcut = 125 # Suitable for cm=1.0. # COULD NEED TO UPDATE THIS. Possibly test for the value of cm.
-    Vcut_zoom = 105 # Also need to beware of this
+    folder = 'Comparemodels/BAS_vs_somaonly_hh/dtexp%i/Varyds/' % dtexp
+    plotname = folder +'bashh_cm'+str(cm)+'_varyds_dendlen'+str(dendlen)+'_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt.png'
+    plotname_2 = folder +'bashh_cm'+str(cm)+'_varyds_dendlen'+str(dendlen)+'_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_zoomed.png'
+    plotname_norm = folder +'bashh_cm'+str(cm)+'_varyds_dendlen'+str(dendlen)+'_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_normalized.png'
+    plotname_crosses = folder +'bashh_cm'+str(cm)+'_varyds_dendlen'+str(dendlen)+'_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_withtaus.png'
+    plotname_withfit = folder +'bashh_cm'+str(cm)+'_varyds_dendlen'+str(dendlen)+'_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_withfit.png'
+    Vcut = idelay+25 # Suitable for cm=1.0. # COULD NEED TO UPDATE THIS. Possibly test for the value of cm.
+    Vcut_zoom = idelay+5 # Also need to beware of this
 elif plotvsl==True:
-    folder = 'Comparemodels/BAS_vs_somaonly_passive/dtexp%i/Varyls/' % dtexp
-    plotname = folder +'baspass_cm'+str(cm)+'_varyls_denddiam'+str(denddiam)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt.png'
-    plotname_2 = folder +'baspass_cm'+str(cm)+'_varyls_denddiam'+str(denddiam)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_zoomed.png'
-    plotname_norm = folder +'baspass_cm'+str(cm)+'_varyls_denddiam'+str(denddiam)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_normalized.png'
-    plotname_crosses = folder +'baspass_cm'+str(cm)+'_varyls_denddiam'+str(denddiam)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_withtaus.png'
-    plotname_withfit = folder +'baspass_cm'+str(cm)+'_varyls_denddiam'+str(denddiam)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Vt_withfit.png'
-    Vcut = 125 # Suitable for cm=1.0. # COULD NEED TO UPDATE THIS. Possibly test for the value of cm.
-    Vcut_zoom = 105 # Also need to beware of this
+    folder = 'Comparemodels/BAS_vs_somaonly_hh/dtexp%i/Varyls/' % dtexp
+    plotname = folder +'bashh_cm'+str(cm)+'_varyls_denddiam'+str(denddiam)+'_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt.png'
+    plotname_2 = folder +'bashh_cm'+str(cm)+'_varyls_denddiam'+str(denddiam)+'_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_zoomed.png'
+    plotname_norm = folder +'bashh_cm'+str(cm)+'_varyls_denddiam'+str(denddiam)+'_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_normalized.png'
+    plotname_crosses = folder +'bashh_cm'+str(cm)+'_varyls_denddiam'+str(denddiam)+'_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_withtaus.png'
+    plotname_withfit = folder +'bashh_cm'+str(cm)+'_varyls_denddiam'+str(denddiam)+'_idur%i_iamp' % idur+str(iamp)+'_Ra%i_ena'%Ra+str(ena)+'_ek' +str(ek)+'_el' +str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_vinit'+str(v_init)+'_Vt_withfit.png'
+    Vcut = idelay+25 # Suitable for cm=1.0. # COULD NEED TO UPDATE THIS. Possibly test for the value of cm.
+    Vcut_zoom = idelay+5 # Also need to beware of this
 
 Vlist   = []
 fitlist = []
@@ -91,26 +96,28 @@ for i in range(Npl):
     ### Setting file name according to what you want to vary
     if plotvsC==True:
         cm = cms[i]
-        infilename  = folder+'baspass_cm'+str(cm)+'_idur%.1f_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_V.txt'
+        infilename  = folder+'basHH_cmf'+str(cmfac)+'_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_V.txt'
     elif plotvsd==True:
         denddiam = denddiams[i]
-        folder = 'Ball-and-stick models/BAS_passive/Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam) +'/current_idur%i_iamp'% idur+str(iamp)+'/dtexp%i/' % dtexp
-        infilename  = folder+'baspass_cm'+str(cm)+'_idur%.1f_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_V.txt'
+        folder = 'Ball-and-stick models/BAS_somaHH_dendHH/Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam) +'/current_idur%i_iamp'% idur+str(iamp)+'/dtexp%i/' % dtexp
+        infilename  = folder+'basHH_cmf'+str(cmfac)+'_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+changestring+'_V_sprxf.txt' 
         print('dendlen:', dendlen, ', denddiam:',denddiam)
         # Testing for denddiam==0. If so, get soma data
         if denddiam==0:
-            somaonly_folder = 'Somaonly/pas/Results/IStim/Soma10/current_idur%i_iamp'% idur+str(iamp)+'/dtexp%i/' % dtexp
-            infilename = somaonly_folder+'somaonly_cm'+str(cm)+'_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+'_pas_V.txt' 
+            somaonly_folder = 'Somaonly/Results/IStim/Soma10/current_idur%i_iamp'% idur+str(iamp)+'/dtexp%i/' % dtexp
+            hhstring = '_ena'+str(ena)+'_ek'+str(ek)+'_el'+str(el_hh)+'_gnabar'+str(gnabar_hh)+'_gkbar'+str(gkbar_hh)+'_gl'+str(gl_hh)
+            infilename = somaonly_folder+'somaonly_cm'+str(cm)+'_idur%i_iamp'%idur+str(iamp)+hhstring+'_Ra%i_vinit' %Ra+str(v_init)+'_V.txt' 
             zerobool = True
     elif plotvsl==True:
         dendlen = dendlens[i]
-        folder = 'Ball-and-stick models/BAS_passive/Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam) +'/current_idur%i_iamp'% idur+str(iamp)+'/dtexp%i/' % dtexp
-        infilename  = folder+'baspass_cm'+str(cm)+'_idur%.1f_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_V.txt'
+        folder = 'Ball-and-stick models/BAS_somaHH_dendHH/Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam) +'/current_idur%i_iamp'% idur+str(iamp)+'/dtexp%i/' % dtexp
+        infilename  = folder+'basHH_cmf'+str(cmfac)+'_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+changestring+'_V_sprxf.txt' 
         print('dendlen:',dendlen, ', denddiam:',denddiam)
         # Testing for dendlen==0. If so, get soma data
         if dendlen==0:
-            somaonly_folder = 'Somaonly/pas/Results/IStim/Soma10/current_idur%i_iamp'% idur+str(iamp)+'/dtexp%i/' % dtexp
-            infilename = somaonly_folder+'somaonly_cm'+str(cm)+'_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+'_pas_V.txt' 
+            somaonly_folder = 'Somaonly/Results/IStim/Soma10/current_idur%i_iamp'% idur+str(iamp)+'/dtexp%i/' % dtexp
+            hhstring = '_ena'+str(ena)+'_ek'+str(ek)+'_el'+str(el_hh)+'_gnabar'+str(gnabar_hh)+'_gkbar'+str(gkbar_hh)+'_gl'+str(gl_hh)
+            infilename = somaonly_folder+'somaonly_cm'+str(cm)+'_idur%i_iamp'%idur+str(iamp)+hhstring+'_Ra%i_vinit' %Ra+str(v_init)+'_V.txt' 
             zerobool = True
     
     ### Opening and reading the file
@@ -182,7 +189,7 @@ for i in range(Npl):
     fitlist.append(fit)
     
     #print('i:',i, '; tau:', tau, '; t_interpolated:', t_interpolated)
-    taus.append(tau+100)
+    taus.append(tau+idelay)
     tauheights.append(V1e) # Should I have normalized first?
     tauheights_norm.append(math.exp(-1))
     
@@ -221,12 +228,12 @@ if plotvsC==True:
         plt.plot(times,Vlist[i],label=r'$C_m=$%s' % str(cms[i]))
 elif plotvsd==True:
     plt.title(r'$V$ vs $t$, idur=%i, iamp=%.1f, Cm=%.2f, l=%i' % (idur,iamp,cm,dendlen))
-    plt.plot(time0+90,V0,label=r'$d=$%s' % str(denddiams[0]))
+    plt.plot(time0,V0,label=r'$d=$%s' % str(denddiams[0]))
     for i in range(1,Npl):
         plt.plot(times,Vlist[i],label=r'$d=$%s' % str(denddiams[i]))
 elif plotvsl==True:
     plt.title(r'$V$ vs $t$, idur=%i, iamp=%.1f, Cm=%.2f, d=%.2f' % (idur,iamp,cm,denddiam))
-    plt.plot(time0+90,V0,label=r'$l=$%s' % str(dendlens[0]))
+    plt.plot(time0,V0,label=r'$l=$%s' % str(dendlens[0]))
     for i in range(1,Npl):
         plt.plot(times,Vlist[i],label=r'$l=$%s' % str(dendlens[i]))
 plt.xlabel(r'$t$ [ms]')
@@ -240,12 +247,12 @@ plt.savefig(plotname)
 plt.figure(figsize=(6,5))
 if plotvsd==True:
     plt.title(r'$V$ vs $t$, idur=%i, iamp=%.1f, Cm=%.2f, l=%i' % (idur,iamp,cm,dendlen))
-    plt.plot(time0+90,V0,label=r'$d=$%s' % str(denddiams[0]))
+    plt.plot(time0,V0,label=r'$d=$%s' % str(denddiams[0]))
     for i in range(1,Npl):
         plt.plot(times,Vlist[i],label=r'$d=$%s' % str(denddiams[i]))
 elif plotvsl==True:
     plt.title(r'$V$ vs $t$, idur=%i, iamp=%.1f, Cm=%.2f, d=%.2f' % (idur,iamp,cm,denddiam))
-    plt.plot(time0+90,V0,label=r'$l=$%s' % str(dendlens[0]))
+    plt.plot(time0,V0,label=r'$l=$%s' % str(dendlens[0]))
     for i in range(1,Npl):
         plt.plot(times,Vlist[i],label=r'$l=$%s' % str(dendlens[i]))
 plt.xlabel(r'$t$ [ms]')
@@ -258,18 +265,18 @@ plt.savefig(plotname_2)
 plt.figure(figsize=(6,5))
 if plotvsd==True:
     plt.title(r'$V$ vs $t$, idur=%i, iamp=%.1f, Cm=%.2f, l=%i' % (idur,iamp,cm,dendlen))
-    plt.plot(time0+90,V0norm,label=r'$d=$%s' % str(denddiams[0]))
+    plt.plot(time0,V0norm,label=r'$d=$%s' % str(denddiams[0]))
     for i in range(1,Npl):
         plt.plot(times,Vnormlist[i],label=r'$d=$%s' % str(denddiams[i]))
     plt.plot(taus,tauheights_norm,'o')
 elif plotvsl==True:
     plt.title(r'$V$ vs $t$, idur=%i, iamp=%.1f, Cm=%.2f, d=%.2f' % (idur,iamp,cm,denddiam))
-    plt.plot(time0+90,V0norm,label=r'$l=$%s' % str(dendlens[0]))
+    plt.plot(time0,V0norm,label=r'$l=$%s' % str(dendlens[0]))
     for i in range(1,Npl):
         plt.plot(times,Vnormlist[i],label=r'$l=$%s' % str(dendlens[i]))
     plt.plot(taus,tauheights_norm,'o')
 plt.xlabel(r'$t$ [ms]')
-plt.ylabel(r'$V$ [mV]')
+plt.ylabel(r'$V/V_{max}$')
 plt.legend(loc='upper right')
 plt.axis([idelay-0.2,Vcut_zoom,0,1.01])
 plt.tight_layout()
@@ -278,7 +285,7 @@ plt.savefig(plotname_norm)
 plt.figure(figsize=(6,5))
 if plotvsd==True:
     plt.title(r'$V$ vs $t$, idur=%i, iamp=%.1f, Cm=%.2f, l=%i' % (idur,iamp,cm,dendlen))
-    plt.plot(time0+90,V0,label=r'$d=$%s' % str(denddiams[0]))
+    plt.plot(time0,V0,label=r'$d=$%s' % str(denddiams[0]))
     plt.plot(timecut,fitlist[0],'--', color='grey')
     for i in range(1,Npl):
         plt.plot(times,Vlist[i],label=r'$d=$%s' % str(denddiams[i]))
@@ -286,7 +293,7 @@ if plotvsd==True:
     plt.plot(taus,tauheights,'o')
 elif plotvsl==True:
     plt.title(r'$V$ vs $t$, idur=%i, iamp=%.1f, Cm=%.2f, d=%.2f' % (idur,iamp,cm,denddiam))
-    plt.plot(time0+90,V0,label=r'$l=$%s' % str(dendlens[0]))
+    plt.plot(time0,V0,label=r'$l=$%s' % str(dendlens[0]))
     plt.plot(timecut,fitlist[0],'--', color='grey')
     for i in range(1,Npl):
         plt.plot(times,Vlist[i],label=r'$l=$%s' % str(dendlens[i]))
@@ -314,7 +321,7 @@ if plotvsd==True:
     tauplotx[1] = taus[0]
     tauploty[0] = Vmin-padding
     tauploty[1] = Vmax+padding
-    plt.plot(time0+90,V0,label=r'$d=$%s' % str(denddiams[0]))
+    plt.plot(time0,V0,label=r'$d=$%s' % str(denddiams[0]))
     plt.plot(tauplotx,tauploty,'--',color='grey')
     plt.plot(tauhx,tauhy,'--',color='grey')
     for i in range(1,Npl):
@@ -340,7 +347,7 @@ elif plotvsl==True:
     tauplotx[1] = taus[0]
     tauploty[0] = Vmin-padding
     tauploty[1] = Vmax+padding
-    plt.plot(time0+90,V0,label=r'$l=$%s' % str(dendlens[0]))
+    plt.plot(time0,V0,label=r'$l=$%s' % str(dendlens[0]))
     plt.plot(tauplotx,tauploty,'--',color='grey')
     plt.plot(tauhx,tauhy,'--',color='grey')
     for i in range(1,Npl):
@@ -363,12 +370,12 @@ plt.savefig(plotname_crosses)
 plt.figure(figsize=(6,5)) ## Shift, only for testing, won't save.
 if plotvsd==True:
     plt.title(r'$V$ vs $t$, idur=%i, iamp=%.1f, Cm=%.2f, l=%i' % (idur,iamp,cm,dendlen))
-    plt.plot(time0+90,V0shift,label=r'$d=$%s' % str(denddiams[0]))
+    plt.plot(time0,V0shift,label=r'$d=$%s' % str(denddiams[0]))
     for i in range(1,Npl):
         plt.plot(times,Vshiftlist[i],label=r'$d=$%s' % str(denddiams[i]))
 elif plotvsl==True:
     plt.title(r'$V$ vs $t$, idur=%i, iamp=%.1f, Cm=%.2f, d=%.2f' % (idur,iamp,cm,denddiam))
-    plt.plot(time0+90,V0shift,label=r'$l=$%s' % str(dendlens[0]))
+    plt.plot(time0,V0shift,label=r'$l=$%s' % str(dendlens[0]))
     for i in range(1,Npl):
         plt.plot(times,Vshiftlist[i],label=r'$l=$%s' % str(dendlens[i]))
 plt.xlabel(r'$t$ [ms]')
@@ -377,3 +384,10 @@ plt.legend(loc='upper right')
 plt.axis([idelay-0.2,Vcut_zoom,0,Vmax-Vmin+0.5])
 plt.tight_layout()
 plt.show()
+
+plt.figure()
+plt.plot(taus,tauheights,'o')
+plt.show()
+
+print('taus:',taus)
+print('V0:',V0)

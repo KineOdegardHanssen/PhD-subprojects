@@ -66,28 +66,91 @@ def main(filename,idelay,idur):
     '''
     #####################################################################################
     trace_results = traces_results[0] # Because I am only looping over one cell, I guess
+    #------------------------ Basic data analysis --------------------------------------------------#
     # treat data and perform avg,rms where needed
     avg_AP_ampl, rms_AP_ampl = avg_and_rms(trace_results["AP_amplitude"])
     avg_AP_halfwidth, rms_AP_halfwidth = avg_and_rms(trace_results["AP_duration_half_width"])
     Nspikes = trace_results["Spikecount"]
     Nspikes = Nspikes[0]
-    return Nspikes, avg_AP_ampl, rms_AP_ampl, avg_AP_halfwidth, rms_AP_halfwidth
+    Nampl   = Nspikes
+    #--------------------------- Safeguards --------------------------------------------------------#
+    ## Duration of APs: Two conditions need to be met: AP dur under 3ms and no more than 3stdv>avg
+    AP_dur_ok = []
+    basic_AP_dur = trace_results["AP_duration_half_width"]
+    rms_threshold = avg_AP_halfwidth+3.*rms_AP_halfwidth
+    for i in range(len(basic_AP_dur)):
+        tempdur = basic_AP_dur[i]
+        if tempdur<3 and tempdur<rms_threshold: # Not too large deviation from the rest
+            AP_dur_ok.append(tempdur)
+    AP_dur_ok = numpy.array(AP_dur_ok)
+    avg_AP_halfwidth, rms_AP_halfwidth = avg_and_rms(AP_dur_ok)
+    Ndur = len(AP_dur_ok)
+    ## First spike gets overestimated amplitude (happens to every sim., but best not to use bad data)
+    ampl_data = trace_results["AP_amplitude"]
+    if len(ampl_data)>1: # Don't want to throw away everything
+        avg_AP_ampl, rms_AP_ampl = avg_and_rms(ampl_data[1:]) # Skipping the first peak
+        Nampl -=1    
+    return Nspikes, avg_AP_ampl, rms_AP_ampl, avg_AP_halfwidth, rms_AP_halfwidth, Nampl, Ndur
 
 
 if __name__ == '__main__':
-    testmodel = 496497595 # 488462965 #
-    idur      = 1000 # ms
-    idelay    = 1
-    iamp      = 0.44 #-0.5 # nA
-    v_init    = -70.0 #-86.5 # mV
-    Ra        = 100 # -150
-    somasize  = 20
+    testmodel = 485694403 # 489931686 # 488462965 # 478513407 # 478513437 # 
+    idur      = 1000 #100 # ms
+    idelay    = 100
+    iamp      = 0.4 # nA
+    v_init    = -86.5 # mV
+    Ra        = 150
+    somasize  = 10 # 15 # 
+    dendlen   = 1000
+    denddiam  = 2
+    nsegments = 200 
     
-    # Defaulting to original values:
-    # DO NOT TOUCH THESE!
-    # SET THEM BELOW INSTEAD!
-    cm = []
-    cm = [0.8,0.85,0.9,0.95,1.0,1.05,1.1,1.15,1.2,1.25,1.3,1.35,1.4,1.45,1.5] #[0.01,0.1,0.5,1.0,1.0] #[0.5,1,2,3,4,4.5,5,5.5,6,7]#,8,9,10]
+    varymech = 'Kd'#'NaV' #'SK'#'Im_v2'#'Kv2like'#'pas' #
+    varyE_bool = True
+    varyE = -107 #[-90,-80]#[-130,-107,-100,-70]#[40,50,53,65,70]#[-60,-53,-30,-10,10,30,60] # Default...407Kd-107 Default478513407pas: -83.6528;  Default478513407Na: 53
+    varyg = 'None' # Default...407Kd2.94396e-010 # Default478513407pas: 0.000362109; Default478513407Na: 0.0409177
+    
+    varylist = [] # Should be redundant
+    plotstring = '_vary'
+    if varyE_bool==True:
+        varylist = varyE
+        plotstring = plotstring + 'E'
+    else:
+        varylist = varyg
+        plotstring = plotstring + 'g'
+      
+    if varymech=='NaV':
+        folderstring = 'VaryNa/' 
+        plotstring   = plotstring + '_NaV'
+    elif varymech=='pas':
+        folderstring = 'VaryPas/'
+        plotstring   = plotstring + '_Pas'
+    elif varymech=='Kd':
+        folderstring = 'VaryKd/'
+        plotstring   = plotstring + '_Kd'
+    elif varymech=='Kv2like':
+        folderstring = 'VaryKv2like/'
+        plotstring   = plotstring + '_Kv2like'
+    elif varymech=='Kv3_1':
+        folderstring = 'VaryKv3_1/'
+        plotstring   = plotstring + '_Kv3_1'
+    elif varymech=='SK':
+        folderstring = 'VarySK/'
+        plotstring   = plotstring + '_SK'
+    elif varymech=='K_T':
+        folderstring = 'VaryK_T/'
+        plotstring   = plotstring + '_K_T'
+    elif varymech=='Im_v2':
+        folderstring = 'VaryIm_v2/'
+        plotstring   = plotstring + '_Im_v2'
+
+    changestring =''
+    if varyE_bool==True:
+        changestring = changestring+'_E'+str(varyE)+'_gdf'
+    else:
+        changestring = changestring+'_Edf_g'+str(varyg)
+    
+    cm = [0.01,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.1,2.2,2.3,2.4,2.5,2.6,2.7,2.8,2.9,3.0]
     
     NCms = len(cm)
     
@@ -98,21 +161,27 @@ if __name__ == '__main__':
     rms_AP_halfwidth = numpy.zeros(NCms)
     
     # Set names
-    outfolder = 'Results/IStim/Soma%i/current_idur'%somasize+str(idur)+'_iamp'+str(iamp)+'/'
-    outfilename_Nspikes = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_Nspikes_vs_Cmall.txt'
-    outfilename_APampl  = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APampl_vs_Cmall.txt'
-    outfilename_APdhw   = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APdurhalfwidth_vs_Cmall.txt'
-    plotname_Nspikes    = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_Nspikes_vs_Cmall.png'
-    plotname_APampl     = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APampl_vs_Cmall.png'
-    plotname_APdhw      = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APdurhalfwidth_vs_Cmall.png'
+    outfolder = 'Results/%i/IStim/Soma%i/dendlen%i/denddiam'% (testmodel,somasize,dendlen)+str(denddiam)+'/'+folderstring
+    currentfolder = 'current_idur'+str(idur)+'_iamp'+str(iamp)+'/'
+    outfolder = outfolder+currentfolder
+    outfilename_Nspikes = outfolder+'baspv_current_idur%i_iamp'% (idur)+str(iamp) +'_cmfs_f_vs_Cmall.txt'
+    outfilename_APampl  = outfolder+'baspv_current_idur%i_iamp'% (idur)+str(iamp) +'_cmfs_APampl_vs_Cmsprx.txt'
+    outfilename_APdhw   = outfolder+'baspv_current_idur%i_iamp'% (idur)+str(iamp) +'_cmfs_APdurhalfwidth_vs_Cmsprx.txt'
+    plotname_Nspikes    = outfolder+'baspv_current_idur%i_iamp'% (idur)+str(iamp) +'_cmfs_f_vs_Cmsprx.png'
+    plotname_APampl     = outfolder+'baspv_current_idur%i_iamp'% (idur)+str(iamp) +'_cmfs_APampl_vs_Cmsprx.png'
+    plotname_APdhw      = outfolder+'baspv_current_idur%i_iamp'% (idur)+str(iamp) +'_cmfs_APdurhalfwidth_vs_Cmsprx.png'
     # make files
     outfile_Nspikes = open(outfilename_Nspikes,'w')
     outfile_APampl  = open(outfilename_APampl,'w')
     outfile_APdhw   = open(outfilename_APdhw,'w')
     for j in range(NCms):
         print('Step ', j+1, ' of', NCms)
-        filename = outfolder+'somaonly_cm'+str(cm[j])+'_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_V.txt' 
-        Nspikes[j], avg_AP_ampl[j], rms_AP_ampl[j], avg_AP_halfwidth[j], rms_AP_halfwidth[j] = main(filename,idelay,idur)
+        infolder = 'Results/%i/IStim/Soma%i/dendlen%i/denddiam'% (testmodel,somasize,dendlen)+str(denddiam)+'/'+ folderstring+currentfolder
+        filename = infolder+'baspv_cmf'+str(cm[j])+'_idur%i_iamp'%idur+str(iamp)+changestring+'_sprx_V.txt' 
+        try:
+            Nspikes[j], avg_AP_ampl[j], rms_AP_ampl[j], avg_AP_halfwidth[j], rms_AP_halfwidth[j], Nampl, Ndur = main(filename,idelay,idur)
+        except:
+            continue
         outfile_Nspikes.write('%.5f %i\n' % (cm[j],Nspikes[j]))
         outfile_APampl.write('%.5f %.10f %.10f\n' % (cm[j],avg_AP_ampl[j],rms_AP_ampl[j]))
         outfile_APdhw.write('%.5f %.10f %.10f\n' % (cm[j],avg_AP_halfwidth[j],rms_AP_halfwidth[j]))

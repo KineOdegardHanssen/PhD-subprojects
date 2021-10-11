@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Plotting vs cm too
-testmodel = 478513407#478513437#488462965 #
+testmodel = 488462965# 478513407#478513437#
 ##### Adjustable parameters/specifications #########
 # File/simulation selection:
 idur = 2  # ms

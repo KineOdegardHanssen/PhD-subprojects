@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 ## Choose model(s) to test:
 #testmodel = 515175347 #Axonabundance (Hundreds of axon sections, branched dends, at least one part of the neuron is not connected to the rest) # AXON CONNECTED TO DENDRITE!!!
@@ -33,16 +34,17 @@ elif testmodel==478513407:
     v_init = -83.7
 elif testmodel==497233271:
     v_init = -90
+v_init = -70 
 
 # Changing values of membrane capacitance:
-cm = 1
+cm = 5.0
 
 # Change current:
-idur = 0#100 # 100 # 1000 #  ms # 1
-iamp = -0.5 #  0.264  # 0.41 # -0.5 # 1  # nA # 0.5 #
-Ra   = 150
+idur = 1000#100 # 100 # 1000 #  ms # 1
+iamp = -10.0 #  0.264  # 0.41 # -0.5 # 1  # nA # 0.5 #
+Ra   = 100
 
-folder = 'Results/%i/Istim/current_idur%i_iamp'% (testmodel,idur)+str(iamp)+'/'
+folder = 'Results/Istim/current_idur%i_iamp'% idur+str(iamp)+'/'
 infilename = folder+'somaonly_cm'+str(cm)+'_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit'%Ra+str(v_init)+'_V.txt'
 infile = open(infilename,'r')
 lines = infile.readlines()
@@ -56,8 +58,27 @@ for line in lines:
     time.append(float(words[0]))
     V.append(float(words[1]))
 
+Vmax = max(V)
+Vmin = min(V)
+dV = Vmax-Vmin
+dV1e = dV*math.exp(-1)
+V1e  = Vmin+dV1e
+print('Vmax:',Vmax)
+print('Vmin:',Vmin)
+print('V1e:',V1e)
+
+
+for i in range(len(V)):
+    if V[i]-V1e<0:
+        print('V:',V[i-1],'i-1:',i-1,'; t:', time[i-1])
+        print('V:',V[i],'i:',i,'; t:', time[i])
+        plot_t = time[i]
+        break
+
+
 plt.figure(figsize=(6,5))
 plt.plot(time,V)
+plt.plot(plot_t,V1e,'o')
 plt.xlabel(r'$t$ [ms]')
 plt.xlabel(r'$V$ [mV]')
 plt.title(r'$V$ vs $t$')

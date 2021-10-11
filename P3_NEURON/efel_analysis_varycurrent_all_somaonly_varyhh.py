@@ -86,7 +86,7 @@ if __name__ == '__main__':
     v_init   = -70 #-86.5 # mV
     Ra       = 100 # -150
     somasize = 10 
-    cm       = 1.4
+    cm       = 1.0
     
     # Default HH values:
     ena = 50
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     gl_hh = 0.0003
     
     ### Change HH values here: ####
-    #ena = 20
+    ena = 49.3
     #ek = -70
     #el_hh = -70
     #gnabar_hh = 0.12*8

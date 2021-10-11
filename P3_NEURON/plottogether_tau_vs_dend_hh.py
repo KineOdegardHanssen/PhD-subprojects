@@ -16,7 +16,30 @@ if varydiam==True:
 else:
     dendlens = [0,1,2,5,10,20,50,100,200,500,1000]
     N = len(dendlens)
+
+varymech = 'Na' # 'K' # 'leak'
+varyE_bool = True
+varyE = 50 #[-10,20,50,60]
+varyg = 'None'
     
+varylist = [] # Should be redundant
+plotstring = '_vary'
+if varyE_bool==True:
+    #varylist = varyE
+    plotstring = plotstring + 'E'
+else:
+    #varylist = varyg
+    plotstring = plotstring + 'g'
+Nvary    = len(varylist)
+
+changestring =''
+if varyE_bool==True:
+    varyE = elem
+    changestring = changestring+'_E'+str(varyE)+'_gdflt'
+else:
+    varyg = elem
+    changestring = changestring+'_Edefault_g'+str(varyg)
+
 A      = np.pi*somasize*somasize
 Ra     = 100
 v_init = -65
@@ -36,10 +59,10 @@ filenames_Cm = []
 filenames_R  = []
 measured_C   = []
 measured_R   = []
-somaonly_folder = 'Somaonly/pas/Results/IStim/Soma10/'+currentfolder
-filename_nodend = somaonly_folder+'somaonly_cms_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+'_gpas'+str(gpas)+'_epas'+str(epas)+'_tau_highCms.txt'
-filename_nodend_Cm  = somaonly_folder+'somaonly_cms_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+'_gpas'+str(gpas)+'_epas'+str(epas)+'_Cm_highCms.txt'
-filename_nodend_R = somaonly_folder+'somaonly_cms_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+'_gpas'+str(gpas)+'_epas'+str(epas)+'_Rin_highCms.txt'
+somaonly_folder = 'Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam) +'/current_idur%i_iamp'% idur+str(iamp)+'/'
+filename_nodend = somaonly_folder+'somaonly_cms_idur%i_iamp' % idur+str(iamp)+'_ena'+str(ena)+'_ek'+str(ek)+'_el'+str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_Ra'+str(Ra)+'_vinit' +str(v_init)+'_gpas'+str(gpas)+'_epas'+str(epas)+'_tau_highCms.txt'
+filename_nodend_Cm  = somaonly_folder+'somaonly_cms_idur%i_iamp' % idur+str(iamp)+'_ena'+str(ena)+'_ek'+str(ek)+'_el'+str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_Ra'+str(Ra)+'_vinit' +str(v_init)+'_gpas'+str(gpas)+'_epas'+str(epas)+'_Ctot_highCms.txt'
+filename_nodend_R = somaonly_folder+'somaonly_cms_idur%i_iamp' % idur+str(iamp)+'_ena'+str(ena)+'_ek'+str(ek)+'_el'+str(el)+'_gnabar'+str(gnabar)+'_gkbar'+str(gkbar)+'_gl'+str(gl)+'_Ra'+str(Ra)+'_vinit' +str(v_init)+'_gpas'+str(gpas)+'_epas'+str(epas)+'_Rin_highCms.txt'
 filenames.append(filename_nodend)
 filenames_Cm.append(filename_nodend_Cm)
 filenames_R.append(filename_nodend_R)
@@ -52,13 +75,13 @@ else:
     endsnippet = '_dtexp%i_varydendlen' % dtexp
     otherparamsn = '_diam' + str(denddiam)
 
-plotname   = plotfolder + 'BAS_vs_onecomp_cms_idur%i_iamp'%idur+str(iamp)+'_Ra%i_gpas' %Ra+str(gpas)+'_vpas' +str(vpas)+otherparamsn+endsnippet
-plotname_2 = plotfolder + 'BAS_vs_onecomp_cm1.5_idur%i_iamp'%idur+str(iamp)+'_Ra%i_gpas'%Ra+str(gpas)+'_vpas' +str(vpas)+otherparamsn+'_tau'+endsnippet+'_percentagediff.png'
-plotname_C = plotfolder + 'BAS_vs_onecomp_cm1.5_idur%i_iamp'%idur+str(iamp)+'_Ra%i_gpas'%Ra+str(gpas)+'_vpas' +str(vpas)+otherparamsn+'_tau'+endsnippet+'_measureC.png'
-plotname_R = plotfolder + 'BAS_vs_onecomp_cm1.5_idur%i_iamp'%idur+str(iamp)+'_Ra%i_gpas'%Ra+str(gpas)+'_vpas' +str(vpas)+otherparamsn+'_tau'+endsnippet+'_Rin.png'
-plotname_tau_vs_d = plotfolder + 'BAS_vs_onecomp_cm1_idur%i_iamp'%idur+str(iamp)+'_Ra%i_gpas'%Ra+str(gpas)+'_vpas' +str(vpas)+otherparamsn+'_tau_vs_d'+endsnippet+'.png'
-plotname_R_vs_d = plotfolder + 'BAS_vs_onecomp_cm1.5_idur%i_iamp'%idur+str(iamp)+'_Ra%i_gpas'%Ra+str(gpas)+'_vpas' +str(vpas)+otherparamsn+'_tau'+endsnippet+'_Rin_vs_d.png'
-plotname_C_vs_d = plotfolder + 'BAS_vs_onecomp_cm1.5_idur%i_iamp'%idur+str(iamp)+'_Ra%i_gpas'%Ra+str(gpas)+'_vpas' +str(vpas)+otherparamsn+'_tau'+endsnippet+'_C_vs_d.png'
+plotname   = plotfolder + 'BASHH_vs_onecomp_cms_idur%i_iamp'%idur+str(iamp)+'_Ra%i' %Ra+changestring+otherparamsn+endsnippet
+plotname_2 = plotfolder + 'BASHH_vs_onecomp_cm1.5_idur%i_iamp'%idur+str(iamp)+'_Ra%i'+changestring+otherparamsn+'_tau'+endsnippet+'_percentagediff.png'
+plotname_C = plotfolder + 'BASHH_vs_onecomp_cm1.5_idur%i_iamp'%idur+str(iamp)+'_Ra%i'%Ra+changestring+otherparamsn+'_tau'+endsnippet+'_measureC.png'
+plotname_R = plotfolder + 'BASHH_vs_onecomp_cm1.5_idur%i_iamp'%idur+str(iamp)+'_Ra%i'%Ra+changestring+otherparamsn+'_tau'+endsnippet+'_Rin.png'
+plotname_tau_vs_d = plotfolder + 'BASHH_vs_onecomp_cm1_idur%i_iamp'%idur+str(iamp)+'_Ra%i'%Ra+changestring+otherparamsn+'_tau_vs_d'+endsnippet+'.png'
+plotname_R_vs_d = plotfolder + 'BASHH_vs_onecomp_cm1.5_idur%i_iamp'%idur+str(iamp)+'_Ra%i'%Ra+changestring+otherparamsn+'_tau'+endsnippet+'_Rin_vs_d.png'
+plotname_C_vs_d = plotfolder + 'BASHH_vs_onecomp_cm1.5_idur%i_iamp'%idur+str(iamp)+'_Ra%i'%Ra+changestring+otherparamsn+'_tau'+endsnippet+'_C_vs_d.png'
 if zoomed==True:
     plotname=plotname+'_zoomed.png'
 else:
@@ -69,10 +92,10 @@ for i in range(1,N):
         denddiam = denddiams[i]
     else:
         dendlen = dendlens[i]
-    folder = 'Ball-and-stick models/BAS_passive/Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam)+'/'+currentfolder
-    filename = folder + 'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra%i_gpas'%Ra+str(gpas)+'_vpas' +str(vpas)+'_tau_highCms.txt'
-    filename_Cm = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra%i_gpas'%Ra+str(gpas)+'_vpas' +str(vpas)+'_Cm_highCms.txt'
-    filename_R = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra%i_gpas'%Ra+str(gpas)+'_vpas' +str(vpas)+'_Rin'
+    folder = 'Ball-and-stick models/BAS_somaHH_dendHH/Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam)+'/'+currentfolder
+    filename = folder + 'basHH_cmfs_idur%i_iamp' % idur+str(iamp)+'_Ra%i'%Ra+'_tau_highCms.txt'
+    filename_Cm = folder + 'basHH_cmfs_idur%i_iamp' % idur+str(iamp)+'_Ra%i'%Ra+'_Ctot_highCms.txt'
+    filename_R = folder +'basHH_cmfs_idur%i_iamp' % idur+str(iamp)+'_Ra%i'%Ra+'_Rin_highCms.txt'
     filenames.append(filename)
     filenames_R.append(filename_R)
     filenames_Cm.append(filename_Cm)
@@ -148,7 +171,7 @@ print('measured_R[0]:',measured_R[0])
 
 plt.xlabel(r'$C_m$ [$\mu$F/cm$^2$] (Cell parameter)')
 plt.ylabel(r'$\tau_m$ [ms] (Measured value)')
-plt.title(r'$\tau_m$ vs $C_m$, passive cell, ball-and-stick')
+plt.title(r'$\tau_m$ vs $C_m$, ball-and-stick HH')
 plt.legend(loc='upper left')
 plt.tight_layout()
 plt.savefig(plotname)
@@ -171,7 +194,7 @@ if varydiam==True:
         fracs[i-1] = 100*(taus_at_1p5[0]-taus_at_1p5[i])/taus_at_1p5[0] # Will be 0 at i=0
     plt.plot(denddiams[1:],fracs)
     plt.xlabel(r'Dendrite diameter ($\mu$m)')
-    plt.title(r'Difference, $\tau$, one comp. and BAS, dend.len. %i' % dendlen)
+    plt.title(r'Difference, $\tau$, one comp. and BAS, HH, dend.len. %i' % dendlen)
     plt.tight_layout()
     plt.savefig(plotname_2)
     # 
@@ -180,7 +203,7 @@ if varydiam==True:
         plt.plot(cms,measured_C[i],label=r'denddiam=%s' % str(denddiams[i]))
     plt.xlabel(r'Cell parameter $C_m$ ($\mu$F/cm$^2$)')
     plt.ylabel(r'Measured $C$ (pF)')
-    plt.title(r'Measured $C$ vs parameter $C_m$, dend.len. %.2f' % dendlen)
+    plt.title(r'Measured $C$ vs parameter $C_m$, dend.len. %.2f, HH' % dendlen)
     plt.tight_layout()
     plt.legend()
     plt.savefig(plotname_C)
@@ -190,7 +213,7 @@ if varydiam==True:
         plt.plot(cms,measured_R[i],label=r'denddiam=%s' % str(denddiams[i]))
     plt.xlabel(r'Cell parameter $C_m$ ($\mu$F/cm$^2$)')
     plt.ylabel(r'$R_{in}$ [$\Omega$]')
-    plt.title(r'$R_{in}$ vs parameter $C_m$, dend.len. %.2f' % dendlen)
+    plt.title(r'$R_{in}$ vs parameter $C_m$, dend.len. %.2f, HH' % dendlen)
     plt.tight_layout()
     plt.legend()
     plt.savefig(plotname_R)
@@ -199,7 +222,7 @@ if varydiam==True:
     plt.plot(denddiams,taus_at_1p5)
     plt.xlabel(r'Dendrite diameter ($\mu$m)')
     plt.ylabel(r'$\tau$ [ms]')
-    plt.title(r'$\tau$ vs $d$, dend.len. %i, $C_m=1.5$' % dendlen)
+    plt.title(r'$\tau$ vs $d$, dend.len. %i, $C_m=1.5$, HH' % dendlen)
     plt.tight_layout()
     plt.savefig(plotname_tau_vs_d)
     # 
@@ -207,7 +230,7 @@ if varydiam==True:
     plt.plot(denddiams,Rins_at_1p5)
     plt.xlabel(r'Dendrite diameter ($\mu$m)')
     plt.ylabel(r'$R_{in}$ [$\Omega$]')
-    plt.title(r'$R_{in}$ vs $d$, dend.len. %i, $C_m=1.5$' % dendlen)
+    plt.title(r'$R_{in}$ vs $d$, dend.len. %i, $C_m=1.5$, HH' % dendlen)
     plt.tight_layout()
     plt.savefig(plotname_R_vs_d)
     # 
@@ -215,7 +238,7 @@ if varydiam==True:
     plt.plot(denddiams,Cs_at_1p5)
     plt.xlabel(r'Dendrite diameter ($\mu$m)')
     plt.ylabel('Capacitance (pF)')
-    plt.title(r'$C$ vs $d$, dend.len. %i, $C_m=1.5$' % dendlen)
+    plt.title(r'$C$ vs $d$, dend.len. %i, $C_m=1.5$, HH' % dendlen)
     plt.tight_layout()
     plt.savefig(plotname_C_vs_d)
 else:
@@ -231,7 +254,7 @@ else:
         fracs[i-1] = 100*(taus_at_1p5[0]-taus_at_1p5[i])/taus_at_1p5[0] # Will be 0 at i=0
     plt.plot(dendlens[1:],fracs)
     plt.xlabel(r'Dendrite length ($\mu$m)')
-    plt.title(r'Difference, $\tau$, one comp. and BAS, dend.diam. %.2f' % denddiam)
+    plt.title(r'Difference, $\tau$, one comp. and BAS, HH, dend.diam. %.2f' % denddiam)
     plt.tight_layout()
     plt.savefig(plotname_2)
     # 
@@ -240,7 +263,7 @@ else:
         plt.plot(cms,measured_C[i],label=r'dendlen=%s' % str(dendlens[i]))
     plt.xlabel(r'Cell parameter $C_m$ ($\mu$F/cm$^2$)')
     plt.ylabel(r'Measured $C$ (pF)')
-    plt.title(r'Measured $C$ vs parameter $C_m$, dend.diam. %.2f' % denddiam)
+    plt.title(r'Measured $C$ vs parameter $C_m$, dend.diam. %.2f, HH' % denddiam)
     plt.tight_layout()
     plt.legend()
     plt.savefig(plotname_C)
@@ -250,7 +273,7 @@ else:
         plt.plot(cms,measured_R[i],label=r'dendlen=%s' % str(dendlens[i]))
     plt.xlabel(r'Cell parameter $C_m$ ($\mu$F/cm$^2$)')
     plt.ylabel(r'$R_{in}$ [$\Omega$]')
-    plt.title(r'$R_{in}$ vs parameter $C_m$, dend.diam. %.2f' % denddiam)
+    plt.title(r'$R_{in}$ vs parameter $C_m$, dend.diam. %.2f, HH' % denddiam)
     plt.tight_layout()
     plt.legend()
     plt.savefig(plotname_R)
@@ -259,7 +282,7 @@ else:
     plt.plot(dendlens,taus_at_1p5)
     plt.xlabel(r'Dendrite length ($\mu$m)')
     plt.ylabel(r'$\tau$ [ms]')
-    plt.title(r'$\tau$ vs $l$, dend.diam. %.2f, $C_m=1.5$' % denddiam)
+    plt.title(r'$\tau$ vs $l$, dend.diam. %.2f, $C_m=1.5$, HH' % denddiam)
     plt.tight_layout()
     plt.savefig(plotname_tau_vs_d)
     #
@@ -267,7 +290,7 @@ else:
     plt.plot(dendlens,Rins_at_1p5)
     plt.xlabel(r'Dendrite length ($\mu$m)')
     plt.ylabel(r'$R_{in}$ [$\Omega$]')
-    plt.title(r'$R_{in}$ vs $l$, dend.diam. %.2f, $C_m=1.5$' % denddiam)
+    plt.title(r'$R_{in}$ vs $l$, dend.diam. %.2f, $C_m=1.5$, HH' % denddiam)
     plt.tight_layout()
     plt.savefig(plotname_R_vs_d)
     #
@@ -275,7 +298,7 @@ else:
     plt.plot(dendlens,Cs_at_1p5)
     plt.xlabel(r'Dendrite length ($\mu$m)')
     plt.ylabel('Capacitance (pF)')
-    plt.title(r'$C$ vs $l$, dend.diam. %.2f, $C_m=1.5$' % (denddiam))
+    plt.title(r'$C$ vs $l$, dend.diam. %.2f, $C_m=1.5$, HH' % (denddiam))
     plt.tight_layout()
     plt.savefig(plotname_C_vs_d)
 plt.show()

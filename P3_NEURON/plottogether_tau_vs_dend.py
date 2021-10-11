@@ -2,11 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+dtexp = -10
+
 varydiam = True # False # 
 
 zoomed = False
 somasize = 10
-dendlen  = 100 # 1 # 2 # 5 # 10 # 20 # 50 # 
+dendlen  = 1 # 1 # 2 # 5 # 10 # 20 # 50 # 
 denddiam = 0.01 # 20 # 2 # 5 # 10 # 20 # 
 if varydiam==True:
     denddiams = [0,0.01,0.1,1,2,5,10,20]
@@ -21,7 +23,7 @@ v_init = -70
 
 idur = 1000   # ms
 iamp = -0.1   # nA 
-currentfolder = 'current_idur%i_iamp'%idur+str(iamp)+'/'
+currentfolder = 'current_idur%i_iamp'%idur+str(iamp)+'/dtexp%i/' % dtexp
 
 taus_at_1 = []
 taus_at_2 = []
@@ -40,13 +42,13 @@ filename_nodend_R = somaonly_folder+'somaonly_cms_idur%i_iamp'%idur+str(iamp)+'_
 filenames.append(filename_nodend)
 filenames_Cm.append(filename_nodend_Cm)
 filenames_R.append(filename_nodend_R)
-plotfolder = 'Comparemodels/BAS_vs_somaonly_passive/'
+plotfolder = 'Comparemodels/BAS_vs_somaonly_passive/dtexp%i/' % dtexp
 
 if varydiam==True:
-    endsnippet = '_varydenddiam'
+    endsnippet = '_dtexp%i_varydenddiam' % dtexp
     otherparamsn = '_len%i' % dendlen
 else:
-    endsnippet = '_varydendlen'
+    endsnippet = '_dtexp%i_varydendlen' % dtexp
     otherparamsn = '_diam' + str(denddiam)
 
 plotname   = plotfolder + 'BAS_vs_onecomp_cms_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas'+otherparamsn+'_tau'+endsnippet
@@ -69,8 +71,8 @@ for i in range(1,N):
         dendlen = dendlens[i]
     folder = 'Ball-and-stick models/BAS_passive/Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam)+'/'+currentfolder
     filename = folder + 'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_tau_highCms.txt'
-    filename_Cm = outfilename = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Cm_highCms.txt'
-    filename_R = outfilename = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Rin'
+    filename_Cm = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Cm_highCms.txt'
+    filename_R = folder +'baspass_cms_idur%i_iamp' % idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_Rin'
     filenames.append(filename)
     filenames_R.append(filename_R)
     filenames_Cm.append(filename_Cm)
@@ -172,7 +174,7 @@ if varydiam==True:
         #print('len(fracs):',len(fracs))
         fracs[i-1] = 100*(taus_at_1[0]-taus_at_1[i])/taus_at_1[0] # Will be 0 at i=0
     plt.plot(denddiams[1:],fracs)
-    plt.xlabel('Dendrite diameter (nm)')
+    plt.xlabel(r'Dendrite diameter ($\mu$m)')
     plt.title(r'Difference, $\tau$, one comp. and BAS, dend.len. %i' % dendlen)
     plt.tight_layout()
     plt.savefig(plotname_2)
@@ -183,7 +185,7 @@ if varydiam==True:
     plt.figure(figsize=(6,5))
     plt.plot(denddiams,fracs12,label=r'$C_m=1$ vs $C_m=2$')
     plt.plot(denddiams,fracs15,label=r'$C_m=1$ vs $C_m=5$')
-    plt.xlabel('Dendrite diameter (nm)')
+    plt.xlabel(r'Dendrite diameter ($\mu$m)')
     plt.ylabel('% difference')
     plt.title(r'Difference, $\tau$, one comp. and BAS, dend.len. %i' % dendlen)
     plt.tight_layout()
@@ -212,21 +214,21 @@ if varydiam==True:
     # 
     plt.figure(figsize=(6,5))
     plt.plot(denddiams,taus_at_1)
-    plt.xlabel('Dendrite diameter (nm)')
+    plt.xlabel(r'Dendrite diameter ($\mu$m)')
     plt.title(r'$\tau$ vs $d$, dend.len. %i, $C_m=1$' % dendlen)
     plt.tight_layout()
     plt.savefig(plotname_tau_vs_d)
     # 
     plt.figure(figsize=(6,5))
     plt.plot(denddiams,Rins_at_1)
-    plt.xlabel('Dendrite diameter (nm)')
+    plt.xlabel(r'Dendrite diameter ($\mu$m)')
     plt.title(r'$R_{in}$ vs $d$, dend.len. %i, $C_m=1$' % dendlen)
     plt.tight_layout()
     plt.savefig(plotname_R_vs_d)
     # 
     plt.figure(figsize=(6,5))
     plt.plot(denddiams,Cs_at_1)
-    plt.xlabel('Dendrite diameter (nm)')
+    plt.xlabel(r'Dendrite diameter ($\mu$m)')
     plt.title(r'$C$ vs $d$, dend.len. %i, $C_m=1$' % dendlen)
     plt.tight_layout()
     plt.savefig(plotname_C_vs_d)
@@ -242,7 +244,7 @@ else:
         #print('len(fracs):',len(fracs))
         fracs[i-1] = 100*(taus_at_1[0]-taus_at_1[i])/taus_at_1[0] # Will be 0 at i=0
     plt.plot(dendlens[1:],fracs)
-    plt.xlabel('Dendrite length (nm)')
+    plt.xlabel(r'Dendrite length ($\mu$m)')
     plt.title(r'Difference, $\tau$, one comp. and BAS, dend.diam. %.2f' % denddiam)
     plt.tight_layout()
     plt.savefig(plotname_2)
@@ -253,7 +255,7 @@ else:
     plt.figure(figsize=(6,5))
     plt.plot(dendlens,fracs12,label=r'$C_m=1$ vs $C_m=2$')
     plt.plot(dendlens,fracs15,label=r'$C_m=1$ vs $C_m=5$')
-    plt.xlabel('Dendrite length (nm)')
+    plt.xlabel(r'Dendrite length ($\mu$m)')
     plt.ylabel('% difference')
     plt.title(r'Difference, $\tau$, one comp. and BAS, dend.diam. %.2f' % denddiam)
     plt.tight_layout()
@@ -282,21 +284,21 @@ else:
     #
     plt.figure(figsize=(6,5))
     plt.plot(dendlens,taus_at_1)
-    plt.xlabel('Dendrite length (nm)')
+    plt.xlabel(r'Dendrite length ($\mu$m)')
     plt.title(r'$\tau$ vs $l$, dend.diam. %.2f, $C_m=1$' % denddiam)
     plt.tight_layout()
     plt.savefig(plotname_tau_vs_d)
     #
     plt.figure(figsize=(6,5))
     plt.plot(dendlens,Rins_at_1)
-    plt.xlabel('Dendrite length (nm)')
+    plt.xlabel(r'Dendrite length ($\mu$m)')
     plt.title(r'$R_{in}$ vs $l$, dend.diam. %.2f, $C_m=1$' % denddiam)
     plt.tight_layout()
     plt.savefig(plotname_R_vs_d)
     #
     plt.figure(figsize=(6,5))
     plt.plot(dendlens,Cs_at_1)
-    plt.xlabel('Dendrite length (nm)')
+    plt.xlabel(r'Dendrite length ($\mu$m)')
     plt.title(r'$C$ vs $l$, dend.diam. %.2f, $C_m=1$' % (denddiam))
     plt.tight_layout()
     plt.savefig(plotname_C_vs_d)

@@ -24,6 +24,16 @@ def main(filename,idelay,idur):
     # Voltage is the second column
     voltage = data[:, 1]
     
+    '''
+    plt.figure(figsize=(6,5))
+    plt.plot(time,voltage)
+    plt.xlabel('t [ms]')
+    plt.ylabel('V [mV]')
+    plt.title('V vs t')
+    plt.tight_layout()
+    plt.show()
+    '''
+    
     # Now we will construct the datastructure that will be passed to eFEL
 
     # A 'trace' is a dictionary
@@ -51,7 +61,7 @@ def main(filename,idelay,idur):
     # Now we pass 'traces' to the efel and ask it to calculate the feature
     # values
     traces_results = efel.getFeatureValues(traces,
-                                           ['peak_time','AP_amplitude', 'AP_duration_half_width', 'Spikecount', 'voltage_base'])
+                                           ['peak_time','AP_amplitude', 'AP_duration_half_width', 'Spikecount', 'voltage_base','AP_begin_indices', 'peak_voltage'])
     ###### This is only printing. I do not really need it when I'm looping ##############
     '''
     # The return value is a list of trace_results, every trace_results
@@ -66,29 +76,72 @@ def main(filename,idelay,idur):
     '''
     #####################################################################################
     trace_results = traces_results[0] # Because I am only looping over one cell, I guess
+    #------------------------ Basic data analysis --------------------------------------------------#
     # treat data and perform avg,rms where needed
     avg_AP_ampl, rms_AP_ampl = avg_and_rms(trace_results["AP_amplitude"])
     avg_AP_halfwidth, rms_AP_halfwidth = avg_and_rms(trace_results["AP_duration_half_width"])
     Nspikes = trace_results["Spikecount"]
     Nspikes = Nspikes[0]
-    return Nspikes, avg_AP_ampl, rms_AP_ampl, avg_AP_halfwidth, rms_AP_halfwidth
+    Nampl   = Nspikes
+    #--------------------------- Safeguards --------------------------------------------------------#
+    ## Duration of APs: Two conditions need to be met: AP dur under 3ms and no more than 3stdv>avg
+    AP_dur_ok = []
+    basic_AP_dur = trace_results["AP_duration_half_width"]
+    rms_threshold = avg_AP_halfwidth+3.*rms_AP_halfwidth
+    for i in range(len(basic_AP_dur)):
+        tempdur = basic_AP_dur[i]
+        if tempdur<3 and tempdur<rms_threshold: # Not too large deviation from the rest
+            AP_dur_ok.append(tempdur)
+    AP_dur_ok = numpy.array(AP_dur_ok)
+    print('basic_AP_dur:',basic_AP_dur)
+    print('AP_dur_ok:',AP_dur_ok)
+    avg_AP_halfwidth, rms_AP_halfwidth = avg_and_rms(AP_dur_ok)
+    Ndur = len(AP_dur_ok)
+    ## First spike gets overestimated amplitude (happens to every sim., but best not to use bad data)
+    ampl_data = trace_results["AP_amplitude"]
+    if len(ampl_data)>1: # Don't want to throw away everything
+        avg_AP_ampl, rms_AP_ampl = avg_and_rms(ampl_data[1:]) # Skipping the first peak
+        Nampl -=1    
+    print('ampl_data[1:]:',ampl_data[1:])
+    print('ampl_data:',ampl_data)
+    #
+    
+    beg_in = trace_results["AP_begin_indices"]
+    print('Voltage at start:',voltage[beg_in])
+    print('Average voltage at start:',numpy.mean(voltage[beg_in]))
+    print('Max voltage at start:',max(voltage[beg_in]))
+    print('Min voltage at start:',min(voltage[beg_in]))
+    pv = trace_results["peak_voltage"]
+    print('Peaks:',pv)
+    print('avg(Peaks):',numpy.mean(pv))
+    vgbi = voltage[beg_in]
+    #vgbi = vgbi[1:]
+    print('avg(Peaks-Voltage at start):',numpy.mean(pv-vgbi))
+    print('avg(Peaks)-avg(Voltage at start)):',numpy.mean(pv)-numpy.mean(voltage[beg_in]))
+    print('Peaks-Voltage at start-ampl_data:',pv-vgbi-ampl_data)
+    print('numpy.mean(Peaks-Voltage at start-ampl_data):',numpy.mean(pv-vgbi-ampl_data))
+    return Nspikes, avg_AP_ampl, rms_AP_ampl, avg_AP_halfwidth, rms_AP_halfwidth, Nampl, Ndur
 
 
 if __name__ == '__main__':
-    testmodel = 496497595 # 488462965 #
-    idur      = 1000 # ms
-    idelay    = 1
-    iamp      = 0.44 #-0.5 # nA
-    v_init    = -70.0 #-86.5 # mV
-    Ra        = 100 # -150
-    somasize  = 20
+    testmodel = 478513437#488462965 #496497595 # 
+    idur   = 1000 #100 # ms
+    idelay = 100
+    iamp   = 0.5#0.41 # nA
+    v_init = -86.5 # mV
+    Ra      = 150
     
     # Defaulting to original values:
     # DO NOT TOUCH THESE!
     # SET THEM BELOW INSTEAD!
     cm = []
-    cm = [0.8,0.85,0.9,0.95,1.0,1.05,1.1,1.15,1.2,1.25,1.3,1.35,1.4,1.45,1.5] #[0.01,0.1,0.5,1.0,1.0] #[0.5,1,2,3,4,4.5,5,5.5,6,7]#,8,9,10]
-    
+    if testmodel==496497595:
+        cm = [0.5,1,2,3,4,4.5,5,5.5,6,7]#,8,9,10]
+    elif testmodel==488462965:
+        cm = [0.8]#[0.5,1,2,3,4,4.5,5,5.5,6,7]#,8,9,10] # Not made
+    elif testmodel==478513437:
+        cm = [0.7]
+    cm = [0.8]
     NCms = len(cm)
     
     Nspikes = numpy.zeros(NCms)
@@ -98,28 +151,15 @@ if __name__ == '__main__':
     rms_AP_halfwidth = numpy.zeros(NCms)
     
     # Set names
-    outfolder = 'Results/IStim/Soma%i/current_idur'%somasize+str(idur)+'_iamp'+str(iamp)+'/'
-    outfilename_Nspikes = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_Nspikes_vs_Cmall.txt'
-    outfilename_APampl  = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APampl_vs_Cmall.txt'
-    outfilename_APdhw   = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APdurhalfwidth_vs_Cmall.txt'
-    plotname_Nspikes    = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_Nspikes_vs_Cmall.png'
-    plotname_APampl     = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APampl_vs_Cmall.png'
-    plotname_APdhw      = outfolder+'somaonly_current_idur%i_iamp'% idur+str(iamp) +'_APdurhalfwidth_vs_Cmall.png'
-    # make files
-    outfile_Nspikes = open(outfilename_Nspikes,'w')
-    outfile_APampl  = open(outfilename_APampl,'w')
-    outfile_APdhw   = open(outfilename_APdhw,'w')
+    outfolder = 'Results/%i/IStim/' % testmodel
+    currentfolder = 'current_idur'+str(idur)+'_iamp'+str(iamp)+'/'
+    outfolder = outfolder+currentfolder
     for j in range(NCms):
         print('Step ', j+1, ' of', NCms)
-        filename = outfolder+'somaonly_cm'+str(cm[j])+'_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_V.txt' 
-        Nspikes[j], avg_AP_ampl[j], rms_AP_ampl[j], avg_AP_halfwidth[j], rms_AP_halfwidth[j] = main(filename,idelay,idur)
-        outfile_Nspikes.write('%.5f %i\n' % (cm[j],Nspikes[j]))
-        outfile_APampl.write('%.5f %.10f %.10f\n' % (cm[j],avg_AP_ampl[j],rms_AP_ampl[j]))
-        outfile_APdhw.write('%.5f %.10f %.10f\n' % (cm[j],avg_AP_halfwidth[j],rms_AP_halfwidth[j]))
-    outfile_Nspikes.close()
-    outfile_APampl.close()
-    outfile_APdhw.close()
+        filename = outfolder+'basps_cm'+str(cm[j])+'_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+'_V.txt' 
+        Nspikes[j], avg_AP_ampl[j], rms_AP_ampl[j], avg_AP_halfwidth[j], rms_AP_halfwidth[j], Nampl, Ndur = main(filename,idelay,idur)
     
+    '''
     # Plot results
     plt.figure(figsize=(6,5))
     plt.plot(cm,Nspikes)
@@ -127,7 +167,7 @@ if __name__ == '__main__':
     plt.ylabel(r'$N_{spikes}$')
     plt.title(r'Capacitance vs number of spikes')
     plt.tight_layout()
-    plt.savefig(plotname_Nspikes)
+    plt.show()
     
     plt.figure(figsize=(6,5))
     plt.errorbar(cm,avg_AP_ampl, yerr=rms_AP_ampl, capsize=2)
@@ -135,7 +175,7 @@ if __name__ == '__main__':
     plt.ylabel(r'Spike amplitude [mV]')
     plt.title(r'Capacitance vs AP amplitude')
     plt.tight_layout()
-    plt.savefig(plotname_APampl)
+    plt.show()
     
     plt.figure(figsize=(6,5))
     plt.errorbar(cm,avg_AP_halfwidth, yerr=rms_AP_halfwidth, capsize=2)
@@ -143,7 +183,8 @@ if __name__ == '__main__':
     plt.ylabel(r'AP width at half amplitude [ms]')
     plt.title(r'Capacitance vs AP width at half amplitude')
     plt.tight_layout()
-    plt.savefig(plotname_APdhw)
+    plt.show()
+    '''
     
     
     # Print results to terminal
@@ -152,3 +193,4 @@ if __name__ == '__main__':
     print('AP amplitude, rms:', rms_AP_ampl)
     print('AP duration at half width, avg:', avg_AP_halfwidth)
     print('AP duration at half width, rms:', rms_AP_halfwidth)
+    print('cm:',cm)

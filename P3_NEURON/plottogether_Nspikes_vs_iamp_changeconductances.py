@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-changeconductance = 'l' # 'n' # 'k' # 
+changeconductance = 'k' # 'n' # 'l' # 
 
 idur = 1000
 somasize = 10
@@ -16,11 +16,11 @@ gkbar_hh = 0.036
 gl_hh = 0.0003
 
 if changeconductance=='n': 
-    conductances = [gnabar_hh,gnabar_hh*2,gnabar_hh*4,gnabar_hh*8]
+    conductances = [gnabar_hh,0.14,0.16,0.18,0.2,0.22,gnabar_hh*2,gnabar_hh*4,gnabar_hh*8]
 elif changeconductance=='k':
-    conductances = [gkbar_hh/4,gkbar_hh/3,gkbar_hh/2,gkbar_hh]
+    conductances = [gkbar_hh/4,gkbar_hh/3,gkbar_hh/2,0.02,0.025,0.03,gkbar_hh]
 elif changeconductance=='l':
-    conductances = [0,0.000003,0.00003,gl_hh]
+    conductances = [0,0.000003,0.00003,gl_hh,0.0004,0.0005,0.0006,0.0008,0.001]
 
 infolder = 'Results/IStim/Soma%i/Vary_iamp/' % somasize
 ## If-test for name here too
@@ -57,15 +57,22 @@ for conductance in conductances:
     infile.close()
     
     plt.plot(iamp, Nspikes, label=r'$g$=%s' % str(conductance))
+    #plt.plot(iamp, Nspikes, '-o', label=r'$g$=%s' % str(conductance)) # For testing
 
 if changeconductance=='n':
-    plt.xlabel(r'$\bar{g}_{Na}$')
+    string = '$\bar{g}_{Na}$'
 elif changeconductance=='k':
-    plt.xlabel(r'$\bar{g}_{K}$')
+    string = '$\bar{g}_{K}$'
 elif changeconductance=='l':
-    plt.xlabel(r'$g_l$')
+    string ='$g_l$'
+plt.xlabel(r'$I$ (nA)')
 plt.ylabel('Number of spikes (frequency)')
-plt.title('Number of spikes vs g')
+if changeconductance=='n':
+    plt.title(r'Number of spikes vs $I$ for $\bar{g}_{Na}$ ')
+elif changeconductance=='k':
+    plt.title(r'Number of spikes vs $I$ for $\bar{g}_{K}$ ')
+elif changeconductance=='l':
+    plt.title(r'Number of spikes vs $I$ for $g_l$ ')
 plt.legend(loc='lower right')
 plt.savefig(plotname)
 plt.show()

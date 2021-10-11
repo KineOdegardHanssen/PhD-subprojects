@@ -1,8 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-changepotential = 'k' # 'l' # 'n' # 
-
+changepotential = 'n' # 'l' # 'k' # 
 idur = 1000
 somasize = 10
 cm = 1.0
@@ -16,9 +15,9 @@ gkbar_hh = 0.036
 gl_hh = 0.0003
 
 if changepotential=='n': 
-    potentials = [40,50,60]
+    potentials = [40,45,48,49,49.3,49.5,50,60]
 elif changepotential=='k':
-    potentials = [-70,-77,-90,-100]
+    potentials = [-70,-77,-85,-90,-100]
 elif changepotential=='l':
     potentials = [-70,-60,-54.3,-40,-30,-20,0,20]
 
@@ -57,15 +56,16 @@ for potential in potentials:
     infile.close()
     
     plt.plot(iamp, Nspikes, label=r'$E$=%s' % str(potential))
+    #plt.plot(iamp, Nspikes, '-o', label=r'$E$=%s' % str(potential))
 
-if changepotential=='n':
-    plt.xlabel(r'$E_{Na}$')
-elif changepotential=='k':
-    plt.xlabel(r'$E_K$')
-elif changepotential=='l':
-    plt.xlabel(r'$E_l$')
+plt.xlabel(r'$I$ (nA)')
 plt.ylabel('Number of spikes (frequency)')
-plt.title('Number of spikes vs E')
+if changepotential=='n':
+    plt.title(r'Number of spikes vs $E_{Na}$')
+elif changepotential=='k':
+    plt.title(r'Number of spikes vs $E_K$')
+elif changepotential=='l':
+    plt.title(r'Number of spikes vs $E_l$')
 plt.legend(loc='lower right')
 plt.savefig(plotname)
 plt.show()

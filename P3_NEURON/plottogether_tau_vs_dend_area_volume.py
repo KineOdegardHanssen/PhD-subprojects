@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+dtexp = -10
+
 cm_readoff = 1.0
 
 zoomed = False
@@ -20,7 +22,7 @@ v_init = -70
 
 idur = 1000   # ms
 iamp = -0.1   # nA 
-currentfolder = 'current_idur%i_iamp'%idur+str(iamp)+'/'
+currentfolder = 'current_idur%i_iamp'%idur+str(iamp)+'/dtexp%i/' % dtexp
 
 taus = []
 filenames = []
@@ -78,7 +80,7 @@ file_R.close()
 
 
 ## Antagelig oppdatere dette her: # Inkludere cm_readoff
-plotfolder = 'Comparemodels/BAS_vs_somaonly_passive/'
+plotfolder = 'Comparemodels/BAS_vs_somaonly_passive/dtexp%i/' % dtexp
 # Area:
 plotname_area   = plotfolder + 'BAS_vs_onecomp_cm'+str(cm_readoff)+'_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_varyarea_tau'
 plotname_C_area = plotfolder + 'BAS_vs_onecomp_cm'+str(cm_readoff)+'_idur%i_iamp'%idur+str(iamp)+'_Ra'+str(Ra)+'_vinit'+str(v_init)+'_pas_varyarea_tau_measureC.png'
