@@ -1,10 +1,10 @@
 label nloop
-variable confignr loop 18 20
+variable confignr loop 399 400 ## 1.25: 656 667   ## 1:# 398 400 # # 653 700 ## 251 260 ## 1: 299 300 # 391 400 # 412 435 ## 843 849 ## 1.25: 244 260 # 638 667 # 
 label bloop
-variable bnr loop 1 10
+variable bnr index 11 #loop 1 10
 
-variable dampfac equal 10#15
-variable spacing equal 1.25
+variable dampfac equal 10
+variable spacing equal 1
 variable sigma_atom equal 1 # Vary this?   # FOR FRIGG'S SAKE, REMEMBER TO MAKE THE FOLDER FIRST!!!!
 #variable pmass equal 1.5#1.5  # Mass of the particle # Is this reasonable?
 variable density equal 3/(4*PI)
@@ -83,6 +83,7 @@ pair_coeff 1 2 ${ljepsilon} ${ljsigma} ${ljcutoff} ${debyecutoff}
 pair_coeff 2 2 ${ljepsilon} ${ljsigma} ${ljcutoff} ${debyecutoff}
 pair_coeff * 4 ${ljepsilon} ${ljsigma} ${ljcutoff} 0               # Er det greit å sette disse generelt her? Kan vel resette etterpå?
 pair_coeff * 3 ${ljepsilon} ${sigma_inter} ${cutoff_inter} 0
+pair_coeff 4 4 ${ljepsilon} ${ljsigma} 0 0 # Vil dette virke slik at vi ikke regner kreftene mellom substratatomer (som ikke beveger seg uansett)? 
 bond_coeff * ${Kbond} 1.0
 angle_coeff * ${Kangle} ${theta0}
 
@@ -103,7 +104,6 @@ group movingatoms type 3 # Not moving the chains
 
 variable scalefac equal ${pmass}/${sigma_atom}
 
-#fix lgvfix movingatoms langevin $T $T ${dampfac} 699483 scale 3 ${scalefac} # Had this before...
 fix lgvfix movingatoms langevin $T $T ${dampfac} ${confignr} scale 3 ${scalefac}
 fix 1 movingatoms nve
 

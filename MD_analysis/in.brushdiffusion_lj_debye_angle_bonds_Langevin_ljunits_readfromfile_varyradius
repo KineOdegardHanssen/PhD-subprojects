@@ -1,8 +1,8 @@
 label nloop
-variable confignr loop 81 100
+variable confignr loop 901 1000
 
 variable dampfac equal 10#15
-variable spacing equal 1.5
+variable spacing equal 8
 variable sigma_atom equal 1 # Vary this?   # FOR FRIGG'S SAKE, REMEMBER TO MAKE THE FOLDER FIRST!!!!
 #variable pmass equal 1.5#1.5  # Mass of the particle # Is this reasonable?
 variable density equal 3/(4*PI)
