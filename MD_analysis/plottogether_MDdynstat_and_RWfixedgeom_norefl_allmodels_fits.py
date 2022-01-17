@@ -1552,7 +1552,7 @@ Ds_p4_f_perp    = powerlaw4(fitds,n_p4_f_perp)
 #### Plotting:
 ##params = {'mathtext.default': 'regular' }  # Ditch this.   
 ###plt.rcParams.update(params)
-'''
+#'''
 plt.figure(figsize=(6,5))#(14,5))
 ax = plt.subplot(111)
 ax.plot(spacings_dyn, Dparallel_dyn, color='g', label=r'$D_\parallel$, dyn.')
@@ -1580,16 +1580,17 @@ ax.plot(fitds,Ds_p3_dyn, '--', label=r'Power law')
 line1, = ax.plot(fitds,Ds_rm_dyn, '--,', label=r'Cation-exchange resin membrane') 
 line1.set_dashes([2, 2, 10, 2])  # 2pt line, 2pt break, 10pt line, 2pt break
 # Add more plotting! # Need to beware of negative porosity for some!
-plt.xlabel(r'$d$ (nm)', fontsize=12)
-plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.xlabel(r'$d$ (nm)', fontsize=14)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=14)
 #box = ax.get_position()
 #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 #ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
-plt.legend(loc='lower right')
+plt.legend(loc='upper left', fontsize=11)
 plt.tight_layout()
 plt.savefig(plotname_d_dyn)
 
 
+'''
 ## Plotting:# Need fancy plotting. Find code and redo fancy plotting.
 plt.figure(figsize=(6,5))#(14,5))
 ax = plt.subplot(111)
@@ -1617,15 +1618,15 @@ ax.plot(fitds,Ds_p3_stat, '--', label=r'Power law')
 line1, = ax.plot(fitds,Ds_rm_stat, '--,', label=r'Cation-exchange resin membrane') 
 line1.set_dashes([2, 2, 10, 2])  # 2pt line, 2pt break, 10pt line, 2pt break
 # Add more plotting! # Need to beware of negative porosity for some!
-plt.xlabel(r'$d$ (nm)')
-plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.xlabel(r'$d$ (nm)', fontsize=14)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=14)
 plt.legend(loc='lower right')
 plt.tight_layout()
 #box = ax.get_position()
 #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 #ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 plt.savefig(plotname_d_stat)
-
+'''
 
 #... Do the same, men for perp.
 plt.figure(figsize=(6,5))#(14,5))
@@ -1654,16 +1655,16 @@ ax.plot(fitds,Ds_p3_dyn_perp, '--', label=r'Power law')# 3')
 line1, = ax.plot(fitds,Ds_rm_dyn_perp, '--,', label=r'Cation-exchange resin membrane') 
 line1.set_dashes([2, 2, 10, 2])  # 2pt line, 2pt break, 10pt line, 2pt break
 # Add more plotting! # Need to beware of negative porosity for some!
-plt.xlabel(r'$d$ (nm)', fontsize=12)
-plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
-plt.legend(loc='lower right')
+plt.xlabel(r'$d$ (nm)', fontsize=14)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=14)
+plt.legend(loc='lower right', fontsize=11)
 plt.tight_layout()
 #box = ax.get_position()
 #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 #ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 plt.savefig(plotname_d_dyn_perp)
 
-
+'''
 plt.figure(figsize=(6,5))#(14,5))
 ax = plt.subplot(111)
 ax.plot(spacings_stat, Dzs_stat, color='limegreen', label=r'$D_\perp$, stat.')
@@ -1690,8 +1691,8 @@ ax.plot(fitds,Ds_p3_stat_perp, '--', label=r'Power law') # 3')
 line1, = ax.plot(fitds,Ds_rm_stat_perp, '--,', label=r'Cation-exchange resin membrane') 
 line1.set_dashes([2, 2, 10, 2])  # 2pt line, 2pt break, 10pt line, 2pt break
 # Add more plotting! # Need to beware of negative porosity for some!
-plt.xlabel(r'$d$ (nm)', fontsize=12)
-plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.xlabel(r'$d$ (nm)', fontsize=14)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=14)
 plt.legend(loc='lower right')
 plt.tight_layout()
 #plt.title(r'$D/D_{\mathregular{bulk}}$ vs $d$')
@@ -1763,8 +1764,8 @@ ax.fill_between(spacings_dyn, Dparallel_dyn+Dparallel_stdv_dyn, Dparallel_dyn-Dp
 ax.plot(fitds,Ds_m2_dyn_m, '-.', label=r'$k+\Delta k$') #label=r'k=%.2e' % (k_m2_dyn+k_m2_dyn_stdv))
 ax.plot(fitds,Ds_m2_dyn, '--', label=r'$k$')#=%.2e' % k_m2_dyn)
 ax.plot(fitds,Ds_m2_dyn_p, '-.', label=r'$k-\Delta k$') #, label=r'k=%.2e' % (k_m2_dyn-k_m2_dyn_stdv))
-plt.xlabel(r'$d$ (nm)', fontsize=12)
-plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.xlabel(r'$d$ (nm)', fontsize=14)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=14)
 plt.title('Custom model 2')
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -1780,8 +1781,8 @@ ax.plot(fitds,Ds_m4_dyn_mf, ':', label=r'$k$, $f-\Delta f$') #, label=r'k=%.2e, 
 ax.plot(fitds,Ds_m4_dyn, '--', label=r'$k$, $f$') #, label=r'k=%.2e, f=%.2e' % (k_m4_dyn,f_m4_dyn))
 ax.plot(fitds,Ds_m4_dyn_pk, '-.', label=r'$k+\Delta k$, $f$')#, label=r'k=%.2e, f=%.2e' % (k_m4_dyn+k_m4_dyn_stdv,f_m4_dyn))
 ax.plot(fitds,Ds_m4_dyn_pf, ':', label=r'$k$, $f+\Delta f$')#, label=r'k=%.2e, f=%.2e' % (k_m4_dyn,f_m4_dyn+f_m4_dyn_stdv))
-plt.xlabel(r'$d$ (nm)', fontsize=12)
-plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.xlabel(r'$d$ (nm)', fontsize=14)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=14)
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
@@ -1798,8 +1799,8 @@ ax.plot(fitds,Ds_m4_stat_mf, ':', label=r'$k$, $f-\Delta f$') #, label=r'k=%.2e,
 ax.plot(fitds,Ds_m4_stat, '--', label=r'$k$, $f$') #, label=r'k=%.2e, f=%.2e' % (k_m4_stat,f_m4_stat))
 ax.plot(fitds,Ds_m4_stat_pk, '-.', label=r'$k+\Delta k$, $f$') #, label=r'k=%.2e, f=%.2e' % (k_m4_stat+k_m4_stat_stdv,f_m4_stat))
 ax.plot(fitds,Ds_m4_stat_pf, ':', label=r'$k$, $f+\Delta k$') #, label=r'k=%.2e, f=%.2e' % (k_m4_stat,f_m4_stat+f_m4_stat_stdv))
-plt.xlabel(r'$d$ (nm)')
-plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.xlabel(r'$d$ (nm)', fontsize=14)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=14)
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
@@ -1815,8 +1816,8 @@ ax.plot(fitds,Ds_p3_dyn_perp_mk, ':', label=r'$n$, $k-\Delta k$') #, label=r'n=%
 ax.plot(fitds,Ds_p3_dyn_perp, '--', label=r'$n$, $k$') #, label=r'n=%.2e, k=%.2e' % (n_p3_dyn_perp,k_p3_dyn_perp))
 ax.plot(fitds,Ds_p3_dyn_perp_pn, '-.', label=r'$n+\Delta n$, $k$') #, label=r'n=%.2e, k=%.2e' % (n_p3_dyn_perp+n_p3_dyn_perp_stdv,k_p3_dyn_perp))
 ax.plot(fitds,Ds_p3_dyn_perp_pk, ':', label=r'$n$, $k+\Delta k$') #, label=r'n=%.2e, k=%.2e' % (n_p3_dyn_perp,k_p3_dyn_perp+k_p3_dyn_perp_stdv))
-plt.xlabel(r'$d$ (nm)', fontsize=12)
-plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.xlabel(r'$d$ (nm)', fontsize=14)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=14)
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
@@ -1833,8 +1834,8 @@ ax.plot(fitds,Ds_p3_stat_perp_mk, ':', label=r'$n$, $k-\Delta k$') #, label=r'n=
 ax.plot(fitds,Ds_p3_stat_perp, '--', label=r'$n$, $k$') #, label=r'n=%.2e, p=%.2e' % (n_p3_stat_perp,p_k3_stat_perp))
 ax.plot(fitds,Ds_p3_stat_perp_pn, '-.', label=r'$n+\Delta n$, $k$') #, label=r'n=%.2e, k=%.2e' % (n_p3_stat_perp+n_p3_stat_perp_stdv,k_p3_stat_perp))
 ax.plot(fitds,Ds_p3_stat_perp_pk, ':', label=r'$n$, $k+\Delta k$') #, label=r'n=%.2e, k=%.2e' % (n_p3_stat_perp,k_p3_stat_perp+k_p3_stat_perp_stdv))
-plt.xlabel(r'$d$ (nm)', fontsize=12)
-plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=12)
+plt.xlabel(r'$d$ (nm)', fontsize=14)
+plt.ylabel(r'$D/D_{\mathregular{bulk}}$', fontsize=14)
 box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
@@ -2410,6 +2411,10 @@ for line in lines:
         Dzs_bulk_vm.append(float(words[3]))
 bulkfile_II.close()
 
+mylinestyles = ['-','--','-.','-,',':','-']
+
+print('sigma_walker:',sigma_walker)
+
 thickness = 50e-9 # m
 sigma_chain  = 1.0
 sigma_walker = np.array(sigma_walker) # np.array([0.1,0.5,1.0,1.5,2.0,3.0,5.0,10.0])
@@ -2433,13 +2438,13 @@ for sigma in sigma_walker:
             D = thisD*Dzs_bulk_vm[j]
             difftime = thickness**2/(2.*D)
             diffusiontime_dyn.append(difftime)
-    plt.plot(fitds_II,Ds_p3_dyn_perp_II,label=r'$\sigma_{\mathregular{LJ}}$ = %s nm' %str(sigma))
+    plt.plot(fitds_II,Ds_p3_dyn_perp_II,mylinestyles[j],label=r'$\sigma_{\mathregular{LJ}}$ = %s nm' %str(sigma))
     diffusiontimes_dyn.append(diffusiontime_dyn)
     fitds_dyn_store.append(fitds_II)
     j+=1
-plt.xlabel('d (nm)')
-plt.ylabel(r'$D_\perp/D_{\mathregular{bulk}}$, dynamic brush, adjusting mass')
-plt.legend(bbox_to_anchor=(1,0), loc="lower left")
+plt.xlabel('d (nm)', fontsize=14)
+plt.ylabel(r'$D_\perp/D_{\mathregular{bulk}}$', fontsize=14)#, dynamic brush', fontsize=14)
+plt.legend(bbox_to_anchor=(1,0), loc="lower left", fontsize=11)
 plt.tight_layout()
 #plt.legend(loc='lower right')
 #ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
@@ -2464,13 +2469,13 @@ for sigma in sigma_walker:
             D = thisD*Dzs_bulk_vm[j]
             difftime = thickness**2/(2.*D)
             diffusiontime_stat.append(difftime)
-    plt.plot(fitds_II,Ds_p3_stat_perp_II,label=r'$\sigma_{\mathregular{LJ}}$ = %s nm' %str(sigma))
+    plt.plot(fitds_II,Ds_p3_stat_perp_II,mylinestyles[j],label=r'$\sigma_{\mathregular{LJ}}$ = %s nm' %str(sigma))
     diffusiontimes_stat.append(diffusiontime_stat)
     fitds_stat_store.append(fitds_II)
     j+=1
-plt.xlabel('d (nm)')
-plt.ylabel(r'$D_\perp/D_{\mathregular{bulk}}$, static brush, adjusting mass')
-plt.legend(bbox_to_anchor=(1,0), loc="lower left")
+plt.xlabel('d (nm)', fontsize=14)
+plt.ylabel(r'$D_\perp/D_{\mathregular{bulk}}$', fontsize=14)#, static brush', fontsize=14)
+plt.legend(bbox_to_anchor=(1,0), loc="lower left", fontsize=11)
 plt.tight_layout()
 #plt.legend(loc='lower right')
 #box = ax.get_position()
@@ -2478,35 +2483,37 @@ plt.tight_layout()
 #ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 plt.savefig(plotname_sigma_free_massadj_static)
 
+'''
 plt.figure(figsize=(6,5))
 for i in range(Nsigmas):
     plt.plot(fitds_dyn_store[i],diffusiontimes_dyn[i],label=r'$\sigma_{\mathregular{LJ}}$ = %s nm' %str(sigma_walker[i]))
-plt.xlabel('d (nm)')
-plt.ylabel('Diffusion time (s)')
+plt.xlabel('d (nm)', fontsize=14)
+plt.ylabel('Diffusion time (s)', fontsize=14)
 #plt.title('Net thickness %s nm, dynamic brush, adjusting mass' % str(thickness*1e9)) # Or change to nm?
-plt.legend(loc='upper left')
+plt.legend(loc='upper left', fontsize=11)
 plt.tight_layout()
 plt.savefig(plotname_difftime_sigma_free_massadj_dynamic)
 
 plt.figure(figsize=(6,5))
 for i in range(Nsigmas):
     plt.plot(fitds_stat_store[i],diffusiontimes_stat[i],label=r'$\sigma_{\mathregular{LJ}}$ = %s nm' %str(sigma_walker[i]))
-plt.xlabel('d (nm)')
-plt.ylabel('Diffusion time (s)')
+plt.xlabel('d (nm)', fontsize=14)
+plt.ylabel('Diffusion time (s)', fontsize=14)
 #plt.title('Net thickness %s nm, static brush, adjusting mass' % str(thickness*1e9)) # Or change to nm?
-plt.legend(loc='upper left')
+plt.legend(loc='upper left', fontsize=11)
 plt.tight_layout()
 plt.savefig(plotname_difftime_sigma_free_massadj_static)
+'''
 
 ###### Zoom-friendly: #######
 #'''
 plt.figure(figsize=(7.5,5))
 for i in range(Nsigmas):#(5):#
-    plt.plot(fitds_dyn_store[i],diffusiontimes_dyn[i],label=r'$\sigma_{\mathregular{LJ}}$ = %s nm' %str(sigma_walker[i]))
-plt.xlabel('d (nm)')
-plt.ylabel('Diffusion time (s)')
+    plt.plot(fitds_dyn_store[i],diffusiontimes_dyn[i],mylinestyles[i],label=r'$\sigma_{\mathregular{LJ}}$ = %s nm' %str(sigma_walker[i]))
+plt.xlabel('d (nm)', fontsize=14)
+plt.ylabel('Diffusion time (s)', fontsize=14)
 #plt.title('Net thickness %s nm, dynamic brush, adjusting mass' % str(thickness*1e9)) # Or change to nm?
-plt.legend(bbox_to_anchor=(1,0), loc="lower left")
+plt.legend(bbox_to_anchor=(1,0), loc="lower left", fontsize=11)
 plt.tight_layout()
 plt.savefig(plotname_difftime_sigma_free_massadj_dynamic_zooming)
 '''
