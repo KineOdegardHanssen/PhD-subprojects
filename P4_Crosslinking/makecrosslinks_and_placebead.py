@@ -15,13 +15,14 @@ rng = np.random.default_rng()
 # I should make a lot of files at once here.
 
 # System info
-spacing = 7
+spacing = 6
 charge  = -1
 T       = 3
 
 print('d =',spacing)
+print('bondcutoff:', bondcutoff)
 
-confignrs = np.arange(1,3)
+confignrs = np.arange(1,1001)
 # Number of files out, etc.
 Nfiles = 1000 # 21 # The number of files I had before
 
@@ -58,8 +59,9 @@ LAMMPS data file via write_data, version 11 Aug 2017, timestep = 200000
 
 '''
 infoldername  = '/home/kine/Documents/Backup2_P2_PolymerMD/P3_Crosslinking/Spacing'+str(spacing)+'/Sigma_free_1/Initial_configurations/Before_bead/'
-outfoldername = '/home/kine/Documents/Backup2_P2_PolymerMD/P3_Crosslinking/Spacing'+str(spacing)+'/Sigma_free_1/Initial_configurations/'
+outfoldername = '/home/kine/Documents/Backup2_P2_PolymerMD/P3_Crosslinking/Spacing'+str(spacing)+'/Sigma_free_1/Initial_configurations/Bondcutoff'+str(bondcutoff)+'/Bondfraction'+str(bondfraction)+'/'
 for confignr in confignrs:
+    print('CONFIG NR',confignr)
     outfilename = 'data.crl_fb_confignr%i' % confignr
     infilename  = infoldername+'data.eq_nobead_config%i' % confignr
     infile      = open(infilename, 'r')
@@ -203,6 +205,7 @@ for confignr in confignrs:
                                     dy+=Ly
                             dist2_mirror = dx*dx+dy*dy+dz*dz
                             if dist2_mirror<bondcutoff2:
+                                dist2 = dist2_mirror
                                 success = True    
                         if success==True:
                             linked_beads[rchain,rbead]=1
@@ -212,15 +215,32 @@ for confignr in confignrs:
                             thebeads = [bead1,bead2]
                             firstbead = min(thebeads)
                             secondbead = max(thebeads)
-                            newbonds.append([firstbead, secondbead])
+                            newbonds.append([firstbead+1, secondbead+1]) # Difference in storage between me and LAMMPS, I think
+                            #print('---------------------------------')
+                            #print('dist2:',dist2,'bondcutoff2:',bondcutoff2)
+                            #print('diff:',diff)
+                            #print('brush_beads_matrix[rchain,rbead,:]:',brush_beads_matrix[rchain,rbead,:])
+                            #print('brush_beads_matrix[beadchainj,k,:]:',brush_beads_matrix[beadchainj,k,:])
                             # Stop neighbours from forming bonds. May extend this functionality to a larger 'radius'
                             # mol1: rchain; mol2: beadchainj # Could have +/-n, loop over neighb, nn. neighb, nnn. neighb, etc.
                             for n in range(1,blockneighbours+1): 
                                 # May run into problems if binding to end bead, will check that first
-                                chain_a1np = int(atomnr_to_element[bead1+n,0])
-                                chain_a1nm = int(atomnr_to_element[bead1-n,0])
-                                chain_a2np = int(atomnr_to_element[bead2+n,0])
-                                chain_a2nm = int(atomnr_to_element[bead2-n,0])
+                                if bead1+n<909:
+                                    chain_a1np = int(atomnr_to_element[bead1+n,0])
+                                else:
+                                    chain_a1np = rchain+1
+                                if bead1-n>=0:
+                                    chain_a1nm = int(atomnr_to_element[bead1-n,0])
+                                else:
+                                    chain_a1nm = rchain+1
+                                if bead2+n<909:
+                                    chain_a2np = int(atomnr_to_element[bead2+n,0])
+                                else:
+                                    chain_a2np = beadchainj+1
+                                if bead1-n>=0:
+                                    chain_a2nm = int(atomnr_to_element[bead2-n,0])
+                                else:
+                                    chain_a2nm = beadchainj+1
                                 rchain = int(rchain)
                                 beadchainj = int(beadchainj)
                                 # Find neighbours:
@@ -240,7 +260,7 @@ for confignr in confignrs:
                             break
     
     # Print number of crosslinking bonds created
-    print('Number of crosslinking bonds:',len(newbonds))
+    #print('Number of crosslinking bonds:',len(newbonds))
     
     ### Part where I randomly place the diffusing bead.
     
@@ -263,7 +283,7 @@ for confignr in confignrs:
         else:
             beadpos = rran
             beadok = True
-    print('beadpos:',beadpos)
+    #print('beadpos:',beadpos)
     
     freebead_number = N_atoms+1
     ############# Write to file. #############
