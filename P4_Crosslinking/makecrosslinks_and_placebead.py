@@ -4,9 +4,10 @@ import sys
 import math
 
 
-bondcutoff = 1.7 # Too big?
+bondcutoff = 3 # Too big?
 bondcutoff2 = bondcutoff**2
-bondfraction = 0.2
+bondfraction = 0.5           # Controlls number of bonds we will attempt to make
+blockneighbours = 3          # Number of neigbours we want to prevent from making bonds.
 
 rng = np.random.default_rng()
 
@@ -85,6 +86,7 @@ for confignr in confignrs:
     Ly = ymax-ymin
     Lz = zmax-zmin
     Lxd2 = 0.5*Lx
+    Lyd2 = 0.5*Ly
     
     pLx = np.array([Lx,0,0])
     mLx = np.array([-Lx,0,0])
@@ -110,6 +112,7 @@ for confignr in confignrs:
     atomnr_beads = np.zeros((9,99))
     chaincounter = np.zeros(9)
     brushbeadcounter = 0
+    atomnr_to_element = np.zeros((910,2)) # Some spurious output, but easier this way
     
     keyword = 'None'
     for line in lines:
@@ -143,6 +146,8 @@ for confignr in confignrs:
                     brush_beads_matrix[thismolID,thiscc,1] = yposition
                     brush_beads_matrix[thismolID,thiscc,2] = zposition
                     atomnr_beads[thismolID,thiscc] = i-1
+                    atomnr_to_element[i-1,0] = thismolID
+                    atomnr_to_element[i-1,1] = thiscc
                     chaincounter[thismolID] += 1
 
     ### Part where I crosslink
@@ -182,49 +187,56 @@ for confignr in confignrs:
                         dist2 = np.dot(diff,diff)
                         if dist2<bondcutoff2:
                             success = True
-                        elif dist2>Lxd2:
-                            # Periodic images
-                            diff_mx1 = brush_beads_matrix[rchain,rbead,:]-brush_beads_matrix[beadchainj,k,:]-pLx    
-                            diff_mx2 = brush_beads_matrix[rchain,rbead,:]-brush_beads_matrix[beadchainj,k,:]-mLx
-                            diff_my1 = brush_beads_matrix[rchain,rbead,:]-brush_beads_matrix[beadchainj,k,:]-pLy
-                            diff_my2 = brush_beads_matrix[rchain,rbead,:]-brush_beads_matrix[beadchainj,k,:]-mLy    
-                            diff_mxy1 = brush_beads_matrix[rchain,rbead,:]-brush_beads_matrix[beadchainj,k,:]-pLxpLy
-                            diff_mxy2 = brush_beads_matrix[rchain,rbead,:]-brush_beads_matrix[beadchainj,k,:]-mLxpLy
-                            diff_mxy3 = brush_beads_matrix[rchain,rbead,:]-brush_beads_matrix[beadchainj,k,:]-pLxmLy
-                            diff_mxy4 = brush_beads_matrix[rchain,rbead,:]-brush_beads_matrix[beadchainj,k,:]-mLxmLy
-                            dist2_mx1 = np.dot(diff_mx1,diff_mx1)    
-                            dist2_mx2 = np.dot(diff_mx1,diff_mx2)    
-                            dist2_my1 = np.dot(diff_my1,diff_my1)
-                            dist2_my2 = np.dot(diff_my1,diff_my2)
-                            dist2_mxy1 = np.dot(diff_mxy1,diff_mxy1)
-                            dist2_mxy2 = np.dot(diff_mxy2,diff_mxy2)
-                            dist2_mxy3 = np.dot(diff_mxy3,diff_mxy3)    
-                            dist2_mxy4 = np.dot(diff_mxy4,diff_mxy4)
-                            if dist2_mx1<bondcutoff2:
-                                success = True
-                            elif dist2_mx2<bondcutoff2:
-                                success = True
-                            elif dist2_my1<bondcutoff2:
-                                success = True
-                            elif dist2_my2<bondcutoff2:
-                                success = True    
-                            elif dist2_mxy1<bondcutoff2:
-                                success = True    
-                            elif dist2_mxy2<bondcutoff2:
-                                success = True
-                            elif dist2_mxy3<bondcutoff2:
-                                success = True
-                            elif dist2_mxy4<bondcutoff2:
+                        else:
+                            dx = diff[0]
+                            dy = diff[1]
+                            dz = diff[2]
+                            if abs(dx)>Lxd2:
+                                if dx>0:
+                                    dx-=Lx
+                                else:
+                                    dx+=Lx
+                            if abs(dy)>Lyd2:
+                                if dy>0:    
+                                    dy-=Ly
+                                else:
+                                    dy+=Ly
+                            dist2_mirror = dx*dx+dy*dy+dz*dz
+                            if dist2_mirror<bondcutoff2:
                                 success = True    
                         if success==True:
                             linked_beads[rchain,rbead]=1
                             linked_beads[beadchainj,k]=1
-                            bead1 = atomnr_beads[rchain,rbead]
-                            bead2 = atomnr_beads[beadchainj,k]
+                            bead1 = int(atomnr_beads[rchain,rbead])
+                            bead2 = int(atomnr_beads[beadchainj,k])
                             thebeads = [bead1,bead2]
                             firstbead = min(thebeads)
                             secondbead = max(thebeads)
                             newbonds.append([firstbead, secondbead])
+                            # Stop neighbours from forming bonds. May extend this functionality to a larger 'radius'
+                            # mol1: rchain; mol2: beadchainj # Could have +/-n, loop over neighb, nn. neighb, nnn. neighb, etc.
+                            for n in range(1,blockneighbours+1): 
+                                # May run into problems if binding to end bead, will check that first
+                                chain_a1np = int(atomnr_to_element[bead1+n,0])
+                                chain_a1nm = int(atomnr_to_element[bead1-n,0])
+                                chain_a2np = int(atomnr_to_element[bead2+n,0])
+                                chain_a2nm = int(atomnr_to_element[bead2-n,0])
+                                rchain = int(rchain)
+                                beadchainj = int(beadchainj)
+                                # Find neighbours:
+                                if chain_a1np==rchain: # If the 'neighbour' is on the same chain, we go ahead and block it
+                                    cc_atom1_np = int(atomnr_to_element[bead1+n,1])
+                                    #print('rchain:',rchain,'cc_atom1_np:',cc_atom1_np)
+                                    linked_beads[rchain,cc_atom1_np]=1
+                                if chain_a1nm==rchain:
+                                    cc_atom1_nm = int(atomnr_to_element[bead1-n,1]) 
+                                    linked_beads[rchain,cc_atom1_nm]=1
+                                if chain_a2np==beadchainj:
+                                    cc_atom2_np = int(atomnr_to_element[bead2+n,1]) 
+                                    linked_beads[beadchainj,cc_atom2_np]=1
+                                if chain_a2nm==beadchainj:
+                                    cc_atom2_nm = int(atomnr_to_element[bead2-n,1])
+                                    linked_beads[beadchainj,cc_atom2_nm]=1
                             break
     
     # Print number of crosslinking bonds created
@@ -287,3 +299,14 @@ for confignr in confignrs:
     for j in range(2*N_atoms+4+startlines+1+N_bonds,Nlines): # Assuming no angle constraint on new bonds, write the rest of the lines to file.
         outfile.write(lines[j])
     outfile.close()                                   # This should be important since I write to multiple files
+'''
+print('atomnr_beads[0,:]:',atomnr_beads[0,:])
+print('atomnr_beads[1,:]:',atomnr_beads[1,:])
+print('atomnr_beads[2,:]:',atomnr_beads[2,:])
+print('atomnr_beads[3,:]:',atomnr_beads[3,:])
+print('atomnr_beads[4,:]:',atomnr_beads[4,:])
+print('atomnr_beads[5,:]:',atomnr_beads[5,:])
+print('atomnr_beads[6,:]:',atomnr_beads[6,:])
+print('atomnr_beads[7,:]:',atomnr_beads[7,:])
+print('atomnr_beads[8,:]:',atomnr_beads[8,:])
+'''
