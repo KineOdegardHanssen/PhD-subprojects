@@ -148,7 +148,7 @@ if __name__ == '__main__':
             changestring =''
             if varyE_bool==True:
                 varyE = elem
-                changestring = changestring+'_E'+str(varyE)+'_gdflt'
+                changestring = changestring+'_E'+str(varyE)+'_gdf'
             else:
                 varyg = elem
                 changestring = changestring+'_Edefault_g'+str(varyg)
