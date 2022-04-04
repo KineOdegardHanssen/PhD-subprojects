@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
 
 # change the default font family
 plt.rcParams.update({'font.family':'Arial'})
@@ -109,22 +110,6 @@ I_AP_mins_everywhere        = []
 I_AP_halfwidth_everywhere   = []
 I_ISI_everywhere            = []
 
-i_master_sprx         = []
-Nspikes_sprx          = []
-avg_AP_ampl_sprx      = []
-rms_AP_ampl_sprx      = []
-avg_AP_mins_sprx      = []
-rms_AP_mins_sprx      = []
-avg_AP_halfwidth_sprx = []
-rms_AP_halfwidth_sprx = []
-avg_ISI_sprx          = []
-rms_ISI_sprx          = []
-I_Nspikes_sprx        = []
-I_AP_ampl_sprx        = []
-I_AP_mins_sprx        = []
-I_AP_halfwidth_sprx   = []
-I_ISI_sprx            = []
-
 i_master_onecomp         = []
 Nspikes_onecomp          = []
 avg_AP_ampl_onecomp      = []
@@ -166,32 +151,6 @@ for cm in cms:
     Nspikes_everywhere.append(Nspikes)
     I_Nspikes_everywhere.append(I_Nspikes)
 
-    ############# SOMAPROX ##################################
-    Nspikes   = []
-    I_Nspikes = []
-        
-    # Set names
-    infolder = 'Ball-and-stick models/BAS_somaHH_dendpassive/Results/IStim/Soma%i/dendlen%i/denddiam'% (somasize,dendlen)+str(denddiam)+'/'+folderstring
-    infilename_Nspikes = infolder+'basHHdpas_csprx'+str(cm)+'_idur%i_varyiamp'% (idur) +'_manual_Nspikes_vs_I.txt'
-    # Read files
-    infile_Nspikes = open(infilename_Nspikes,'r')
-    lines_Nspikes  = infile_Nspikes.readlines()
-    Nlines_Nspikes = len(lines_Nspikes)
-
-    for i in range(Nlines_Nspikes):
-        words_Nspikes = lines_Nspikes[i].split()
-        if len(words_Nspikes)>0:
-            I_Nspikes.append(float(words_Nspikes[0]))
-            Nspikes.append(float(words_Nspikes[1]))
-
-    infile_Nspikes.close()
-    
-    Nspikes_sprx.append(Nspikes)
-    I_Nspikes_sprx.append(I_Nspikes)
-
-    #print('i_master:',i_master) 
-    #print('Nspikes:',Nspikes)
-
     #################### Soma only, Hodgkin-Huxley #########################################
     Nspikes   = []
     I_Nspikes = []
@@ -227,7 +186,6 @@ for cm in cms:
 # Plotting
 # These are out of use for the time being... Need to add more colors.
 color_bashhall  = ['#1f77b4','#d62728']
-color_bashhsprx = ['#ff7f0e','#9467bd'] # Skip this?
 color_somahh    = ['#2ca02c','#8c564b']
 
 plotfolder = 'Comparemodels/All/'
@@ -236,6 +194,15 @@ plotname_rdf = plotfolder+'fI_rdiff_allmodels.png'
 plotname_rdf_maxdiff  = plotfolder+'fI_rdiff_maxdiff_allmodels.png'
 plotname_rdf_lastdiff = plotfolder+'fI_rdiff_lastdiff_allmodels.png'
 
+''' # OLD
+#fig = plt.figure(figsize=(15,15),dpi=300)
+#gs = gridspec.GridSpec(3, 4)
+#ax1 = plt.subplot(gs[0, 0:2])
+#ax2 = plt.subplot(gs[0, 2:4])
+#ax3 = plt.subplot(gs[1, 0:2])
+#ax4 = plt.subplot(gs[1, 2:4])
+#ax5 = plt.subplot(gs[2, 1:3])
+'''
 
 fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(15,15),dpi=300)
 #fig, ((ax1, ax2), (ax3, ax4), (ax5)) = plt.subplots(3, 2, figsize=(15,15),dpi=300)
@@ -245,7 +212,7 @@ ax2.set_title(r'B',loc='left',fontsize=18)
 ax3.set_title(r'C',loc='left',fontsize=18)
 ax4.set_title(r'D',loc='left',fontsize=18)
 ax5.set_title(r'E',loc='left',fontsize=18)
-
+ax6.set_title(r'F',loc='left',fontsize=18)
 
 plt.rc('xtick', labelsize=16)
 plt.rc('ytick', labelsize=16)
@@ -253,13 +220,13 @@ plt.rc('legend', fontsize=16)
 
 ax1.set_title('One compartment HH neuron',fontsize=18)
 for i in range(Ncm):
-    ax1.plot(I_Nspikes_onecomp[i], Nspikes_onecomp[i],label=r'One comp., $C_m$ = %.2f' % cms[i], linewidth=mylinewidth)
-ax1.set_ylabel('$f$ [Hz]',fontsize=16)
+    ax1.plot(I_Nspikes_onecomp[i], Nspikes_onecomp[i],label=r'%.2f*$C_m$' % cms[i], linewidth=mylinewidth)
+ax1.set_ylabel('$f$ (Hz)',fontsize=16)
 
 ax2.set_title('Ball-and-stick HH neuron',fontsize=18)
 for i in range(Ncm):
-    ax2.plot(I_Nspikes_everywhere[i], Nspikes_everywhere[i],label=r'$C_{m,all}$ = %.2f' % cms[i], linewidth=mylinewidth)
-    #ax2.plot(I_Nspikes_sprx[i], Nspikes_sprx[i],label=r'$C_{m,somaprox.}$ = %.2f' % cms[i], linewidth=mylinewidth)
+    if np.sum(Nspikes_everywhere[i])!=0:
+        ax2.plot(I_Nspikes_everywhere[i], Nspikes_everywhere[i],label=r'%.2f*$C_{m}$' % cms[i], linewidth=mylinewidth)
 
 ## One panel for each Allen model too.
 
@@ -330,19 +297,10 @@ i_master_everywhere_all   = []
 Nspikes_everywhere_all    = []
 I_Nspikes_everywhere_all  = []
 
-i_master_sprx_all         = []
-Nspikes_sprx_all          = []
-I_Nspikes_sprx_all        = []
-
 for testmodel in testmodels:
     i_master_everywhere         = []
     Nspikes_everywhere_allen    = []
     I_Nspikes_everywhere_allen  = []
-    
-    i_master_sprx               = []
-    Nspikes_sprx_allen          = []
-    I_Nspikes_sprx_allen        = []
-
     infolder      = 'Allen_test_changecapacitance/figures/%i/' % (testmodel)
     vrestfolder   = infolder 
     for cm in cms:
@@ -366,34 +324,9 @@ for testmodel in testmodels:
 
         Nspikes_everywhere_allen.append(Nspikes)
         I_Nspikes_everywhere_allen.append(I_Nspikes)
-    
-        ############# SOMAPROX ##################################
-        Nspikes         = []
-        I_Nspikes       = []
-        
-        # Set names
-        infilename_Nspikes = infolder+'%i_cmsprx'%testmodel+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Nspikes_vs_I.txt'
-        # Read files
-        infile_Nspikes = open(infilename_Nspikes,'r')
-    
-        lines_Nspikes = infile_Nspikes.readlines()
-        Nlines_Nspikes = len(lines_Nspikes)
-    
-        for i in range(Nlines_Nspikes):
-            words_Nspikes = lines_Nspikes[i].split()
-            if len(words_Nspikes)>0:
-                I_Nspikes.append(float(words_Nspikes[0]))
-                Nspikes.append(float(words_Nspikes[1]))
-    
-        infile_Nspikes.close()
-        
-        Nspikes_sprx_allen.append(Nspikes)
-        I_Nspikes_sprx_allen.append(I_Nspikes)
     Nspikes_everywhere_all.append(Nspikes_everywhere_allen)
     I_Nspikes_everywhere_all.append(I_Nspikes_everywhere_allen)
-    
-    Nspikes_sprx_all.append(Nspikes_sprx_allen)
-    I_Nspikes_sprx_all.append(I_Nspikes_sprx_allen)
+        
 
 # Plotting
     
@@ -401,7 +334,6 @@ for testmodel in testmodels:
 #color_pv_sprx  = ['#ff7f0e','#9467bd','#8c564b']
 
 color_pv_all   = ['#1f77b4','#d62728','#2ca02c']
-#color_pv_sprx  = ['darkblue','#9467bd','darkgreen']
 color_pv_sprx  = ['rebeccapurple','#9467bd','olive']
 
 ## avg and rms:
@@ -412,31 +344,29 @@ ax5.set_title('Allen model %s' % testmodels[2],fontsize=18)
 I_Nspikes_everywhere_this0 = I_Nspikes_everywhere_all[0]
 I_Nspikes_everywhere_this1 = I_Nspikes_everywhere_all[1]
 I_Nspikes_everywhere_this2 = I_Nspikes_everywhere_all[2]
-I_Nspikes_sprx_this0       = I_Nspikes_sprx_all[0]
-I_Nspikes_sprx_this1       = I_Nspikes_sprx_all[1]
-I_Nspikes_sprx_this2       = I_Nspikes_sprx_all[2]
 Nspikes_everywhere_this0  = Nspikes_everywhere_all[0]
 Nspikes_everywhere_this1  = Nspikes_everywhere_all[1]
 Nspikes_everywhere_this2  = Nspikes_everywhere_all[2]
-Nspikes_sprx_this0        = Nspikes_sprx_all[0]
-Nspikes_sprx_this1        = Nspikes_sprx_all[1]
-Nspikes_sprx_this2        = Nspikes_sprx_all[2]
 for i in range(Ncm):
-    ax3.plot(I_Nspikes_everywhere_this0[i], Nspikes_everywhere_this0[i],
-label=r'$C_{m,\mathregular{all}}$=%.2f' % cms[i], linewidth=mylinewidth)
-    ax4.plot(I_Nspikes_everywhere_this1[i], Nspikes_everywhere_this1[i],
-label=r'$C_{m,\mathregular{all}}$=%.2f' % cms[i], linewidth=mylinewidth)
-    ax5.plot(I_Nspikes_everywhere_this2[i], Nspikes_everywhere_this2[i],label=r'$C_{m,\mathregular{all}}$=%.2f' % cms[i], linewidth=mylinewidth)
-    ### Somaprox:
-    #ax3.plot(I_Nspikes_sprx_this0[i], Nspikes_sprx_this0[i],'--',label=r'$C_{m,\mathregular{somaprox.}}$=%.2f' % cms[i], linewidth=mylinewidth)
-    #ax4.plot(I_Nspikes_sprx_this1[i], Nspikes_sprx_this1[i],'--',label=r'$C_{m,\mathregular{somaprox.}}$=%.2f' % cms[i], linewidth=mylinewidth)
-    #ax5.plot(I_Nspikes_sprx_this2[i], Nspikes_sprx_this2[i],'--',label=r'$C_{m,\mathregular{somaprox.}}$=%.2f' % cms[i], linewidth=mylinewidth)
+    print('i:',i, 'Ncm:',Ncm)
+    if np.sum(Nspikes_everywhere_this0[i])!=0:
+        ax3.plot(I_Nspikes_everywhere_this0[i], Nspikes_everywhere_this0[i],
+label=r'%.2f*$C_{m}$' % cms[i], linewidth=mylinewidth)
+    if np.sum(Nspikes_everywhere_this1[i])!=0:
+        ax4.plot(I_Nspikes_everywhere_this1[i], Nspikes_everywhere_this1[i],
+label=r'%.2f*$C_{m}$' % cms[i], linewidth=mylinewidth)
+    if np.sum(Nspikes_everywhere_this2[i])!=0:
+        ax5.plot(I_Nspikes_everywhere_this2[i], Nspikes_everywhere_this2[i],label=r'%.2f*$C_{m}$' % cms[i], linewidth=mylinewidth)
 
 ax1.legend(loc='lower right')
 ax2.legend(loc='lower right')
 ax3.legend(loc='lower right')
-ax4.legend(loc='upper left')
+ax4.legend(loc='lower right',ncol=2)
 ax5.legend(loc='lower right')
+ax1.set_xlabel(r'$I$ (nA)',fontsize=16)
+ax1.set_ylabel(r'$f$ (Hz)',fontsize=16)
+ax2.set_xlabel(r'$I$ (nA)',fontsize=16)
+ax2.set_ylabel(r'$f$ (Hz)',fontsize=16)
 ax3.set_xlabel(r'$I$ (nA)',fontsize=16)
 ax3.set_ylabel(r'$f$ (Hz)',fontsize=16)
 ax4.set_xlabel(r'$I$ (nA)',fontsize=16)
@@ -444,13 +374,8 @@ ax4.set_ylabel(r'$f$ (Hz)',fontsize=16)
 ax5.set_xlabel(r'$I$ (nA)',fontsize=16)
 ax5.set_ylabel(r'$f$ (Hz)',fontsize=16)
 
-
-fig.tight_layout()
-plt.savefig(plotname_all)
-
 ############ Differences #############
-# Store the max values. Plot the relative difference
-fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(15,15),dpi=300)
+
 currat0      = []
 currat1      = []
 currat2      = [] 
@@ -467,6 +392,15 @@ maxdiff_tot  = []
 lastdiff1_m0 = []
 lastdiff1_m1 = []
 lastdiff1_m2 = []
+im0_store    = []
+rd1_m0_store = []
+im1_store    = []
+rd1_m1_store = []
+im2_store    = []
+rd1_m2_store = []
+cm_m0_store  = []
+cm_m1_store  = []
+cm_m2_store  = []
 for i in range(Ncm): # Should I do this for somaprox too?
     if i!=3:
         #print('---------------------------')
@@ -541,38 +475,30 @@ for i in range(Ncm): # Should I do this for somaprox too?
         #print('---------------------------')
         # Plotting:
         if len(rd1_m0)>0:
-            ax3.plot(im0, rd1_m0, label='$C_m$=%s' % str(cms[i]))
+            cm_m0_store.append(cms[i])
+            im0_store.append(im0)
+            rd1_m0_store.append(rd1_m0)
             lastdiff1_m0.append(rd1_m0[-1])
         if len(rd1_m1)>0:
-            ax4.plot(im1, rd1_m1, label='$C_m$=%s' % str(cms[i]))
+            cm_m1_store.append(cms[i])
+            im1_store.append(im1)
+            rd1_m1_store.append(rd1_m1)
             lastdiff1_m1.append(rd1_m1[-1])
         if len(rd1_m2)>0:
-            ax5.plot(im2, rd1_m2, label='$C_m$=%s' % str(cms[i]))
+            cm_m2_store.append(cms[i])
+            im2_store.append(im2)
+            rd1_m2_store.append(rd1_m2)
             lastdiff1_m2.append(rd1_m2[-1])
-ax1.legend(loc='lower right')
-ax2.legend(loc='lower right')
-ax3.legend(loc='lower right')
-ax4.legend(loc='lower right')
-ax5.legend(loc='lower right')
-ax1.set_title(r'A',loc='left',fontsize=18)
-ax2.set_title(r'B',loc='left',fontsize=18)
-ax3.set_title(r'C',loc='left',fontsize=18)
-ax4.set_title(r'D',loc='left',fontsize=18)
-ax5.set_title(r'E',loc='left',fontsize=18)
-ax3.set_title(r'Allen model %i' % testmodels[0],fontsize=18)
-ax4.set_title(r'Allen model %i' % testmodels[1],fontsize=18)
-ax5.set_title(r'Allen model %i' % testmodels[2],fontsize=18)
-ax3.set_ylabel(r'Relative difference in $f$',fontsize=16)
-ax4.set_xlabel(r'$I$ (nA)',fontsize=16)
-ax4.set_ylabel(r'Relative difference in $f$',fontsize=16)
-ax5.set_ylabel(r'Relative difference in $f$',fontsize=16)
-ax5.set_xlabel(r'$I$ (nA)',fontsize=16)
+
 # Convert to arrays?
 currat_bas    = []
 maxdiff_bas   = []
 maxdiff1_bas  = []
 maxdiff2_bas  = []
 lastdiff1_bas = []
+im_bas_store  = []
+rd1_bas_store = []
+cm_bas_store  = []
 for i in range(Ncm): # Should I do this for somaprox too?
     if i!=3:
         im_bas, rd1_bas, rd2_bas = reldiffs(Nspikes_everywhere[i],Nspikes_everywhere[3],I_Nspikes_everywhere[i],I_Nspikes_everywhere[3]) 
@@ -597,15 +523,19 @@ for i in range(Ncm): # Should I do this for somaprox too?
         if len(rd1_bas)>0 or len(rd2_bas)>0:
             currat_bas.append(im_bas[np.argmax(abs(rd1_bas))])
         if len(rd1_bas)>0:
-            ax2.plot(im_bas, rd1_bas,label='$C_m$=%s' % str(cms[i]))
+            cm_bas_store.append(cms[i])
+            im_bas_store.append(im_bas)
+            rd1_bas_store.append(rd1_bas)
             lastdiff1_bas.append(rd1_bas[-1])
-ax2.set_title(r'Ball-and-stick HH',fontsize=18)
 
 currat_oc    = []
 maxdiff_oc   = []
 maxdiff1_oc  = []
 maxdiff2_oc  = []
 lastdiff1_oc = []
+cm_oc_store  = []
+im_oc_store  = []
+rd1_oc_store = []
 for i in range(Ncm):
     if i!=3:
         im_oc, rd1_oc, rd2_oc = reldiffs(Nspikes_onecomp[i],Nspikes_onecomp[3],I_Nspikes_onecomp[i],I_Nspikes_onecomp[3]) 
@@ -630,10 +560,104 @@ for i in range(Ncm):
         if len(rd1_oc)>0 or len(rd2_oc):
             currat_oc.append(im_oc[np.argmax(abs(rd1_oc))])
         if len(rd1_oc)>0:
-            ax1.plot(im_oc, rd1_oc,label='$C_m$=%s' % str(cms[i]))
+            cm_oc_store.append(cms[i])
+            im_oc_store.append(im_oc)
+            rd1_oc_store.append(rd1_oc)
             lastdiff1_oc.append(rd1_oc[-1])
+
+### Finish main plotting
+print('-------------------------------')
+print('cm_oc_store[3]:',cm_oc_store[3])
+print('cm_bas_store[3]:',cm_bas_store[3])
+print('cm_m0_store[3]:',cm_m0_store[3])
+print('cm_m1_store[3]:',cm_m1_store[3])
+print('cm_m2_store[3]:',cm_m2_store[3])
+print('-------------------------------')
+print('cm_oc_store[4]:',cm_oc_store[4])
+print('cm_bas_store[4]:',cm_bas_store[4])
+print('cm_m0_store[4]:',cm_m0_store[4])
+print('cm_m1_store[4]:',cm_m1_store[4])
+print('cm_m2_store[4]:',cm_m2_store[4])
+print('-------------------------------')
+#change25pc = (lastdiff1_oc[3],lastdiff1_bas[3],lastdiff1_m0[3],lastdiff1_m1[3],lastdiff1_m2[3])
+#change50pc = (lastdiff1_oc[4],lastdiff1_bas[4],lastdiff1_m0[4],lastdiff1_m1[3],lastdiff1_m2[4])
+#ind = np.arange(len(change25pc))
+#ax6.bar(ind,change50pc)
+#ax6.bar(ind,change25pc) # Could have yerr too, but prob. no use
+#ax6.set_xticks(ind, ('One comp.','BAS','437','965','407'))
+#ax6.set_xlabel('Model',fontsize=18)
+#ax6.set_ylabel(r'Relative difference at max. current',fontsize=18)
+#ax6.set_title(r'Difference from $C_m$=1.0 $\mu$F/cm$^2$',fontsize=18)
+
+barWidth = 0.25
+change25pc = [lastdiff1_oc[3],lastdiff1_bas[3],lastdiff1_m0[3],lastdiff1_m1[3],lastdiff1_m2[3]]
+change50pc = [lastdiff1_oc[4],lastdiff1_bas[4],lastdiff1_m0[4],lastdiff1_m1[3],lastdiff1_m2[4]]
+
+br1 = np.arange(len(change25pc))
+br2 = [x+barWidth for x in br1]
+
+ax6.bar(br1, change25pc, width=barWidth, label='25%')
+ax6.bar(br2, change50pc, width=barWidth, label='50%')
+
+ax6.axhline(y=0,color='k',linestyle='-',linewidth=1.0)
+plt.xticks(br1, ['One comp.','BAS','437','965','407'])#([r + barWidth for r in range(len(change25pc))], ['One comp.','BAS','437','965','407'])
+ax6.set_xlabel('Model',fontsize=18)
+ax6.set_ylabel(r'Relative difference at max. current',fontsize=18)
+ax6.set_title(r'Difference from $C_m$ = 1.0 $\mu$F/cm$^2$',fontsize=18)
+ax6.legend(loc='upper right')
+fig.tight_layout()
+plt.savefig(plotname_all)
+
+## Other plotting
+# Store the max values. Plot the relative difference
+fig = plt.figure(figsize=(15,15),dpi=300)
+gs = gridspec.GridSpec(3, 4)
+
+ax1 = plt.subplot(gs[0, 0:2])
+ax2 = plt.subplot(gs[0, 2:4])
+ax3 = plt.subplot(gs[1, 0:2])
+ax4 = plt.subplot(gs[1, 2:4])
+ax5 = plt.subplot(gs[2, 1:3])
+
+#ax1 = fig.add_subplot(3,2,1)
+#ax2 = fig.add_subplot(3,2,2)
+#ax3 = fig.add_subplot(3,2,3)
+#ax4 = fig.add_subplot(3,2,4)
+#ax5 = fig.add_subplot(3,2,5)
+
+# Do stuff. Loop, etc.
+for i in range(len(cm_oc_store)):
+    ax1.plot(im_oc_store[i], rd1_oc_store[i],label='%s*$C_m$' % str(cm_oc_store[i]))
+for i in range(len(cm_bas_store)):
+    ax2.plot(im_bas_store[i], rd1_bas_store[i],label='%s*$C_m$' % str(cm_oc_store[i]))
+for i in range(len(cm_m0_store)):
+    ax3.plot(im0_store[i], rd1_m0_store[i], label='%s*$C_m$' % str(cm_m0_store[i]))
+for i in range(len(cm_m1_store)):
+    ax4.plot(im1_store[i], rd1_m1_store[i], label='%s*$C_m$' % str(cm_m1_store[i]))
+for i in range(len(cm_m2_store)):
+    ax5.plot(im2_store[i], rd1_m2_store[i], label='%s*$C_m$' % str(cm_m2_store[i]))
+
+ax1.legend(loc='lower right')
+ax2.legend(loc='lower right')
+ax3.legend(loc='lower right')
+ax4.legend(loc='lower right')
+ax5.legend(loc='lower right')
+ax1.set_title(r'A',loc='left',fontsize=18)
+ax2.set_title(r'B',loc='left',fontsize=18)
+ax3.set_title(r'C',loc='left',fontsize=18)
+ax4.set_title(r'D',loc='left',fontsize=18)
+ax5.set_title(r'E',loc='left',fontsize=18)
 ax1.set_title(r'One compartment HH',fontsize=18)
+ax2.set_title(r'Ball-and-stick HH',fontsize=18)
+ax3.set_title(r'Allen model %i' % testmodels[0],fontsize=18)
+ax4.set_title(r'Allen model %i' % testmodels[1],fontsize=18)
+ax5.set_title(r'Allen model %i' % testmodels[2],fontsize=18)
 ax1.set_ylabel(r'Relative difference in $f$',fontsize=16)
+ax3.set_ylabel(r'Relative difference in $f$',fontsize=16)
+ax4.set_xlabel(r'$I$ (nA)',fontsize=16)
+ax4.set_ylabel(r'Relative difference in $f$',fontsize=16)
+ax5.set_ylabel(r'Relative difference in $f$',fontsize=16)
+ax5.set_xlabel(r'$I$ (nA)',fontsize=16)
 
 fig.tight_layout()
 plt.savefig(plotname_rdf)
@@ -655,7 +679,23 @@ print('maxdiff1_v1:',maxdiff1_v1)
 print('maxdiff2_v1:',maxdiff2_v1)
 
 
-fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(15,15),dpi=300)
+fig = plt.figure(figsize=(15,15),dpi=300)
+
+gs = gridspec.GridSpec(3, 4)
+
+ax1 = plt.subplot(gs[0, 0:2])
+ax2 = plt.subplot(gs[0, 2:4])
+ax3 = plt.subplot(gs[1, 0:2])
+ax4 = plt.subplot(gs[1, 2:4])
+ax5 = plt.subplot(gs[2, 1:3])
+
+#ax1 = fig.add_subplot(3,2,1)
+#ax2 = fig.add_subplot(3,2,2)
+#ax3 = fig.add_subplot(3,2,3)
+#ax4 = fig.add_subplot(3,2,4)
+#ax5 = fig.add_subplot(3,2,5)
+
+#fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(15,15),dpi=300)
 ax1.plot(cms[:-1],maxdiff1_oc)
 ax2.plot(cms[:-2],maxdiff1_bas)
 ax3.plot(cms[:-1],maxdiff0_v1)
@@ -667,7 +707,7 @@ ax3.set_title(r'C',loc='left',fontsize=18)
 ax4.set_title(r'D',loc='left',fontsize=18)
 ax5.set_title(r'E',loc='left',fontsize=18)
 ax1.set_title(r'One compartment HH',fontsize=18)
-ax1.set_title(r'Ball-and-stick HH',fontsize=18)
+ax2.set_title(r'Ball-and-stick HH',fontsize=18)
 ax3.set_title(r'Allen model %i' % testmodels[0],fontsize=18)
 ax4.set_title(r'Allen model %i' % testmodels[1],fontsize=18)
 ax5.set_title(r'Allen model %i' % testmodels[2],fontsize=18)
@@ -680,7 +720,23 @@ ax5.set_xlabel(r'$C_m$ ($\mu$F/cm$^2$)',fontsize=16)
 
 plt.savefig(plotname_rdf_maxdiff)
 
-fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(15,15),dpi=300)
+fig = plt.figure(figsize=(15,15),dpi=300)
+
+gs = gridspec.GridSpec(3, 4)
+
+ax1 = plt.subplot(gs[0, 0:2])
+ax2 = plt.subplot(gs[0, 2:4])
+ax3 = plt.subplot(gs[1, 0:2])
+ax4 = plt.subplot(gs[1, 2:4])
+ax5 = plt.subplot(gs[2, 1:3])
+
+#ax1 = fig.add_subplot(3,2,1)
+#ax2 = fig.add_subplot(3,2,2)
+#ax3 = fig.add_subplot(3,2,3)
+#ax4 = fig.add_subplot(3,2,4)
+#ax5 = fig.add_subplot(3,2,5)
+
+#fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(15,15),dpi=300)
 ax1.plot(cms[:-1],lastdiff1_oc)
 ax2.plot(cms[:-2],lastdiff1_bas)
 ax3.plot(cms[:-1],lastdiff1_m0)
@@ -692,7 +748,7 @@ ax3.set_title(r'C',loc='left',fontsize=18)
 ax4.set_title(r'D',loc='left',fontsize=18)
 ax5.set_title(r'E',loc='left',fontsize=18)
 ax1.set_title(r'One compartment HH',fontsize=18)
-ax1.set_title(r'Ball-and-stick HH',fontsize=18)
+ax2.set_title(r'Ball-and-stick HH',fontsize=18)
 ax3.set_title(r'Allen model %i' % testmodels[0],fontsize=18)
 ax4.set_title(r'Allen model %i' % testmodels[1],fontsize=18)
 ax5.set_title(r'Allen model %i' % testmodels[2],fontsize=18)
@@ -704,5 +760,50 @@ ax5.set_ylabel(r'Relative difference in $f$ at highest stim.',fontsize=16)
 ax5.set_xlabel(r'$C_m$ ($\mu$F/cm$^2$)',fontsize=16)
 
 plt.savefig(plotname_rdf_lastdiff)
+
+'''
+fig = plt.figure(figsize=(15, 15))
+gs = gridspec.GridSpec(3, 4)
+# Test:
+ax1 = plt.subplot(gs[0, 0:2])
+ax2 = plt.subplot(gs[0, 2:4])
+ax3 = plt.subplot(gs[1, 0:2])
+ax4 = plt.subplot(gs[1, 2:4])
+ax5 = plt.subplot(gs[2, 1:3])
+ax1.plot([1,2,3],[1,2,3])
+ax2.plot([1,2,3],[1,2,3])
+ax3.plot([1,2,3],[1,2,3])
+ax4.plot([1,2,3],[1,2,3])
+ax5.plot([1,2,3],[1,2,3])
+plt.tight_layout()
+
+# This is all very technical
+fig = plt.figure(figsize=(12, 5))
+gs = gridspec.GridSpec(2, 5)
+# Test:
+for i in range(0, 5):
+    if i < 2:
+        ax = plt.subplot(gs[0, 2 * i:2 * i + 2])
+    else:
+        ax = plt.subplot(gs[1, 2 * i - 5:2 * i + 2 - 5])
+    ax.plot([1,2,3],[i+1,1+2*i,i*i+1])
+
+#Original code:
+fig = plt.figure(figsize=(12, 5))
+gs = gridspec.GridSpec(2, 12)
+
+for i in range(0, 11):
+    if i < 6:
+        ax = plt.subplot(gs[0, 2 * i:2 * i + 2])
+    else:
+        ax = plt.subplot(gs[1, 2 * i - 11:2 * i + 2 - 11])
+    data = [[1, i * 1], [2, i * 2 * 2], [3, i * 3 * 3]]
+    df = pd.DataFrame(data, columns=['x', 'y'])
+
+    df.plot('x', 'y', ax=ax)
+
+plt.tight_layout()
+plt.show()
+'''
 
 plt.show()

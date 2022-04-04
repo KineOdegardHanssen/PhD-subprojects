@@ -138,8 +138,21 @@ plotfolder = 'figures/Comparemodels/'
 plotname = plotfolder+'fI_varyE_AllenPV_withCa.png'
 
 ## avg and rms:
-fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7, ax8, ax9), (ax10, ax11, ax12)) = plt.subplots(4, 3, figsize=(22,20))
+fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7, ax8, ax9), (ax10, ax11, ax12)) = plt.subplots(4, 3, figsize=(20,25))
 fig.suptitle(r'Frequency $f$ vs $I$',fontsize=16)
+
+ax1.set_title(r'A',loc='left',fontsize=18)
+ax2.set_title(r'B',loc='left',fontsize=18)
+ax3.set_title(r'C',loc='left',fontsize=18)
+ax4.set_title(r'D',loc='left',fontsize=18)
+ax5.set_title(r'E',loc='left',fontsize=18)
+ax6.set_title(r'F',loc='left',fontsize=18)
+ax7.set_title(r'G',loc='left',fontsize=18)
+ax8.set_title(r'H',loc='left',fontsize=18)
+ax9.set_title(r'I',loc='left',fontsize=18)
+ax10.set_title(r'J',loc='left',fontsize=18)
+ax11.set_title(r'K',loc='left',fontsize=18)
+ax12.set_title(r'L',loc='left',fontsize=18)
 
 # Add legends! #I could probably have looped this... ax1., ax2. etc. makes it hard.
 ax1.set_title(r'Vary $E_{\mathregular{Na}}$, Allen model %i' % testmodels[0],fontsize=16)
@@ -522,7 +535,7 @@ Nspikes_everywhere_this   = Nspikes_everywhere_all_Ca[0]
 #Nspikes_sprx_this         = Nspikes_sprx_all_Ca[0]
 for j in range(NECa):
     ### Everywhere:
-    ax10.plot(I_Nspikes_everywhere_this[j], Nspikes_everywhere_this[j],label=r'%s==%.2f' % (plotlabelCa,ECa0[j]), linewidth=mylinewidth)
+    ax10.plot(I_Nspikes_everywhere_this[j], Nspikes_everywhere_this[j],label=r'%s=%.2f' % (plotlabelCa,ECa0[j]), linewidth=mylinewidth)
     ### Somaprox:
     #ax10.plot(I_Nspikes_sprx_this[j], Nspikes_sprx_this[j],'--',label=r'sprx: %s=%.2f' % (plotlabelCa,ECa0[j]), linewidth=mylinewidth)
 ax10.set_xlabel('$I$ (nA)',fontsize=14)
@@ -554,6 +567,11 @@ for j in range(NECa):
     #ax12.plot(I_Nspikes_sprx_this[j], Nspikes_sprx_this[j],'--',label=r'somaprox: %s=%.2f' % (plotlabelCa,ECa0[j]), linewidth=mylinewidth)
 ax12.set_xlabel('$I$ (nA)',fontsize=14)
 ax12.set_ylabel('$f$ (Hz)',fontsize=14)
+
+#ax1.set_title(r'A',x=-.5,fontsize=18)
+#ax4.set_title(r'B',x=-.5,fontsize=18)
+#ax7.set_title(r'C',x=-.5,fontsize=18)
+#ax10.set_title(r'D',x=-.5,fontsize=18)
 
 fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 

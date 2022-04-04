@@ -111,8 +111,8 @@ def manual(filename,idelay,idur,spikedurat):
     return Npeaks, peaktimes, peakmins_avg, peakmins_rms, peakvals_avg,  peakvals_rms, dur_avg, dur_rms, isi_avg, isi_rms, isi
 
 if __name__ == '__main__':
-    testmodel  = 478513437 # 488462965 # 478513407 # 
-    cm         = 1.5
+    testmodel  = 488462965 # 478513437 # 478513407 #  ##  ## 485694403 # 489931686 # 480633479 # ## 
+    cm         = 1.0
     spikedurat = -40
     idur       = 2000 #100 # ms
     idelay     = 100
@@ -123,11 +123,18 @@ if __name__ == '__main__':
     denddiam   = 1
     nsegments  = 200 
     
-    varymech = 'leak' # 
+    varymech = 'Na' # 'K' # 'leak' # 
     varyE_bool = True
     namestringfirst = ''
-    varyE = [0] #[-20,-10,0,10,20]
-    namestringfirst = namestringfirst + 'Epasplus'
+    if varymech=='Na':
+        varyE = [50]#[63,73] #[40,50,53,60,70]
+        namestringfirst = namestringfirst + 'ENa' ### +str(varyE)
+    elif varymech=='K':
+        varyE = [-100]#[-120,-107,-100,-90,-80]
+        namestringfirst = namestringfirst + 'EK' ### +str(varyE)
+    elif varymech=='pas': # THIS CAN VARY A LOT, RIGHT? 
+        varyE = -83 #[-70,-73,-77,-80,-90]
+        namestringfirst = namestringfirst + 'EK' ### +str(varyE)
     varyg = 'None'
     
     varylist = [] # Should be redundant
@@ -212,7 +219,7 @@ if __name__ == '__main__':
         v_init = -88.8
     ###########################################################
     
-    iamps  = [0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.2,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.3,0.31,0.32,0.33,0.34,0.35,0.36,0.37,0.38,0.39,0.4,0.41,0.42,0.43,0.44,0.45,0.46,0.47,0.48,0.49,0.5,0.51,0.52,0.53,0.54,0.55,0.56,0.57,0.58,0.59,0.6,0.61,0.62,0.63,0.64,0.65,0.66,0.67,0.68,0.69,0.7,0.71,0.72,0.73,0.74,0.75,0.76,0.77,0.78,0.79,0.8]##[0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.2,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.3,0.31,0.32,0.33,0.34,0.35,0.36,0.37,0.38,0.39,0.4,0.41,0.42,0.43,0.44,0.45,0.46,0.47,0.48,0.49,0.5]
+    iamps  = [0.5,0.51,0.52,0.53,0.54,0.55,0.56,0.57,0.58,0.59,0.6,0.61,0.62,0.63,0.64,0.65,0.66,0.67,0.68,0.69,0.7]#,0.71,0.72,0.73,0.74,0.75,0.76,0.77,0.78,0.79,0.8]#[0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.1,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,0.2,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,0.3,0.31,0.32,0.33,0.34,0.35,0.36,0.37,0.38,0.39,0.4,0.41,0.42,0.43,0.44,0.45,0.46,0.47,0.48,0.49,0.5,0.51,0.52,0.53,0.54,0.55,0.56,0.57,0.58,0.59,0.6,0.61,0.62,0.63,0.64,0.65,0.66,0.67,0.68,0.69,0.7]#,0.71,0.72,0.73,0.74,0.75,0.76,0.77,0.78,0.79,0.8]#
     
     NI   = len(iamps)
     
@@ -233,16 +240,16 @@ if __name__ == '__main__':
     for E in varyE:
         print('E:',E)
         namestring = namestringfirst+str(E)
-        outfilename_Nspikes = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Nspikes_vs_I.txt'
-        outfilename_APampl = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Vmax_vs_I.txt'
-        outfilename_APmins = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Vmin_vs_I.txt'
-        outfilename_APdhw  = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_sdurat%s_vs_I.txt' % str(spikedurat)
-        outfilename_ISI   = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+'_idur%i_varyiamp'% idur+'_manual_ISI_vs_I.txt'
-        plotname_Nspikes  = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Nspikes_vs_I.png'
-        plotname_APampl   = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Vmax_vs_I.png'
-        plotname_APmins   = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Vmin_vs_I.png'
-        plotname_APdhw    = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_sdurat%s_vs_I.png' % str(spikedurat)
-        plotname_ISI      = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_ISI_vs_I.png'
+        outfilename_Nspikes = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Nspikes_vs_I_vII.txt'
+        outfilename_APampl = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Vmax_vs_I_vII.txt'
+        outfilename_APmins = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Vmin_vs_I_vII.txt'
+        outfilename_APdhw  = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_sdurat%s_vs_I_vII.txt' % str(spikedurat)
+        outfilename_ISI   = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+'_idur%i_varyiamp'% idur+'_manual_ISI_vs_I_vII.txt'
+        plotname_Nspikes  = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Nspikes_vs_I_vII.png'
+        plotname_APampl   = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Vmax_vs_I_vII.png'
+        plotname_APmins   = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_Vmin_vs_I_vII.png'
+        plotname_APdhw    = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_sdurat%s_vs_I_vII.png' % str(spikedurat)
+        plotname_ISI      = outfolder+'%s_%i_cmfall'%(namestring,testmodel)+str(cm)+'_idur%i_varyiamp'% idur+'_manual_ISI_vs_I_vII.png'
         # make files
         outfile_Nspikes = open(outfilename_Nspikes,'w')
         outfile_APampl  = open(outfilename_APampl,'w')
@@ -265,7 +272,7 @@ if __name__ == '__main__':
                 outfile_APdhw.write('%.5f %.10f %.10f\n' % (iamp,avg_AP_halfwidth[j],rms_AP_halfwidth[j]))
                 outfile_ISI.write('%.5f %.10f %.10f\n' % (iamp,avg_ISI[j],rms_ISI[j]))
                 # Write all ISIs:
-                outfilename_ISI_all = outfolder+'basPV_idur%i_iamp'% (idur)+str(iamp) +'_manual_cmf'+str(cm)+'_ISIall_vs_Cmall.txt'
+                outfilename_ISI_all = outfolder+'basPV_idur%i_iamp'% (idur)+str(iamp) +'_manual_cmf'+str(cm)+'_ISIall_vs_Cmall_vII.txt'
                 outfile_ISI_all = open(outfilename_ISI_all,'w')
                 for k in range(len(ISI)):
                     outfile_ISI_all.write('%.10f ' % ISI[k])
