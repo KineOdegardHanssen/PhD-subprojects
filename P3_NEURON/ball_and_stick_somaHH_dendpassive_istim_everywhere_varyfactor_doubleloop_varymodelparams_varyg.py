@@ -29,7 +29,6 @@ def run_sim(varymech, varyE, varyg, somasize, cm=1.0, cmfac=1.0, idur=1.0, iamp=
     # AND
     # Changing cm in proximal regions
     cmthis = cm*cmfac
-    pnncutoff = 3.5*somasize
     for sec in h.allsec():
         sec.Ra = Ra
         sectype = sec.name().split("[")[0]
@@ -63,14 +62,7 @@ def run_sim(varymech, varyE, varyg, somasize, cm=1.0, cmfac=1.0, idur=1.0, iamp=
             sec.L = dendlen
             sec.diam = denddiam
             sec.nseg = nsegments
-            section = sec
-            dist = h.distance(somasec(0.5),section(1)) # Measuring distance to end of section
-            if dist<=pnncutoff:
-                exec("sec.cm = {}".format(cmthis))
-            else:
-                for seg in sec:
-                    if h.distance(somasec(0.5),seg)<=pnncutoff:
-                        exec("seg.cm = {}".format(cmthis))
+            exec("sec.cm = {}".format(cmthis))
     
     stim_idx = 0
     stim_params = {
@@ -97,15 +89,27 @@ def run_sim(varymech, varyE, varyg, somasize, cm=1.0, cmfac=1.0, idur=1.0, iamp=
 
 
 if __name__ == '__main__':
-    varymech = 'Na' # 'K' # 'leak' # 
-    varyE_bool = True
+    varyE = [50] # Default Na
+    gna   = 0.12
+    
+    varymech = 'Na' # 'leak' # 'K' # 
+    varyE_bool = False # True # 
+    varyg_bool = True # False # 
     if varymech=='Na':
-        varyE = [45,80]#[40,50,60,70]
+        varyE = [50]#[40,50,60,70]
     elif varymech=='K':
         varyE = [-70,-73,-77,-80,-90]
     elif varymech=='leak':
-        varyE = [-40,-50,-54.3,-60,-70]
-    varyg = 'None'
+        varyE = [-60]#[-40,-50,-54.3,-60,-70]
+    if varyE_bool==False:
+        varyE = 'None'
+    varyfactors = [2.5]#[1.5,2.0,3.0,5.0]#[0.8,1.0,1.2]#[0.1,0.5]#
+    Ngs = len(varyfactors)
+    varyg = []
+    for i in range(Ngs):
+        varyg.append(gna*varyfactors[i])
+    if varyg_bool==False:
+        varyg = 'None'
     
     varylist = [] # Should be redundant
     plotstring = '_vary'
@@ -146,19 +150,19 @@ if __name__ == '__main__':
     for iamp in iamps:
         currentfolder = 'current_idur'+str(idur)+'_iamp'+str(iamp)+'/'
         outfolder = outfolder_base+currentfolder
-        plotname = outfolder+'basHHdpas_cmf'+str(cmfac)+'_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit'%Ra+str(v_init)+plotstring+'_V.png'
+        plotname = outfolder+'basHHdpas_cmf'+str(cmfac)+'_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit'%Ra+str(v_init)+plotstring+'_V_all.png'
         #plt.figure(figsize=(6,5))
         for elem in varylist:
-            print('elem:',elem, '; current:', iamp)
+            print('elem:',elem, '; current:', iamp, '; cmfac:', cmfac)
             changestring =''
             if varyE_bool==True:
                 varyE = elem
-                changestring = changestring+'_E'+str(varyE)+'_gdflt'
+                changestring = changestring+'_E'+str(varyE)+'_gdf'
             else:
                 varyg = elem
-                changestring = changestring+'_Edflt'+'_g'+str(varyg)
+                changestring = changestring+'_g'+str(varyg)
             t, v = run_sim(varymech, varyE, varyg, somasize, cm, cmfac, idur, iamp, idelay, v_init, tstart, tstop_i, Ra, nsegments, dtexp)
-            outfilename = outfolder+'basHHdpas_cmf'+str(cmfac)+'_idur%i_iamp'%idur+str(iamp)+'_Ra%i_vinit' %Ra+str(v_init)+changestring+'_V.txt' 
+            outfilename = outfolder+'basHHdpas_cmf'+str(cmfac)+'_Ra%i_vinit' %Ra+str(v_init)+changestring+'_V_all.txt' 
             outfile = open(outfilename,'w')
             # Write to 'Results/IStim/'
     
