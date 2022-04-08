@@ -112,11 +112,11 @@ varymech = 'Na' # 'K' #
 varyE_bool = True 
 namestring = ''
 if varymech=='Na':
-    varyE = [40,50,53,60,70] # Change this later
+    varyE = [43,53,63] # Change more later
     namestring = namestring + 'ENa'+str(varyE)
     varyEpas = []
     for ENa in varyE:
-        Epasthis = (gNa*ENa+gK*EK)/gpas
+        Epasthis = (gNa*ENa+gK*EK)/gpas_
         varyEpas.append(Epasthis)
 elif varymech=='K':
     varyE = -100 
@@ -176,7 +176,7 @@ if vary_Ca_LVA==True:
 if vary_gpas==True: 
     namestring = namestring + '_gpas'+str(changedg)+'p'
 
-def return_allen_cell_model(model_folder):
+def return_allen_cell_model(model_folder,varyE_this):
 
     params = json.load(open(join(model_folder, "fit_parameters.json"), 'r'))
 
@@ -242,18 +242,18 @@ def return_allen_cell_model(model_folder):
         # First: Change mechanisms 
         # Mechanisms that can be anywhere
         if varymech=='pas':
-            if varyE!='None':
-                sec.e_pas = varyE
+            if varyE_this!='None':
+                sec.e_pas = varyE_this
         if vary_gpas==True: ### NB! THIS CHANGES DEPENDING ON WHERE ON THE NEURON WE ARE!
             sec.g_pas *= changedg 
             gnumber+=1
         if sectype=='soma':
             if varymech=='Na':
-                if varyE!='None':
-                    sec.ena = varyE
+                if varyE_this!='None':
+                    sec.ena = varyE_this
             elif varymech=='K':
-                if varyE!='None':
-                    sec.ek = varyE
+                if varyE_this!='None':
+                    sec.ek = varyE_this
             if varygbool==True: ## REMEMBER TO IMPLEMENT!: ISSUE A WARNING IF MORE g's HAVE BEEN CHANGED
                 if varyIh==True:
                     sec.gbar_Ih *= changedg 
@@ -303,13 +303,13 @@ if "win64" in sys.platform:
         neuron.h.nrn_load_dll(mod_folder+"/nrnmech.dll")
     neuron.nrn_dll_loaded.append(mod_folder)
 
-for iamp in iamps:
+for E in varyE:
     for model_idx in range(len(all_models)):
         model_name = all_models[model_idx]
         #print(model_idx, model_name)
         model_folder = join("cell_models", model_name)
     
-        cell = return_allen_cell_model(model_folder)
+        cell = return_allen_cell_model(model_folder,E)
     
         pointprocess = {
                 'idx': 0,
@@ -342,7 +342,7 @@ for iamp in iamps:
 
         ax4.plot(cell.tvec, stimulus.i)
 
-        fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp),  '{}_changecmf{}_everywhere_vinit{}_addedRa.png'.format(namestring,cm_changecmf,v_init)))
+        fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp),  '{}_withEpas_cmf{}_everywhere_vinit{}_addedRa.png'.format(namestring,cm_changecmf,v_init)))
     
         # print out section information: # Works even though I do everything through LFPy
         for sec in neuron.h.allsec():
@@ -354,7 +354,7 @@ for iamp in iamps:
         plt.ylabel('Potential (mV)')
         plt.title('Membrane potential in soma')
         plt.legend(loc='upper right')
-        fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp),  '{}_changecmf{}_everywhere_vinit{}_addedRa_big.png'.format(namestring,cm_changecmf,v_init)))
+        fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp),  '{}_withEpas_cmf{}_everywhere_vinit{}_addedRa_big.png'.format(namestring,cm_changecmf,v_init)))
     
         '''
         fig = plt.figure(figsize=[12, 8])
@@ -363,7 +363,7 @@ for iamp in iamps:
         plt.ylabel('Potential (mV)')
         plt.title('Membrane potential along axon')
         plt.legend(loc='upper right')
-        fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp), "axon", '{}_changecmf{}_everywhere_vinit{}_ax_wRa.png'.format(namestring,cm_changecmf,v_init)))
+        fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp), "axon", '{}_withEpas_cmf{}_everywhere_vinit{}_ax_wRa.png'.format(namestring,cm_changecmf,v_init)))
     
         fig = plt.figure(figsize=[12, 8])
         #plt.plot(cell.tvec, cell.rec_variables['cai'][0, :], label='Soma') # Soma is high
@@ -372,17 +372,17 @@ for iamp in iamps:
         plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
         plt.title('Ca$^{2+}$-concentration along axon')
         plt.legend(loc='lower right')
-        fig.savefig(join("figures", "%i" % testmodel, "current_idur%i_iamp" % idur + str(iamp), "axon", "Ca", '{}_chcmf{}_everywhere_vinit{}_axCaRa.png'.format(namestring,cm_changecmf,v_init)))
+        fig.savefig(join("figures", "%i" % testmodel, "current_idur%i_iamp" % idur + str(iamp), "axon", "Ca", '{}_withEpas_cmf{}_everywh_vinit{}_axCaRa.png'.format(namestring,cm_changecmf,v_init)))
         
         fig = plt.figure(figsize=[12, 8])
         plt.plot(cell.tvec, cell.rec_variables['cai'][0, :])
         plt.xlabel('Time (ms)')
         plt.ylabel(r'Ca$^{2+}$-concentration (mM)')
         plt.title('Ca$^{2+}$-concentration in soma')
-        fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp), 'Ca', '{}_changecmf{}_everywhere_vinit{}_Ca_wRa.png'.format(namestring,cm_changecmf,v_init)))
+        fig.savefig(join("figures", "%i" % testmodel,"current_idur%i_iamp" % idur + str(iamp), 'Ca', '{}_withEpas_cmf{}_everywhere_vinit{}_Ca_wRa.png'.format(namestring,cm_changecmf,v_init)))
         '''
         
-        outfilename = "figures/%i/current_idur%i_iamp" % (testmodel,idur) + str(iamp)+"/"+namestring+"_changecmf" + str(cm_changecmf) + "_everywhere_vinit"+str(v_init)+"_addedRa.txt"
+        outfilename = "figures/%i/current_idur%i_iamp" % (testmodel,idur) + str(iamp)+"/"+namestring+"_withEpas_cmf" + str(cm_changecmf) + "_everywhere_vinit"+str(v_init)+"_addedRa.txt"
         outfile = open(outfilename,'w')
         vmem_soma = cell.vmem[0,:]#[idx, :] # Have time array too...
         Ca_soma   = cell.rec_variables['cai'][0, :] # Don't know if I need this...
@@ -394,32 +394,6 @@ for iamp in iamps:
         for i in range(Nt):
             outfile.write('%.16f %.16f\n' % (time[i],vmem_soma[i]))
         outfile.close()    
-        
-        vmax = max(vmem_soma) 
-        vmin = min(vmem_soma) 
-        deltav = vmax-vmin
-        vthr  = -40 #vmax-0.15*deltav # If there is a peak above this value, we count it
-        vprev = vthr-40 # A peak never kicks in at initiation, even if I change vthr
-        Npeaks = 0
-        for i in range (1,len(vmem_soma)-1):  
-            #print(vmem_soma[i])
-            if vmem_soma[i-1]<vmem_soma[i] and vmem_soma[i+1]<vmem_soma[i] and vmem_soma[i]>vthr:
-                Npeaks+=1
-        print(Npeaks, ' peaks for model ', testmodel, ', current ', iamp)
-        print('iamps:',iamps)
-        print('vmax:', vmax)
-
-        outfilename = "figures/%i/current_idur%i_iamp" % (testmodel,idur) + str(iamp)+"/"+namestring+"_changecmf" + str(cm_changecmf) + "_everywhere_vinit"+str(v_init)+"_addedRa_vmax.txt"
-        outfile = open(outfilename,'w') 
-        outfile.write('%.5f' % vmax)
-        outfile.close()   
-        
-        outfilename = "figures/%i/current_idur%i_iamp" % (testmodel,idur) + str(iamp)+"/"+namestring+"_changecmf" + str(cm_changecmf) + "_everywhere_vinit"+str(v_init)+"_addedRa_Npeaks.txt"
-        outfile = open(outfilename,'w') 
-        outfile.write('%i' % Npeaks)
-        outfile.close()   
-    
-        #print('vmem_soma[0]:',vmem_soma[0])
     
         print('iamp:',iamp)
         t1 = tm.clock()
