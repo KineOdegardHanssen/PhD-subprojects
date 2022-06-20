@@ -1,11 +1,26 @@
-variable spacing equal 1
-variable sigma_atom equal 1 # Just a random constant to get the simulation going
+label nloop
+variable confignr loop 1 3
 
+variable spacing equal 3
 variable dampfac equal 10
+variable sigma_atom equal 1
+variable charge equal -1    # Need to make a new file system to make this happen. I think I need to change it in the .vashishta-file :(
+# Setting the right mass for the diffusing particle
+variable density equal 3/(4*PI)
+variable volfac equal 4*PI/3
+variable test equal ${density}*${volfac}
+variable r3 equal ${sigma_atom}^3
+print 'variable: ${density}'
+print 'Volume factor: ${density}*${volfac}'
+print 'dens*volfac ${test}'
+print 'sigma_atom^3: ${r3}'
+variable pmass equal 4*PI*${sigma_atom}^3/3*${density}
+
 ######################### Setting the sytem ####################################
 ## from makesystem-script:
 variable Ncr equal 5 # Number of crosslinkers
 variable pad equal 10
+variable Ncrf equal 50
 
 ## Getting conversion factors and constructing the dielectric
 # Neccessary quantities in lj units:
@@ -44,7 +59,6 @@ variable Kangle equal 20.0/${energyunit_ljinnano}
 variable Kbond equal 200.0/${energyunit_ljinnano}
 variable kappa equal 1.0
 variable debyecutoff equal 3.0
-variable charge equal -1                  # The dielectric will be changed to set the Debye interaction to the correct value
 variable dt equal 0.00045                 # This timestep seems to work well for our simulations (standard ljunits timestep is too big)
 variable M equal 9
 variable N equal 101
@@ -61,7 +75,8 @@ bond_style harmonic
 angle_style harmonic
 
 # Making the atoms:
-read_data data.N909_Nchains9_Ly3_gridspacing${spacing}_charge${charge}_mass1_Ncr${Ncr}_pad${pad}_nonrandom
+read_data /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Initial_configurations/data.bead_wsubstr_eq_N909_d${spacing}_charge${charge}_mass1_Ncr${Ncr}_pad${pad}_Ncrf${Ncrf}_file${confignr}
+
 
 velocity all create $T 87287 # I can reset the velocities.
 
@@ -71,22 +86,43 @@ angle_coeff * ${Kangle} ${theta0}
 
 ############################ Prepare simulation #####################################
 
-# Minimize really messes up the structure
-#minimize 1.0e-4 1.0e-6 100 1000
-
-group movingmonomers type 2
-
 neighbor 1.0 bin
 #neigh_modify once no every 1 delay 0 check yes
 
-#dielectric ${conversionfactor} # DEPRECATED
+dielectric ${conversionfactor}
 timestep ${dt}
 
-fix lgvfix movingmonomers langevin $T $T ${dampfac} 699483
-fix 1 movingmonomers nve
+########################### Add atom info ##############################################
 
-############################ Equilibrate ##############################################
-run 200000 # I only need to do this once for each d, so I can afford to make the simulation pretty long.
+mass 3 ${pmass}
 
-# write_data?
-write_data data.N909_Nchains9_Ly3_gridspacing${spacing}_charge${charge}_mass1_Ncr${Ncr}_pad${pad}_nonrandom_equilibrated nocoeff
+group freeatom type 3
+group movingatoms type 2 3
+
+variable scalefac equal ${pmass}/${sigma_atom}
+
+fix lgvfix movingatoms langevin $T $T ${dampfac} ${confignr} scale 3 ${scalefac}
+fix 1 movingatoms nve
+
+velocity freeatom set 0 0 0 #${vcomp} ${vcomp} ${vcomp} # starting with zero velocity
+
+compute pefree freeatom pe/atom
+compute peprint freeatom reduce sum c_pefree
+
+############################ Run ##############################################
+
+log /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/log-files/log.confignr${confignr}_printevery10
+
+dump walltest freeatom custom 100 /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/freeatom_confignr${confignr}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
+print 'YO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Spacing: ${spacing}; density: ${density}; psigma: ${sigma_atom}; pmass: ${pmass}; confignr${confignr}'
+dump walltest_all all custom 200000 /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/all_confignr${confignr}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
+dump walltest_all_TEST all custom 100 /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/all_confignr${confignr}_TEST.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
+
+thermo 10
+thermo_style custom step c_peprint
+
+run 200000
+
+clear
+next confignr
+jump SELF nloop

@@ -20,7 +20,7 @@ if onechain==True:      ################# Could probably remove this, but maybe 
 else:
     M             = 9   # Number of chains
     L2            = 3   # Determining the shape of the L1xL2 polymer grid on the surface
-    gridspacing   = 5   # The spacing in our grid
+    gridspacing   = 3   # The spacing in our grid
 substratecharge = 0
 charge          = -1
 mass            = 1

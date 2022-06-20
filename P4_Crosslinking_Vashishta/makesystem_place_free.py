@@ -9,7 +9,7 @@ print('Hi')
 # I should make a lot of files at once here.
 
 # System info
-spacing = 1
+spacing = 3
 radius  = 1
 charge  = -1
 T       = 3
@@ -18,7 +18,7 @@ T       = 3
 Nfiles = 1000
 Ncr    = 5
 pad    = 10
-
+Ncrfr  = 50 # Or scale to system size
 
 # Technicalities: Placement of bead
 tol        = 0.2*radius # The closest we'll allow the bead to be to a brush 'atom'
@@ -37,11 +37,14 @@ vz = np.sqrt(T)
 xran = np.zeros(Nfiles)
 yran = np.zeros(Nfiles)
 zran = np.zeros(Nfiles)
+xran_crf = np.zeros((Nfiles,Ncrfr))
+yran_crf = np.zeros((Nfiles,Ncrfr))
+zran_crf = np.zeros((Nfiles,Ncrfr))
 
 brush_beads = [] # We know where the substrate atoms are (at z=0), but we should know where the beads are so that we can avoid overlap
 
 foldername  = '/home/kine/Documents/P4_Crosslinking_Vashishta/Spacing'+str(spacing)+'/Sigma_free_'  + str(radius) + '/Initial_configurations/'
-outfilename = 'data.bead_wsubstr_eq_N909_d'+str(spacing)+'_charge%i_mass1_Ncr%i_pad%i_file' % (charge,Ncr,pad)
+outfilename = 'data.bead_wsubstr_eq_N909_d'+str(spacing)+'_charge%i_mass1_Ncr%i_pad%i_Ncrf%i_file' % (charge,Ncr,pad,Ncrfr)
 
 infilename = 'data.N909_Nchains9_Ly3_gridspacing'+str(spacing)+'_charge%i_mass1_Ncr%i_pad%i_nonrandom_equilibrated' % (charge,Ncr,pad)
 infile     = open(infilename, 'r')
@@ -82,6 +85,7 @@ bond_atom2 = []
 
 # ((i+1), molID[i], atomtypes_all[i], qs[i], xpos[i], ypos[i], zpos[i]))
 # Have switches instead?
+maxz = 0
 keyword = 'None'
 for line in lines:
     words = line.split()
@@ -113,6 +117,8 @@ for line in lines:
         # Check if this is a brush atom, then append it to the brush list if it is.
         if this_atom_type==1 or this_atom_type==2:
             brush_beads.append(np.array([xposition,yposition,zposition]))
+            if zposition>maxz:
+                maxz = zposition
     '''
     if len(words)==4:
         if keyword=='Velocities':
@@ -149,6 +155,34 @@ while i<Nfiles: # I need to get the box edges here # USE CONTINUE??????
         beadpos.append(rran)
         i+=1
 
+
+
+beadpos_crf = []
+
+i = 0
+while i<Nfiles:
+    j = 0
+    beadpos_crf_this = []
+    while j<Ncrfr:
+        breakit = False
+        xran_crf[i,j] = random.uniform(xmin,xmax)
+        yran_crf[i,j] = random.uniform(ymin,ymax)
+        zran_crf[i,j] = random.uniform(substr_tol,maxz)
+        rran_crf = np.array([xran_crf[i,j],yran_crf[i,j],zran_crf[i,j]])
+        for rbr in brush_beads:
+            distvec = rbr-rran_crf
+            dist2   = np.dot(distvec,distvec)
+            if dist2<tol:
+                breakit = True
+                break
+        if breakit==True:
+            continue
+        else:
+            beadpos_crf.append(rran_crf)
+            j+=1
+    i+=1
+
+
 print('beadpos:',beadpos)
 
 freebead_number = N_atoms+1
@@ -160,7 +194,7 @@ for i in range(Nfiles):
     for j in range(startlines-1):
         # if-test to update number of atoms?
         if len(lines[j].split())==2 and lines[j].split()[1]=='atoms':
-            outfile.write('%i atoms\n' % (N_atoms+1))
+            outfile.write('%i atoms\n' % (N_atoms+1+Ncrfr))
         else:
             outfile.write(lines[j])
     for j in range(startlines-1,startlines+N_atoms-1):
@@ -171,11 +205,15 @@ for i in range(Nfiles):
         else:    # I don't want an empty line between this one and the next
             #print('I broke.')
             break
-    outfile.write('%i %i 3 0 %.16e %.16e %.16e\n' % (freebead_number, max(molID)+1,xran[i],yran[i],zran[i])) # atom-ID molecule-ID atom-type q x y z # And the three last numbers I don't know. Flags? Counters of how many times they have crossed a border?
+    outfile.write('%i %i 3 %i %.16e %.16e %.16e\n' % (freebead_number, max(molID)+1,charge,xran[i],yran[i],zran[i])) # atom-ID molecule-ID atom-type q x y z # And the three last numbers I don't know. Flags? Counters of how many times they have crossed a border?
+    for j in range(Ncrfr):
+        outfile.write('%i %i 6 0 %.16e %.16e %.16e\n' % (freebead_number+1+j, max(molID)+2+j,xran_crf[i,j],yran_crf[i,j],zran_crf[i,j]))
     for j in range(N_atoms+3):                        # Writing velocities to file.
         outfile.write(lines[j+startlines+N_atoms-1])
     # How to pick the velocity? Just choose one?
     outfile.write('%i %.16e %.16e %.16e\n' % (freebead_number,vx,vy,vz))
+    for j in range(Ncrfr):
+        outfile.write('%i %.16e %.16e %.16e\n' % (freebead_number+1+j,vx,vy,vz))
     for j in range(2*N_atoms+4+startlines-2,Nlines):      # Write the rest of the lines to file. Everything from here on can be copy-pasted
         outfile.write(lines[j])
     outfile.close()                                   # This should be important since I write to multiple files
