@@ -1,7 +1,7 @@
 label nloop
-variable confignr loop 1 3
+variable confignr loop 801 1000
 
-variable spacing equal 5
+variable spacing equal 3
 variable dampfac equal 10
 variable sigma_atom equal 1
 variable charge equal -1    # Need to make a new file system to make this happen. I think I need to change it in the .vashishta-file :(
@@ -75,7 +75,7 @@ bond_style harmonic
 angle_style harmonic
 
 # Making the atoms:
-read_data /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Initial_configurations/data.bead_wsubstr_eq_N909_d${spacing}_charge${charge}_mass1_Ncr${Ncr}_pad${pad}_Ncrf${Ncrf}_file${confignr}
+read_data /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Initial_configurations/data.bead_wsubstr_eq_N909_d${spacing}_charge${charge}_mass1_Ncr${Ncr}_pad${pad}_nocrosslinkers_file${confignr}
 
 
 velocity all create $T 87287 # I can reset the velocities.
@@ -111,12 +111,10 @@ compute peprint freeatom reduce sum c_pefree
 
 ############################ Run ##############################################
 
-log /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/log-files/log.confignr${confignr}_printevery10
+log /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/log-files/log.confignr${confignr}_printevery10_nocrosslinkers
 
-dump walltest freeatom custom 100 /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/freeatom_confignr${confignr}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
-print 'YO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Spacing: ${spacing}; density: ${density}; psigma: ${sigma_atom}; pmass: ${pmass}; confignr${confignr}'
-dump walltest_all all custom 200000 /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/all_confignr${confignr}.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
-dump walltest_all_TEST all custom 100 /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/all_confignr${confignr}_TEST.lammpstrj id type mol xu yu zu vx vy vz # Maybe skip this? Only use it if I need to, at least.
+dump walltest freeatom custom 100 /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/freeatom_confignr${confignr}_nocrosslinkers.lammpstrj id type mol xu yu zu vx vy vz 
+dump walltest_all all custom 200000 /home/kine/Documents/P4_Crosslinking_Vashishta/Spacing${spacing}/Sigma_free_${sigma_atom}/Charge${charge}/all_confignr${confignr}_nocrosslinkers.lammpstrj id type mol xu yu zu vx vy vz 
 
 thermo 10
 thermo_style custom step c_peprint
