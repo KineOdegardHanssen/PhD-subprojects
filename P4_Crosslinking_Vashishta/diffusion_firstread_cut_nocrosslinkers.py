@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt                     # To plot
 from scipy.optimize import curve_fit
 from pylab import *
-import data_treatment as datr
 import numpy as np
 import random
 import math
@@ -60,7 +59,7 @@ Npartitions  = 5 # For extracting more walks from one file (but is it really suc
 minlength    = int(floor(Nsteps/Npartitions)) # For sectioning the data
 print('timestepsize:', timestepsize)
 
-endlocation          = '/home/kine/Documents/P4_Crosslinking_Vashishta/Spacing'+str(spacing)+'/Sigma_free_'  + str(radius) + '/Charge%i' % charge
+endlocation          = '/home/kine/Documents/P4_Crosslinking_Vashishta/Spacing'+str(spacing)+'/Sigma_free_'  + str(radius) + '/Charge%i/' % charge
 filestext            = 'config'+str(confignrs[0])+'to'+str(confignrs[-1])+'_nocrosslinkers'
 # Text files
 outfilename_ds           = endlocation+'av_ds_'+filestext+'.txt'
@@ -99,13 +98,6 @@ plotname_th_hist    = endlocation+'th_hist_h%i' % testh +filestext+'.png'
 plotname_exittimes  = endlocation+'exittimes_'+filestext+'.png'
 plotname_exittimes_binned = endlocation+'exittimes_hist_'+filestext+'.png'
 
-## Setting arrays
-# Prepare for sectioning distance data:
-time_walks_SI, steps, partition_walks, numberofsamples, len_all, lengths, startpoints = datr.partition_holders_averaged(Nsteps,minlength)
-
-print('Sections, walks:')
-print('minlength:', minlength)
-print('lenghts:', lengths)
 # These are all squared:
 # All together:
 allRs     = []
@@ -132,13 +124,6 @@ averagevparallel  = np.zeros(Nsteps)
 averagevparallel2 = np.zeros(Nsteps) # Velocities, squared
 averagedparallel2 = np.zeros(Nsteps) # Distances, squared
 average_counter   = np.zeros(Nsteps)
-average_walks     = copy.deepcopy(partition_walks)
-average_walks_SI  = copy.deepcopy(partition_walks)
-average_walks_z2     = copy.deepcopy(partition_walks)
-average_walks_z2_SI  = copy.deepcopy(partition_walks)
-average_walks_p2     = copy.deepcopy(partition_walks)
-average_walks_p2_SI  = copy.deepcopy(partition_walks)
-average_counters     = copy.deepcopy(partition_walks) # Okay, this name is confusing.
 
 
 # Separated by seed:
@@ -180,7 +165,8 @@ for confignr in confignrs:
     infilename_free = endlocation+'freeatom_confignr'+str(confignr)+'_nocrosslinkers.lammpstrj'
     plotname_dirs   = endlocation+'dxdydzR2_seed'+str(confignr)+'_nocrosslinkers.png'
     plotname_testsect = endlocation+'testsectioned_seed'+str(confignr)+'_nocrosslinkers.png'
-
+    
+    #print('infilename_all:',infilename_all)
     # Read in:
     #### Automatic part
     ## Find the extent of the polymers: Max z-coord of beads in the chains
@@ -250,10 +236,14 @@ for confignr in confignrs:
     totlines = len(lines)         # Total number of lines
     lineend = totlines-1          # Index of last element
     
+    print('infile_free:', infilename_free)
+    
     # Extracting the number of atoms:
     words = lines[3].split()
     Nall = int(words[0])
     N    = Nall
+    
+    print('Nall:',Nall)
     
     skiplines   = 9             # If we hit 'ITEM:', skip this many steps...
     skipelem    = 0
@@ -278,12 +268,15 @@ for confignr in confignrs:
     zs_fortesting = []
     while i<totlines:
         words = lines[i].split()
+        #print('words:',words)
         if words[0]=='ITEM:': # Some double testing going on...
             if words[1]=='TIMESTEP':
                 words2 = lines[i+1].split() # The time step is on the next line
                 t = float(words2[0])
                 times.append(t)
                 i+=skiplines
+                #print('len(times):',len(times))
+                #print('t:',t)
             elif words[1]=='NUMBER': # These will never kick in. 
                 i+=7
             elif words[1]=='BOX':
@@ -310,6 +303,8 @@ for confignr in confignrs:
             counter+=1
             i+=1
     infile_free.close()
+    if len(times)<Nsteps:
+        continue
     dt = (times[1]-times[0])*timestepsize # This might be handy
     #print('dt:', dt)
     #print('times[1]-times[0]:',times[1]-times[0])
@@ -476,64 +471,6 @@ for confignr in confignrs:
         plt.tight_layout()
         plt.legend(loc='upper left')
         plt.savefig(plotname_dirs)
-    
-    # Partitioned:
-    # Npartitions
-    part_walks    = []
-    part_steps    = []
-    part_start    = 0
-    #smallest_part_walk = int(math.floor(Nin/Npartitions))
-    for i in range(Npartitions):
-        this_part    = []
-        these_steps  = []
-        part_start   = startpoints[i]
-        len_thiswalk = lengths[i]
-        part_end     = part_start+len_thiswalk
-        if part_start>(Nin-1):              # Do not start this section if the bead has left the brush.
-            break
-        rstart = pos_inpolymer[part_start]
-        for j in range(len_thiswalk):
-            #print('i:',i,', j:',j)
-            if part_start+j>(Nin-1):
-                break
-            rthis =  pos_inpolymer[part_start+j]
-            drvec = rthis - rstart
-            dr2   = np.dot(drvec,drvec)
-            dz2   = drvec[2]*drvec[2]
-            dpar2 = drvec[0]*drvec[0]+drvec[1]*drvec[1]
-            '''
-            print('part_start:',part_start, '; part_start+j:', part_start+j, ';   j:',j)
-            print('rthis:',rthis)
-            print('rstart:',rstart)
-            print('drvec:', drvec)
-            print('dr2:', dr2)
-            '''
-            average_walks[i][j]    +=dr2
-            average_walks_z2[i][j] +=dz2
-            average_walks_p2[i][j] +=dpar2
-            average_counters[i][j] +=1
-            this_part.append(dr2)
-            these_steps.append(j)
-        part_walks.append(this_part)
-        part_steps.append(these_steps)
-    sections_walk.append(part_walks)
-    sections_steps.append(part_steps)
-    
-    if test_sectioned==True and (config==1 or seed==5 or seed==11 or seed==15 or seed==17 or seed==21): # This does not make much sense now... I wanted to inspect some plots.
-        plt.figure(figsize=(6,5))
-        for i in range(Npartitions):
-            plt.plot(part_steps[i], part_walks[i], label='Section %i' % i)
-        plt.xlabel(r'Step number')
-        plt.ylabel(r'Distance$^2$ [in unit length]')
-        plt.title('Random walk in polymer brush, config %i, d = %i nm' % (confignr,spacing))
-        plt.tight_layout()
-        plt.legend(loc='upper left')
-        plt.savefig(plotname_testsect)
-    # Do something else than this? Use the data I already have?
-    #time_beforepartition = time.process_time()
-    #partition_walks = datr.partition_dist_averaged(positions, partition_walks, Nsteps, minlength) # partition_walks is being updated inside of the function
-    #time_afterpartition = time.process_time()
-    #print('Time, partitioning:',time_afterpartition-time_beforepartition)
 
 outfile_cuts.close()
 outfile_noexit.close()
@@ -632,16 +569,6 @@ averagevparallel2 = averagevparallel2[0:Ninbrush]
 
 print('len(averageR2s):',len(averageR2s))
 print('Nsteps:', Nsteps)
-
-# Sectioned walks
-for i in range(Npartitions):
-    for j in range(lengths[i]):
-        if average_counters[i][j]!=0:
-            #print('Before division: Average_walks=', average_walks[i][j], '     average_counters=',average_counters[i][j])
-            average_walks[i][j]   /=average_counters[i][j]
-            average_walks_z2[i][j]/=average_counters[i][j]
-            average_walks_p2[i][j]/=average_counters[i][j]
-            #print('After division: Average_walks=', average_walks[i][j], '     average_counters=',average_counters[i][j])
 
 if Nseeds<12:
     print('gamma_avgs:',gamma_avgs)
@@ -832,19 +759,6 @@ plt.tight_layout()
 plt.savefig(plotname_traj_zt)
 
 
-outfile_sections = open(outfilename_sections, 'w')
-for i in range(Npartitions):
-    outfile_sections.write('Section %i\n' % i) # When reading from the file afterwards, I can extract the section number by if words[0]=='Section' and use that to divide the data into sections
-    for j in range(lengths[i]):
-        average_walks_SI[i][j]    = average_walks[i][j]*unitlength 
-        average_walks_z2_SI[i][j] = average_walks_z2[i][j]*unitlength 
-        average_walks_p2_SI[i][j] = average_walks_p2[i][j]*unitlength 
-        time_walks_SI[i][j]       = steps[i][j]*timestepsize
-        #print('time_walks_SI[i][j]:', time_walks_SI[i][j], ': steps[i][j]:',steps[i][j], ';   timestepsize:',timestepsize, '; steps[i][j]*timestepsize:', steps[i][j]*timestepsize)
-        outfile_sections.write('%.16f %.16f %.16f %.16f\n' % (time_walks_SI[i][j],average_walks_SI[i][j],average_walks_p2_SI[i][j],average_walks_z2_SI[i][j]))
-outfile_sections.close()
-
-
 outfile_maxz = open(outfilename_maxz, 'w')
 outfile_maxz.write('%.16f' % maxz_av)         # Should I have some rms value here too?
 outfile_maxz.close()
@@ -869,32 +783,6 @@ if popup_plots==True:
     plt.axis([0, times_single_real[maxind], min(averagevxs_SI[0:maxind]), max(averagevs_SI[0:maxind])])
     plt.show()
 
-'''
-plt.figure()
-for i in range(Npartitions):
-    plt.plot(steps[:][i],average_walks[:][i], label='Start at step %i' % startpoints[i])
-plt.xlabel(r'Time step')
-plt.ylabel(r'Distance$^2$ [m]')
-plt.title('RMSD in brush, d = %i nm, SI, sectioning' % spacing)
-plt.tight_layout()
-plt.legend(loc='upper left')
-plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
-plt.show()
-
-
-maxind = 10000
-plt.figure(figsize=(6,5))
-plt.plot(times_single_real, averageR2s_SI, label=r'$<R^2>$')
-plt.plot(times_single_real, averagedz2s_SI, label=r'$<dz^2>$')
-plt.plot(times_single_real, averagedparallel2_SI, label=r'$<dx^2+dy^2>$')
-plt.xlabel(r'Index (s)')
-plt.ylabel(r'Distance$^2$ [in unit length]')
-plt.title(r'RMSD in brush, d = %i nm, $\sigma_b=%.2f$, SI' % (spacing,psigma))
-plt.tight_layout()
-plt.legend(loc='upper left')
-plt.axis([0, times_single_real[maxind], 0, max(averageR2s_SI[0:maxind])])
-plt.show()
-'''
 # To determine the range
 xmax_plot = 100
 plt.figure(figsize=(6,5))
@@ -1031,60 +919,6 @@ plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
 plt.legend(loc='upper left')
 plt.savefig(plotname_velocity_SI)
 
-
-
-
-'''
-print('Original:')
-print('steps[0][:]:',steps[0][:])
-print('steps[:][0]:',steps[:][0])
-print('steps[1][:]:',steps[1][:])
-print('steps[:][1]:',steps[:][1])
-print('steps[2][:]:',steps[2][:])
-print('steps[:][2]:',steps[:][2])
-
-
-print('SI!!!!:')
-print('time_walks_SI[0][:]:',time_walks_SI[0][:])
-print('time_walks_SI[:][0]:',time_walks_SI[:][0])
-print('time_walks_SI[1][:]:',time_walks_SI[1][:])
-print('time_walks_SI[:][1]:',time_walks_SI[:][1])
-print('time_walks_SI[2][:]:',time_walks_SI[2][:])
-print('time_walks_SI[:][2]:',time_walks_SI[:][2])
-
-
-print('average_walks_SI[0][:]:',average_walks_SI[0][:])
-print('average_walks_SI[:][0]:',average_walks_SI[:][0])
-print('average_walks_SI[1][:]:',average_walks_SI[1][:])
-print('average_walks_SI[:][1]:',average_walks_SI[:][1])
-print('average_walks_SI[2][:]:',average_walks_SI[2][:])
-print('average_walks_SI[:][2]:',average_walks_SI[:][2])
-'''
-print('average_walks:',average_walks)
-print('average_walks_SI:',average_walks_SI)
-#'''
-
-plt.figure()
-for i in range(Npartitions):
-    plt.plot(time_walks_SI[:][i],average_walks_SI[:][i], label='Start at step %i' % startpoints[i])
-plt.xlabel(r'Time [s]')
-plt.ylabel(r'Distance$^2$ [m]')
-plt.title('RMSD in brush, d = %i nm, SI, sectioning' % spacing)
-plt.tight_layout()
-plt.legend(loc='upper left')
-plt.ticklabel_format(axis='both', style='sci', scilimits=(0,0))
-plt.savefig(plotname_sectioned_average)
-
-plt.figure()
-for i in range(Npartitions):
-    plt.plot(steps[:][i],average_walks_SI[:][i], label='Start at step %i' % startpoints[i])
-plt.xlabel(r'Time step')
-plt.ylabel(r'Distance$^2$ [m]')
-plt.title('RMSD in brush, d = %i nm, SI, sectioning' % spacing)
-plt.tight_layout()
-plt.legend(loc='upper left')
-plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
-plt.savefig(plotname_sectioned_average_vs_steps)
 
 #plotname_sectioned_average_vs_steps
 

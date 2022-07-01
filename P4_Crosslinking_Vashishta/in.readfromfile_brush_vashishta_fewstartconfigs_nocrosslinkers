@@ -1,5 +1,5 @@
 label nloop
-variable confignr loop 801 1000
+variable confignr loop 840 1000
 
 variable spacing equal 3
 variable dampfac equal 10
