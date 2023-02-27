@@ -1,0 +1,20 @@
+/* ----------------------------------------------------
+
+This hoc file should create a neuron of the following shape:
+
+            O
+I hope this works
+Note the conventions:
+
+    soma needs to be a list (soma[0], not soma),
+    use soma for the soma compartment.
+    -----------------------------------------------------*/
+
+create soma[1]
+
+soma[0] {
+pt3dadd(0, 0, 0, 20)
+pt3dadd(0, 0, 20, 20)
+}
+
+

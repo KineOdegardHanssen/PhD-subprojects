@@ -1,0 +1,99 @@
+{
+  "passive": [
+    {
+      "ra": 259.38, 
+      "cm": [
+        {
+          "section": "soma", 
+          "cm": 1
+        }, 
+        {
+          "section": "axon", 
+          "cm": 1
+        }, 
+        {
+          "section": "dend", 
+          "cm": 1
+        }
+      ], 
+      "e_pas": -62.25
+    }
+  ], 
+  "fitting": [
+    {
+      "junction_potential": -14.0, 
+      "sweeps": [
+        57
+      ]
+    }
+  ], 
+  "conditions": [
+    {
+      "celsius": 34.0, 
+      "erev": [
+        {
+          "ena": 53.34, 
+          "section": "soma", 
+          "ek": -105.9
+        }
+      ], 
+      "v_init": -86
+    }
+  ], 
+  "genome": [
+    {
+      "section": "soma", 
+      "name": "gbar_naf", 
+      "value": 7.268182922948454, 
+      "mechanism": "naf"
+    }, 
+    {
+      "section": "soma", 
+      "name": "q_naf", 
+      "value": 4.1580105383364714, 
+      "mechanism": "naf"
+    }, 
+    {
+      "section": "soma", 
+      "name": "gbar_kaf", 
+      "value": 0.38737933764202503, 
+      "mechanism": "kaf"
+    }, 
+    {
+      "section": "soma", 
+      "name": "q_kaf", 
+      "value": 5.9986703030264179, 
+      "mechanism": "kaf"
+    }, 
+    {
+      "section": "soma", 
+      "name": "gbar_SK", 
+      "value": 0.0028175455472127641, 
+      "mechanism": "SK"
+    }, 
+    {
+      "section": "soma", 
+      "name": "gbar_Ca_HVA", 
+      "value": 0.00014931667074610222, 
+      "mechanism": "Ca_HVA"
+    }, 
+    {
+      "section": "soma", 
+      "name": "gamma_CaDynamics", 
+      "value": 0.0039437262397438904, 
+      "mechanism": "CaDynamics"
+    }, 
+    {
+      "section": "soma", 
+      "name": "decay_CaDynamics", 
+      "value": 251.12865131321399, 
+      "mechanism": "CaDynamics"
+    },
+    {
+      "section": "soma", 
+      "name": "g_pas", 
+      "value": 0.00021366131123869505, 
+      "mechanism": ""
+    }
+  ]
+}
