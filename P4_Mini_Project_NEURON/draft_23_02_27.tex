@@ -1,0 +1,263 @@
+\documentclass[times, twoside]{zHenriquesLab-StyleBioRxiv}
+%\usepackage{changepage} % This did not help the table
+\usepackage{graphicx}
+% Please give the surname of the lead author for the running footer
+\leadauthor{Hanssen} 
+
+
+\usepackage[
+backend=biber,
+style=zHenriquesLab-StyleBib,
+]{biblatex}
+
+\addbibresource{mybibliography.bib}
+
+\title{Interplay of CaHVA and Ca$^{2+}$-activated K$^+$ channels affecting firing rate}
+\shorttitle{Interplay of ion channel currents}
+
+% Use letters for affiliations, numbers to show equal authorship (if applicable) and to indicate the corresponding author
+\author[1,\Letter]{Kine Ødegård Hanssen}
+\author[2,\Letter]{Geir Halnes}
+
+\affil[1]{Department of Physics, University of Oslo, Oslo, Norway}
+\affil[2]{Department of Physics, Norwegian University of Life Sciences, Ås, Norway}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+    Perineuronal nets (PNNs) are extracellular matrix structures consisting of proteoglycans crosslinked to hyaluronan. They wrap around subgroups of neurons in the brain, primarily parvalbumin positive inhibitory neurons. The nets have been found to lower the capacitance of their ensheathed neurons, as well as affecting conductances and activation curves of certain ion channels. We studied how changes in PNN-sensitive currents through high-voltage activated calcium (CaHVA) channels and calcium-activated potassium (SK and BK) channels affected the firing rate of one-compartment neuron models with realistic ion channels.
+\end{abstract}
+
+\section*{Introduction}
+% Is neurotoxicity a word?
+Perineuronal nets (PNNs) are structures made up primarily of glycosaminoglycans and crosslinkers. The nets enwrap neurons of various types in various parts of the brain, but tend to appear on parvalbumin positive (PV) neurons \cite{van_t_spijker_sweet_2017}. PNNs have been linked to memory and mature at the end of a period of increased plasticity \cite{tsien_very_2013,thompson_removal_2018}. They have also been indicated to protect their ensheathed neurons from neurotoxicity \cite{van_t_spijker_sweet_2017} and have been implicated in the functioning of fast-spiking neurons \cite{tewari_perineuronal_2018,balmer_perineuronal_2016, lensjo_removal_2017}.
+% Possible other ref.s for toxicity (found in van 't Spijker and Kwok):  
+% Miyata et al., 2007; Suttkus et al., 2014; Cabungcal et al., 2013
+
+Tewari et al. \cite{tewari_perineuronal_2018} and Lensjø et al. \cite{lensjo_removal_2017}, among others, have found that PNN removal lowers the firing frequency ff of fast-spiking PV neurons. Tewari et al. \cite{tewari_perineuronal_2018} posit that the insulating properties of the PNNs alter the capacitance $c_\text{m}$ of enwrapped neurons, allowing high firing frequencies. However, recreating the data of Tewari et al. \cite{tewari_perineuronal_2018} using biophysically detailed models \textcolor{red}{cite self!}, we found that the change in $c_\text{m}$ alone could not account for the change in firing observed by Tewari et al. \cite{tewari_perineuronal_2018}. Therefore, we suspect additional properties of the cell to be affected by PNNs, further reducing ff.
+
+Vigetti et al. \cite{vigetti_chondroitin_2008} found that the activation of high-voltage activated calcium (CaHVA) current in xenopus photoreceptors was greatly affected by the presence of chondroitin sulphates (CS), which are key components of the PNNs. The presence of CS in solution shifted the activation curves towards lower voltages. Removal of the nets should therefore shift the activation curve to higher voltages. Furthermore, Kochlamazashvili et al. \cite{kochlamazashvili_extracellular_2010} found that the presence of hyaluronan (HA), another net component, increased the amplitude of calcium current. While this could be an effect of an increased maximal calcium conductance, it may also be due to the nets shifting the activation curves to lower voltages as observed by Vigetti et al. \cite{vigetti_chondroitin_2008}, leaving the channels open at lower voltages.
+
+Dembitskaya et al. \cite{dembitskaya_attenuation_2021} found that removal of PNNs with chondroitinase ABC (chABC) yielded an increase in small-conductance calcium-activated potassium current SK. Their findings suggest that this might be due the appearance of new dendritic spines, whose presence upregulate $\bar{g}_\text{SK}$ by containing  SK channels \cite{dembitskaya_attenuation_2021}.
+
+Due to the low intracellular $\text{Ca}^{2+}$-concentration, calcium currents tend to be negative and hence depolarize the cell. The potassium equilibrium potential is low, so potassium tends to flow out of the cell and repolarize the membrane potential. Hence, the presence of a calcium channel might increase the firing as the membrane potential is closer to the firing threshold, while adding another potassium channel could feasibly lower ff. When a calcium-activated potassium channel is present, these two mechanisms may interact in interesting ways that might be sensitive to the relative values of the conductances. Therefore, care should be taken in looking at the effect of CaHVA and SK on firing. % Have this somewhere else? A bit too "chatty" for an introduction, or any part of a manuscript. But I need something similar to this.
+
+\section*{Methods} \label{sec:methods}
+% Not so sure about the order of the paragraphs.
+
+The membrane potential of a one-compartment model was simulated using NEURON and analyzed through custom scripts. The systems were equilibrated for 600 ms before the recordings started. A time step of 0.0078125 ms was used. % Or say 2^{-7} ms?
+Input currents $I$ of constant amplitude were applied for 1000 ms. % Step current?
+Due to varying degrees of spike adaptation, only data from the last 500 ms of the stimulus were analyzed in order to yield readily interpretable results. % Or say bursting?
+%Due to a notable spike adaptation for some parameter combinations, only data from the last 500 ms of the stimulus were analyzed. % Or say bursting?
+
+The calcium reversal potential $E_{\text{Ca}}$ is particularly sensitive to the intra- and extracellular calcium concentrations as these differ vastly in size \cite{sterratt_principles_2011}. In order to obtain reliable results, the calcium concentrations were allowed to vary according through a model proposed by Destexhe et al. \cite{destexhe_synthesis_1994}, and $E_{\text{Ca}}$ was calculated by NEURON at each time step. \textcolor{red}{Ref here?}
+
+\begin{figure*}
+\centering
+\includegraphics[width=\textwidth]{compare_Allenbase_Hjorthbase_I0.01nA.png}
+\caption{Firing behavior of minimal models of PV-cells. A) Voltage traces for input current $I$ = 0.01 nA. B) $f-I$ curve for the minimal models. Hjorth et. al. - naf, kaf and pas, Allen Institute - NaV, Kv2like and pas.}
+\label{fig:basemodelchoice_allen_hjorth}
+\end{figure*}
+
+
+% Mention that this is done to make the model more general (and hence more believable?)
+Ion channels were taken from models of PV cells and put on a one-compartment morphology, together with a general leak current. Sodium- and potassium channels naf and kaf from Hjorth et al. \cite{hjorth_microcircuits_2020} were chosen as they yielded a short spike duration, as is characteristic of PV neurons \cite{bartos_functional_2012}. Similarly, ion channels NaV and Kv2like from the Allen Institute for Brain Science's PV neuron models were inserted into a soma, yielding broader spikes and lower firing frequencies than the soma with naf and kaf, as shown in Figure \ref{fig:basemodelchoice_allen_hjorth}. The combination of naf, kaf and leak was therefore chosen to form a minimal model that yielded spiking characteristics similar to PV cells. Additional mechanisms were then added one by one to gauge their effect.
+% Mention Destexhe at some point
+
+In the first realization, ion channels CaHVA and SK from PV interneuron models developed by the Allen Institute for Brain Science were added to the neuron. These models were made by fitting electrophysiological and morphological data to measurements from single neurons. More specifically, we used conductances from the perisomatic model of the neuron with CellID 471077857 in the Allen Brain Atlas database. Additional CaHVA-channels and calcium-activated potassium channels have been tested, as shown in Appendix A. % Move this?
+
+The channels included in the main models behave as listed:
+
+% Currents
+\begin{align}
+    I_\text{Na} = \bar{g}_\text{Na}l^3k(V-E_\text{Na})\\
+    I_\text{K}  = \bar{g}_\text{K}u^2v(V-E_\text{K})\\
+    I_\text{Ca} = \bar{g}_\text{Ca}m^2h(V-E_\text{Ca})\\
+    I_\text{SK} = \bar{g}_\text{Sk}z(V-E_\text{K})
+    \label{eq:Is}
+\end{align}
+
+% Derivation 
+The variables of activation and inactivation all vary according to
+\begin{align}
+    \dot{x} = \frac{x_\infty-x}{\tau_x}\\
+    \label{eq:derivatives}
+\end{align}
+
+where $x$ is the activation or inactivation variable and $\dot{x}$ is its time derivative. $x_\infty$ and $\tau_x$ are variables that depend on either $V$ or $[\text{Ca}^{2+}]_\text{in}$.
+
+% alpha and beta, where they are needed:
+\begin{align}
+    m_\alpha =  \frac{-0.055(V+27)}{\exp{[-(V+27)/3.8]} - 1}\label{eq:malpha}\\
+    m_\beta  =  0.94\exp{[-(V+75)/17]}\label{eq:mbeta}\\
+    h_\alpha =  0.000457\exp{[-(V+13)/50)]}\\
+    h_\beta  =  \frac{0.0065}{\exp{[-(V+15)/28]}+1}
+\end{align}	
+
+As CaHVA and SK are the main focus of this work, their variables are listed below. The expression for the corresponding variables for $I_\text{Na}$ and $I_\text{K}$ can be found in Hjorth et al. \cite{hjorth_microcircuits_2020}.
+
+\begin{align}
+    \tau_m = \frac{1}{m_\alpha + m_\beta}\\
+    \tau_h = \frac{1}{h_\alpha + h_\beta}\\
+    \tau_z = 1.0 \text{ ms}
+\end{align}
+
+% Inf and Tau
+\begin{align}
+    m_\infty &= \frac{m_\alpha}{m_\alpha + m_\beta}\\
+    h_\infty &= \frac{h_\alpha}{h_\alpha + h_\beta}\\
+    z_\infty &= \frac{1}{1 + \left(\frac{0.00043}{\left[\text{Ca}\right]_\text{in}}\right)^{4.8}}
+\end{align}
+
+\begin{figure}%{}{\linewidth}
+\centering
+\includegraphics[width=\linewidth]{CaHVA_activation_minf_mtau.png}
+\caption{Variables of the CaHVA channel as a function of $V$. A) Activation variable $m_\infty$, B) Time constant $\tau_m$ of activation.} % Should I add h, though?
+\label{fig:CaHVA_activation_minf_mtau}
+\end{figure}
+
+The activation curve and time constant of CaHVA is shown in Figure  \ref{fig:CaHVA_activation_minf_mtau}A and B, respectively. As $\tau_m\approx6$ ms at the voltage where $m_\infty$ = 0.5, it will take the channel some time to open. Given the brief duration of the action potential expected of this type of neuron \cite{bartos_functional_2012}, it may be that the channel does not have time to become significantly open until the end of the action potential. % Where do I want to go with this in the METHODS section? Rather mention it later on?
+
+\begin{figure}%{}{\linewidth}
+\centering
+\includegraphics[width=\linewidth]{zInf_SK.png}
+\caption{Activation variable $z_\infty$ of the SK channel as a function of intracellular calcium concentration $[\text{Ca}^{2+}]_\text{in}$. The grey dotted line indicates the initial value of $[\text{Ca}^{2+}]_\text{in}$ in the cell model, while the black dashed line indicates the concentration at which the channel is halfway open.}
+\label{fig:SK_activation_zinf}
+\end{figure}
+
+Figure \ref{fig:SK_activation_zinf} shows the activation curve of the SK channel, which depends on the intracellular calcium concentration. The initial calcium concentration is $10^{-4}$ mM, as indicated by the gray dotted line. The channel is halfway open when the intracellular calcium concentration $[\text{Ca}^{2+}]_\text{in}$ has increased from by a factor of 4.3. Given that the initial extracellular calcium concentration is 2 mM, SK should activate fairly easily. % Weird to have this here?
+%The difference between the initial value of [Ca]in and the value at which the channel is halfway open is less than a factor of ten. % Weirdly phrased
+%\textcolor{red}{That should mean that SK activates fairly easily. But I probably need to talk about Ca-conc. outside to discuss that enough}
+
+In order to yield appropriate calcium dynamics, the parameters in the Destexhe models were set to $\gamma=$0.2 and $\tau=$5 ms, as the parameters set in the Allen model resulted in very small changes in the calcium concentration.  % Write more?
+
+The default values $\bar{g}_\text{CaHVA}$ and $\bar{g}_\text{SK}$ were 0.2 and 1.0 times the conductances from the perisomatic model, respectively. These conductances resulted a high firing frequency when added to the minimal model, which is a feature characteristic of the observed PV cells \cite{tewari_perineuronal_2018,lensjo_removal_2017}.
+ % Find ref!
+%PV interneuron models developed by the Allen Institute for Brain Science constrained to morphological and electrophysiological data from real PV neurons.
+
+
+\subsection*{Shifts of the CaHVA activation curve}
+Vigetti et al. \cite{vigetti_chondroitin_2008} found that the CaHVA conductance rises at a larger value of the membrane potential in the absence of chondroitin than when chondroitin is present. As chondroitin is ubiquitous in PNNs, removal of the nets should lead to a shift of CaHVA activation towards higher voltages. % Should this be in the methods section? We have mentioned it before, briefly... Think about this.
+
+In order to assess the impact of PNN breakdown on neuronal firing properties, a shift was introduced in the activation variable of the CaHVA mechanism. The shift was made by performing the substitution $V\rightarrow V+V_\text{shift}$ in Equation \ref{eq:malpha} and \ref{eq:mbeta}. For completeness, a range of shifts were assessed, from large negative shifts to large positive shifts.
+
+
+\section*{Results}
+
+\subsection*{Changing conductances}
+
+\begin{figure*}
+\centering
+\includegraphics[width=\textwidth]{mainmodel_threeofI.png}
+\caption{$f-I$ curves when altering A) $\bar{g}_\text{CaHVA}$ without SK present, B) $\bar{g}_\text{SK}$ with default $\bar{g}_\text{CaHVA}$, C) $\bar{g}_\text{CaHVA}$ with the SK conductance set to default ($1.0\bar{g}_\text{SK}$). Bold lines represent curves of the default parameters for each of the models.}
+\label{fig:fI_hjortbase_cahva_sk}
+\end{figure*}
+
+
+As seen from Figure \ref{fig:fI_hjortbase_cahva_sk}A, $f$ increases with increasing $\bar{g}_\text{CaHVA}$ when no SK is present, but does not affect $f$ to a great extent. Furthermore, firing ceases when $\bar{g}_\text{CaHVA}$ is sufficiently large. Figure \ref{fig:fI_hjortbase_cahva_sk}B reveals that $f$ decreases with increasing $\bar{g}_\text{SK}$. Comparing the two figures, the change in $f$ when changing $\bar{g}_\text{SK}$ is significantly larger than when changing $\bar{g}_\text{CaHVA}$. 
+
+Figure \ref{fig:fI_hjortbase_cahva_sk}C reveals that in the presence of SK, increasing $\bar{g}_\text{CaHVA}$ has the opposite effect of firing to when no SK is present. $f$ decreases drastically with increasing $\bar{g}_\text{CaHVA}$. As $\bar{g}_\text{CaHVA}$ is increased, SK is activated more quickly, leading to a membrane repolarization due to a positive potassium current. The lowered membrane potential makes it harder for the neuron to fire, which is reflected in the reduced firing rates. However, $\bar{g}_\text{CaHVA}$ is implied to decrease upon PNN removal \cite{kochlamazashvili_extracellular_2010}, which should lease to an increase in $f$ according to Figure \ref{fig:fI_hjortbase_cahva_sk}C. Therefore, the reduction in $f$ observed by Tewari et al. \cite{tewari_perineuronal_2018} is not likely to be caused by a change in $\bar{g}_\text{CaHVA}$. However, CaHVA might still have an effect, as Vigetti et al. \cite{vigetti_chondroitin_2008} found a CS-induced shift in its activation curve.
+
+
+\begin{figure*} %trace_cainfo_idur1000_iamp0.02_CaHVA_aligned
+\centering
+\includegraphics[width=\textwidth]{trace_twopanels_idur1000_iamp0.003_aligned.png}
+\caption{Voltage traces when altering A) $\bar{g}_\text{CaHVA}$ without SK present,  B) $\bar{g}_\text{SK}$ with default $\bar{g}_\text{CaHVA}$. The models were subject to a . The models were subject to a $I=0.003$ nA input current for 1000 ms in order to ensure regular spiking. Spikes in the latter half of the stimulus interval were chosen in order to avoid effects of spike adaptation. The voltage traces have been shifted in ordered to overlap. The $x-$ axis therefore only provides a rough estimate of the time occurrence action potential takes place.}
+\label{fig:trace_hjorthbase_cahva_sk}
+\end{figure*}
+
+Figure \ref{fig:trace_hjorthbase_cahva_sk} shows the voltage traces over one action potential for various conductances. In Figure \ref{fig:trace_hjorthbase_cahva_sk}A, $\bar{g}_\text{CaHVA}$ was varied with no SK channel present. The spike retained the same shape, but with a different degree of afterhyperpolarization. Comparing the large time constant of activation $\tau_m$ seen in Figure \ref{fig:CaHVA_activation_minf_mtau} to the narrow duration of the action potential in Figure \ref{fig:trace_hjorthbase_cahva_sk}A, the CaHVA channel has insufficient time to fully open during the action potential duration. Instead of affecting the height or width of the action potential, the CaHVA channel is open during the action potential duration, increasing the membrane potential immediately after the spike. The slight increase in the membrane potential should make it slightly easier to reach the action potential threshold, explaining the slightly increased firing rate observed in Figure \ref{fig:fI_hjortbase_cahva_sk}A.
+
+Figure \ref{fig:trace_hjorthbase_cahva_sk}B shows the trace over one action potential when varying $\bar{g}_\text{SK}$ with $\bar{g}_\text{CaHVA}$
+ set to default. The width and height of the spikes do not depend on $\bar{g}_\text{SK}$, but the membrane potential stabilizes at a slightly lower value for larger $\bar{g}_\text{SK}$. The membrane potential therefore has to increase more to reach the action potential threshold for larger $\bar{g}_\text{SK}$, which means that $f$ should decrease with increasing $\bar{g}_\text{SK}$. This is in agreement with the observations of Figure \ref{fig:fI_hjortbase_cahva_sk}B.
+ 
+ The late onset effect of he SK channel should not come as a surprise. As the SK channel activates when the intracellular calcium concentration is sufficiently high, the SK channel will be closed for the duration of the action potential and open after the CaHVA channel has lead to a sufficient increase in [Ca$^{2+}$]$_\text{in}$. Additionally, the time constant $\tau_z$ of the SK channel is 1.0 ms, further delaying the opening of the SK channel. This can be seen by comparing Figure \ref{fig:trace_hjorthbase_cahva_sk}A and Figure \ref{fig:trace_hjorthbase_cahva_sk}B. %The SK channel should therefore affect the membrane potential at a slightly later time than CaHVA, as seen by comparing 
+ %Related to the influx of calcium related to the CaHVA activation described above.
+
+
+\subsection*{Shifting activation curves}
+\subsubsection*{With only CaHVA present}
+
+\begin{figure*} % Weird choice of conductances? Talk to Geir?
+\centering
+\includegraphics[width=\textwidth]{vary_gCaHVA__s500.png}
+\caption{$f-I$ curves for different shifts $V_\text{shift}$ of the activation curve for different values of $\bar{g}_\text{CaHVA}$. A) 0.1$\bar{g}_\text{CaHVA}$, B) 0.5$\bar{g}_\text{CaHVA}$, C) 1.0$\bar{g}_\text{CaHVA}$, D) 2.0$\bar{g}_\text{CaHVA}$. $\bar{g}_\text{CaHVA}$ is the default value as defined in Section \ref{sec:methods}.}
+\label{fig:shift_gcahva_allen_only}
+\end{figure*}
+
+
+% This is interesting:
+Figure \ref{fig:shift_gcahva_allen_only} shows $f$ vs $I$ for values of $V_\text{shift}$ ranging from large and negative to large and positive, shifting the activation curves to lower and higher voltages, respectively. Positive shifts lead to an increase in $f$, while negative shifts lead to a reduction in $f$. As PNN breakdown is associated with negative shifts \cite{vigetti_chondroitin_2008}, these results suggest that reduced firing in the absence of the nets (as observed by Tewari et al. \cite{tewari_perineuronal_2018}) could at least partially be due to the effect of PNNs on CaHVA channel activation. However, the negative shifts have a limited impact on $f$.
+
+% This is noteworthy, but perhaps not interesting:
+As seen from Figure \ref{fig:shift_gcahva_allen_only} the effect of the shifts varies depending on the value of $\bar{g}_\text{CaHVA}$. For low $\bar{g}_\text{CaHVA}$, the effect is rather small, with the effect of negative shifts being negligible. % while the effect of positive shifts being slight, but notable.
+%For low ˉgCaHVA\bar{g}_\text{CaHVA}, the effect is pretty small, and the effect of positive shifts are far more pronounced than the effect of negative shifts.
+However, the largest positive shifts yield spontaneous firing (i.e. shifts towards lower voltages, opposite of PNN removal). %Furthermore, firing ceases at lower gCaHVA for large positive shifts. (larger values than we have now)
+
+The effect of activation curve shifts on $f$ remains moderate for one-compartment neurons with mechanisms naf, kaf, leak and CaHVA. For curves without spontaneous firing (or curves that only displays firing for a short interval), the difference is about 20\% in the most extreme cases \textcolor{red}{this measure is a bit too subjective}. The difference in $f$ for two curves tend to be larger for smaller $I$ than larger $I$, which suggests a pronounced effect of input current close to the threshold. This is perhaps not surprising, given the observations of spontaneous firing - for a considerable part of parameter space, very little is needed to initiate firing.
+
+\subsubsection*{With CaHVA and SK present}
+
+\begin{figure*}
+\centering
+\includegraphics[width=\textwidth]{vary_gSK_gCaHVA__s500.png}
+\caption{$f-I$ curves for different shifts $V_\text{shift}$ of the activation curve for different values of $\bar{g}_\text{SK}$. A) 0.1$\bar{g}_\text{SK}$, B) 0.5$\bar{g}_\text{SK}$, C) 1.0$\bar{g}_\text{SK}$, D) 2.0$\bar{g}_\text{SK}$. $\bar{g}_\text{SK}$ is the default value from the Allen Brain Atlas' cell model.}
+\label{fig:shift_gcahva_cahva_sk_allen}
+\end{figure*}
+
+\begin{figure}%{}{\linewidth}
+\centering
+\includegraphics[width=\linewidth]{realistic_params_s500.png}
+\caption{$f-I$ curves for the default model ($V_\text{shift}=0$ mV, $1.0\bar{g}_\text{CaHVA}$ and and $1.0\bar{g}_\text{SK}$) and the model that is altered to be consistent with PNN breakdown ($V_\text{shift}=-14.5$ mV, $1.0\bar{g}_\text{CaHVA}$ and $3.337\bar{g}_\text{SK}$). $\bar{g}_\text{CaHVA}$ and  $\bar{g}_\text{SK}$ are the default conductances as defined in the Methods section.}
+\label{fig:shift_realisticparams}
+\end{figure}
+
+Figure \ref{fig:shift_gcahva_cahva_sk_allen} shows $f$ vs $I$ for the selected values of $V_\text{shift}$ when the small-conductance calcium-activated potassium channel SK is present. Comparing with Figure \ref{fig:shift_gcahva_allen_only}, $f$ responds greatly to shifts in CaHVA activation. No spontaneous firing occurs for any combination of $V_\text{shift}$ and $\bar{g}_\text{SK}$. There is a slight change in onset for small $\bar{g}_\text{SK}$. A positive shift in CaHVA activation leads to a decrease in $f$ for all $\bar{g}_\text{SK}$, while a negative shift leads to an increase in $f$ for all $\bar{g}_\text{SK}$. These results suggest that the shift in activation could not contribute for the reduced firing observed by Tewari et al. \cite{tewari_perineuronal_2018} upon PNN removal. This is further corroborated by Figure \ref{fig:shift_realisticparams}\ref{fig:shift_realisticparams}, which shows an increase in $f$ when CaHVA is shifted and $\bar{g}_\text{SK}$ is increased according to literature (\cite{vigetti_chondroitin_2008} and \cite{dembitskaya_attenuation_2021}, respectively). % Does this sentence make sense?
+% Some of these sentences could possibly be removed.
+
+\subsection*{Generalization to other channels}
+%\section{Models with different ion channels}
+
+\begin{figure*}
+\centering
+\includegraphics[width=\textwidth]{compare_allmodels_fI_all_mainmodelgs_varyghva_getgSK.png}
+\caption{$f-I$ curves for different combinations of ion channel models over a range of calcium conductances without SK or BK present, as well as for one value of $\bar{g}_\text{SK}$ or $\bar{g}_\text{BK}$. A) CaHVA (Allen) and bk (Hjorth), B) CaHVA (Allen) and BK (Zhang), C) CaHVA (Allen) and BK (Ait Ouares), D) CaHVA (Allen) and SK (Ait Ouares), E) CaHVA (Allen) and SK (Allen), F) CaN (Konstantoudaki) and bk (Hjorth), G) CaN (Konstantoudaki) and BK (Zhang), H) CaN (Konstantoudaki) and BK (Ait Ouares), I) CaN (Konstantoudaki) and SK (Ait Ouares), J) CaN (Konstantoudaki) and SK (Allen), K) CaQ (Hjorth) and bk (Hjorth), L) CaQ (Hjorth) and BK (Zhang), M) CaQ (Hjorth) and BK (Ait Ouares), N) CaQ (Hjorth) and SK (Ait Ouares), O) CaQ (Hjorth) and SK (Allen). The cell models consist of the channels mentioned as well as channels naf and kaf from Hjorth et al. and a standard leak channel. The default parameters are listed in Table \ref{tab:defaultcond_all}.}
+\label{fig:allmodels_fI_appendix}
+\end{figure*}
+
+In order to ensure the general nature of the findings above, other relevant ion channels were tested on the base soma introduced in the methods section. The results are shown in Figure \ref{fig:allmodels_fI_appendix}. Note that large-conductance calcium-activated potassium channels (BK) were also tested as both BK and SK can exist on fast-spiking interneurons \cite{orduz_parvalbumin_2013,goldberg_specific_2005}. 
+
+As the ion channels were taken from models with advanced morphologies and put on a soma, some of the conductances were changed from their values in the original works. A list of the default conductances of this paper is placed in Table \ref{tab:defaultcond_all} for convenience. %\textcolor{red}{More on the fact that this is proof-of-concept models, rather than super realistic?}
+Similar to the $f-I$ curve of Figure \ref{fig:fI_hjortbase_cahva_sk}A, all neuron models stop firing when the calcium conductance is sufficiently increased when no SK or BK is present, as seen by Figure \ref{fig:allmodels_fI_appendix}. Furthermore, Figure \ref{fig:allmodels_fI_appendix} shows that the firing rate in all models decrease significantly for sufficiently large SK or BK. Although the magnitude of this reduction is somewhat model-dependent, the finding is in agreement with Figure \ref{fig:fI_hjortbase_cahva_sk}B.
+
+
+
+\begin{table} % Place units here too!
+    \centering
+    %\begin{adjustwidth}{-2.25in}{0in}
+    \caption{Default conductances used in Figure \ref{fig:allmodels_fI_appendix}. Note that some conductances have been changed a bit due to the change in morphology.} % Numbers are rounded up to their proper ...
+    \resizebox{0.5\textwidth}{!}{\begin{tabular}{c|c|c|c|c}
+         $\bar{g}_\text{CaHVA}$ (S/cm$^2$) & $\bar{g}_\text{canin}$ (S/cm$^2$) & $\bar{p}_\text{caq}$ (cm/s) & $\bar{g}_\text{SK}$ (S/cm$^2$) & $\bar{g}_\text{BK}$ (S/cm$^2$)\\
+         \hline
+         2.99$\cdot10^{-5}$ & 0.0003 & 6.2$\cdot10^{-5}$ & 0.0028 & 0.0028 \\
+    \end{tabular}
+    \label{tab:defaultcond_all}}
+    %\end{adjustwidth}
+\end{table}
+
+\section*{Discussion}
+More accurate results might have been gathered by simulating neurons with a complex morphology, as SK channels are implied to be upregulated on dendrites \cite{dembitskaya_attenuation_2021}. However, the aim of this work was to show the interplay between high-voltage activated calcium channels and calcium-activated potassium channels. Therefore, emphasis was put on testing out different channels instead of exploring morphologies. Furthermore, electrophysiological parameters are tailored to recordings and morphologies of individual neurons, so that testing of different ion channels on one complex morphology would render opaque results at best. An investigation of CaHVA and SK or BK channels in complex morphologies has therefore been left to future works. % Make a better argument for why we can't just have a bunch of different morphologies and use the mechanisms that come with them (too complicated? Other channels that might affect the behavior?)
+
+\section*{Conclusion}
+Altering CaHVA when no SK is present, be it by changing the conductance or shifting the activation curve, only leads to minor changes in $f$. The presence of SK reverses the effect of increasing $\bar{g}_\text{CaHVA}$, lowering $f$ considerably. % Double check how we expect g to change
+
+$f$ decreases significantly with increasing $\bar{g}_\text{SK}$. The presence of SK reverses the effect of shifts in CaHVA activation, so that negative shifts lead to an increase in $f$. This increase is not consistent with observations of $f$ after PNN removal \cite{tewari_perineuronal_2018}.
+
+%\appendix
+
+\printbibliography
+
+\end{document}
+
