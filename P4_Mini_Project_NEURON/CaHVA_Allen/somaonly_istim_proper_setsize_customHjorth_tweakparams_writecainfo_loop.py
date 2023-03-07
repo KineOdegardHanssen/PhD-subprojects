@@ -93,7 +93,7 @@ def return_allen_cell_model(model_folder, cm_factor, somasize, idur,iamp,idelay,
     
     stimulus = LFPy.StimIntElectrode(cell, **stim_params)
     #syn.set_spike_times(np.array([1]))
-    cell.simulate(rec_variables=["eca","cai","cao","ica_Ca_HVA","ik_SK","g_Ca_HVA","g_SK"],rec_vmem=True, rec_imem=True)
+    cell.simulate(rec_variables=["eca","cai","cao","ica_Ca_HVA","g_Ca_HVA"],rec_vmem=True, rec_imem=True)
     t, v = cell.tvec.copy(), cell.vmem[0].copy()
 
 
@@ -113,7 +113,7 @@ def return_allen_cell_model(model_folder, cm_factor, somasize, idur,iamp,idelay,
 
 if __name__ == '__main__':
     cm_factor = 1.0 #[0.5,1,1.25,1.5]
-    iamps  = [0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,0.01,0.011,0.012,0.013,0.014,0.015,0.016,0.017,0.018,0.019,0.02,0.021,0.022,0.023,0.024,0.025,0.026,0.027,0.028,0.029,0.03,0.031,0.032,0.033,0.034,0.035,0.036,0.037,0.038,0.039,0.04,0.041,0.042,0.043,0.044,0.045,0.046,0.047,0.048,0.049,0.05,0.051,0.052,0.053,0.054,0.055,0.056,0.057,0.058,0.059,0.06]
+    iamps  = [0.02]#[0,0.001,0.002,0.003,0.004,0.005,0.006,0.007,0.008,0.009,0.01,0.011,0.012,0.013,0.014,0.015,0.016,0.017,0.018,0.019,0.02,0.021,0.022,0.023,0.024,0.025,0.026,0.027,0.028,0.029,0.03,0.031,0.032,0.033,0.034,0.035,0.036,0.037,0.038,0.039,0.04,0.041,0.042,0.043,0.044,0.045,0.046,0.047,0.048,0.049,0.05,0.051,0.052,0.053,0.054,0.055,0.056,0.057,0.058,0.059,0.06]
     idur   = 1000 # 5000 # 
     idelay = 100
     tstop  = idur+idelay+10. #2.
@@ -133,11 +133,11 @@ if __name__ == '__main__':
     
     gnaf    = 1.0
     gkaf    = 1.0
-    gcahvas = [0.1,0.2,0.3,0.5,0.75,1.0,1.5,2.0,3.0,5.0,7.5,10.0,15.0]
+    gcahvas = [0,0.1,0.2,0.3,0.5,0.75,1.0,1.5]#,2.0,3.0,5.0,7.5,10.0,15.0]
     gpas    = 1.0
     Ng      = len(gcahvas)
-    for i in range(Ng):
-        gcahvas[i] = int(gcahvas[i]/5.0)
+    #for i in range(Ng):
+    #    gcahvas[i] = int(gcahvas[i]/5.0)
     
     print('iamps:',iamps)
     for i in range(Ni):
