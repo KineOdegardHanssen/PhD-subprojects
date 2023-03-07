@@ -25,7 +25,7 @@ t_before_rec = -600.
 
 cm = 1.0
 
-showplot = False
+showplot = True # False
 
 # change the default font family
 #plt.rcParams.update({'font.family':'Arial'})
