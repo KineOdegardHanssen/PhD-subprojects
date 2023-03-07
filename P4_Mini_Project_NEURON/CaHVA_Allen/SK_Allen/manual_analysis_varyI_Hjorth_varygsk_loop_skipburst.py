@@ -94,7 +94,7 @@ def manual(filename,idelay,idur,spikedurat,skiptime):
     time_peakvals = peaktimes#[:-1]
     
     durthr = 50 # High dur. thr. Should have more than one spike in the last quarter if it is this high
-    Npeaks /= anfraction # Want frequency
+    Npeaks /= anfraction #Want frequency
     # Checking if we've got consistent firing:
     if Npeaks!=0:
         print('in Npeaks!=0')
@@ -102,7 +102,9 @@ def manual(filename,idelay,idur,spikedurat,skiptime):
             Npeaks=0
         if len(dur)==0:
             Npeaks=0
-        elif peaktimes[-1]<=(3*idur/4.+idelay) and dur[-1]<durthr: #Checking if there's no firing in the last quarter of the stim. interval AND a short ISI: That means that the firing has stopped
+        if peaktimes[-1]<=(3*idur/4.+idelay) and dur[-1]<durthr: #Checking if there's no firing in the last quarter of the stim. interval AND a short ISI: That means that the firing has stopped
+            Npeaks=0
+        if peaktimes[-1]<=(0.85*idur+idelay) and dur[-1]<20:
             Npeaks=0
     
     '''
@@ -173,8 +175,8 @@ if __name__ == '__main__':
     
     gnaf   = 1.0
     gkaf   = 1.0
-    gcahva = 1.0
-    gsks   = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.25,1.5,2.0,2.5,3.0,5.0,7.5,10.0,15.0]#[12.5]#[0.1,0.5,1.0,2.0]#[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,2.0,2.5,5.0,10.0]
+    gcahva = 0.2
+    gsks   = [0.1]#,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.25,1.5,2.0,2.5,3.0,5.0,7.5,10.0,15.0]#[12.5]#[0.1,0.5,1.0,2.0]#[0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,2.0,2.5,5.0,10.0]
     gpas   = 1.0
     
     cm = 1.0
