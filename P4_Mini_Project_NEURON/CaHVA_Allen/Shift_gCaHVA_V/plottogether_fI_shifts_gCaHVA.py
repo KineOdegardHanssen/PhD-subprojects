@@ -49,13 +49,14 @@ vary_kaf     = False
 vary_Ca_HVA  = True # False
 vary_gpas    = False # 
 
-gnafs   = 1.0
-gkafs   = 1.0
-gcahvas = [0.02,0.1,0.2,0.4]#[0.1,0.5,1.0,2.0] # Possibly change these. A lot of simulations need to be run first
-gpases  = 1.0
-vshifts = [-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0,5,10,15,20,25,30,35,40,45,50]
-Ng      = len(gcahvas)
-NV      = len(vshifts)
+gnafs         = 1.0
+gkafs         = 1.0
+gcahvas       = [0.02,0.1,0.2,0.4]#[0.1,0.5,1.0,2.0] # Possibly change these. A lot of simulations need to be run first
+gpases        = 1.0
+vshifts       = [50,45,40,35,30,25,20,15,10,5,0,-5,-10,-15,-20,-25,-30,-35,-40,-45,-50]
+vshifts_label = [-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0,5,10,15,20,25,30,35,40,45,50]
+Ng            = len(gcahvas)
+NV            = len(vshifts)
 
 colors = []
 for i in range(NV):
@@ -242,9 +243,9 @@ for i in range(NV):
     Nspikes    = Nspikes_this[i]
     if numpy.sum(Nspikes)>0:
         if vshifts[i]==0:
-            ax1.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts[i]),linewidth=3,color=colors[i])    
+            ax1.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts_label[i]),linewidth=3,color=colors[i])    
         else:
-            ax1.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts[i]),linewidth=2,color=colors[i])
+            ax1.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts_label[i]),linewidth=2,color=colors[i])
 
 I_Nspikes_this = I_Nspikes_all[1]
 Nspikes_this   = Nspikes_all[1]
@@ -253,9 +254,9 @@ for i in range(NV):
     Nspikes    = Nspikes_this[i]
     if numpy.sum(Nspikes)>0:
         if vshifts[i]==0:
-            ax2.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts[i]),linewidth=3,color=colors[i])
+            ax2.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts_label[i]),linewidth=3,color=colors[i])
         else:
-            ax2.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts[i]),linewidth=2,color=colors[i])
+            ax2.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts_label[i]),linewidth=2,color=colors[i])
 
 I_Nspikes_this = I_Nspikes_all[2]
 Nspikes_this   = Nspikes_all[2]
@@ -264,9 +265,9 @@ for i in range(NV):
     Nspikes    = Nspikes_this[i]
     if numpy.sum(Nspikes)>0:
         if vshifts[i]==0:
-            ax3.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts[i]),linewidth=3,color=colors[i])
+            ax3.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts_label[i]),linewidth=3,color=colors[i])
         else:
-            ax3.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts[i]),linewidth=2,color=colors[i])
+            ax3.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts_label[i]),linewidth=2,color=colors[i])
 
 I_Nspikes_this = I_Nspikes_all[3]
 Nspikes_this   = Nspikes_all[3]
@@ -275,9 +276,9 @@ for i in range(NV):
     Nspikes    = Nspikes_this[i]
     if numpy.sum(Nspikes)>0:
         if vshifts[i]==0:
-            ax4.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts[i]),linewidth=3,color=colors[i])
+            ax4.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts_label[i]),linewidth=3,color=colors[i])
         else:
-            ax4.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts[i]),linewidth=2,color=colors[i])
+            ax4.plot(I_Nspikes, Nspikes, label=r'$V_{\mathregular{shift}}$ = %s mV' % str(vshifts_label[i]),linewidth=2,color=colors[i])
 
 
 ax1.legend(loc='lower right')#,ncol=1)

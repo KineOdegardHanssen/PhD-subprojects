@@ -11,7 +11,8 @@ def avg_and_rms(x):
     rmsx = numpy.sqrt(rmsx/(N-1))
     return avgx,rmsx
 
-vshifts     = [-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0,5,10,15,20,25,30,35,40,45,50]
+vshifts       = [50,45,40,35,30,25,20,15,10,5,0,-5,-10,-15,-20,-25,-30,-35,-40,-45,-50]
+vshifts_label = [-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0,5,10,15,20,25,30,35,40,45,50]
 spikedurat = -40
 idur       = 1000 #100 # ms
 idelay     = 10
@@ -26,8 +27,9 @@ t_before_rec = -600.
 # change the default font family
 #plt.rcParams.update({'font.family':'Arial'})
 
-
+j = 0
 for vshift in vshifts:
+    vshift_label = vshifts_label[j]
     plt.rc('xtick',labelsize=14)
     plt.rc('ytick',labelsize=14)
     
@@ -79,7 +81,7 @@ for vshift in vshifts:
     
     folder    = 'Vshift_'+str(vshift)+'/Results/Soma%i/' % somasize
     outfolder = 'Compare/'
-    figname   = outfolder+outnamestring+'_Vshift'+str(vshift)+'_Ng'+str(Ng)+'_fI.png'
+    figname   = outfolder+outnamestring+'_Vshift'+str(vshift_label)+'_Ng'+str(Ng)+'_fI.png'
     
     i = 0
     cm = 1.0
@@ -130,3 +132,4 @@ for vshift in vshifts:
     plt.tight_layout()
     plt.savefig(figname)
     #plt.show()
+    j+=1
