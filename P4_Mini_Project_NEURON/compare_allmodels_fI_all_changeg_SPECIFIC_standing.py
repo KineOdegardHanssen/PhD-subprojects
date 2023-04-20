@@ -46,7 +46,7 @@ axr3 = plt.subplot(gs[5, 4:6])
 
 ax1.set_title(r'A',loc='left',fontsize=18)
 ax2.set_title(r'B',loc='left',fontsize=18)
-ax2.set_title(r'C',loc='left',fontsize=18)
+ax3.set_title(r'C',loc='left',fontsize=18)
 ax4.set_title(r'D',loc='left',fontsize=18)
 ax5.set_title(r'E',loc='left',fontsize=18)
 ax6.set_title(r'F',loc='left',fontsize=18)
@@ -87,10 +87,10 @@ for i in range(Ng):
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+ '_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA0.2p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('CaHVA_Allen/bk/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{CaHVA}$, %s$\bar{g}_\mathregular{bk}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaHVA}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
 Nmodels = len(model_folders)
 
-ax1.set_title(r'CaHVA (Allen); bk (Hjorth)',fontsize=14)
+ax1.set_title(r'CaHVA (Allen); BK (Hjorth)',fontsize=14)
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -142,7 +142,7 @@ model_folders.append('CaHVA_Allen/BK_I_Zhang/gSK0.0028/')
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA0.2p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax4.set_title(r'CaHVA (Allen); BK (Zhang)',fontsize=14)
+ax4.set_title(r'CaHVA (Allen); BK (Zang)',fontsize=14)
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -161,7 +161,7 @@ for i in range(Nmodels):
         if len(words)>0:
             iamp_Nspikes.append(float(words[0]))
             Nspikes.append(float(words[1]))
-    
+
     if np.sum(Nspikes)>0:
         if i==0 or i==Nmodels-1:
             ax4.plot(iamp_Nspikes,Nspikes,label=labels[i],color=colors[i])
@@ -356,14 +356,14 @@ plotlabels  = []
 for gcahva in gcahvas:
     #### Subplot 6 ####
     model_folders.append('canin_Konstantoudaki/gSK0.0028/')
-    labels.append(r'%s$\bar{g}_\mathregular{canin}$' % str(gcahva))
+    labels.append(r'%s$\bar{g}_\mathregular{CaN}$' % str(gcahva))
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('canin_Konstantoudaki/bk/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{canin}$, %s$\bar{g}_\mathregular{bk}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaN}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax2.set_title(r'canin (Konstantoudaki); bk (Hjorth)',fontsize=14)
+ax2.set_title(r'CaN (Konstantoudaki); BK (Hjorth)',fontsize=14)
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -407,14 +407,14 @@ plotlabels  = []
 for gcahva in gcahvas:
     #### Subplot 7 ####
     model_folders.append('canin_Konstantoudaki/gSK0.0028/')
-    labels.append(r'%s$\bar{g}_\mathregular{canin}$' % str(gcahva))
+    labels.append(r'%s$\bar{g}_\mathregular{CaN}$' % str(gcahva))
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('canin_Konstantoudaki/BK_I_Zhang/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{canin}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaN}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax5.set_title(r'canin (Konstantoudaki); BK (Zhang)',fontsize=14)
+ax5.set_title(r'CaN (Konstantoudaki); BK (Zang)',fontsize=14)
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -458,14 +458,14 @@ plotlabels  = []
 for gcahva in gcahvas:
     #### Subplot 8 ####
     model_folders.append('canin_Konstantoudaki/gSK0.0028/')
-    labels.append(r'%s$\bar{g}_\mathregular{canin}$' % str(gcahva))
+    labels.append(r'%s$\bar{g}_\mathregular{CaN}$' % str(gcahva))
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('canin_Konstantoudaki/BK_AitOuares/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{canin}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaN}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax8.set_title(r'canin (Konstantoudaki); BK (Ait Ouares)',loc='right',fontsize=13.8)
+ax8.set_title(r'CaN (Konstantoudaki); BK (Ait Ouares)',loc='right',fontsize=13.8)
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -509,14 +509,14 @@ plotlabels  = []
 for gcahva in gcahvas:
     #### Subplot 9 ####
     model_folders.append('canin_Konstantoudaki/gSK0.0028/')
-    labels.append(r'%s$\bar{g}_\mathregular{canin}$' % str(gcahva))
+    labels.append(r'%s$\bar{g}_\mathregular{CaN}$' % str(gcahva))
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('canin_Konstantoudaki/SK_AitOuares/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{canin}$, %s$\bar{g}_\mathregular{SK}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaN}$, %s$\bar{g}_\mathregular{SK}$' % str(gbk))
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gsk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax11.set_title(r'canin (Konstantoudaki); SK (Ait Ouares)',loc='right',fontsize=13.8) #'_gsk'+str(gbk)+'p' + '_gCaHVA'+str(gcahva)+'p_
+ax11.set_title(r'CaN (Konstantoudaki); SK (Ait Ouares)',loc='right',fontsize=13.8) #'_gsk'+str(gbk)+'p' + '_gCaHVA'+str(gcahva)+'p_
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -561,14 +561,14 @@ colorindex  = []
 for gcahva in gcahvas:
     #### Subplot 10 ####
     model_folders.append('canin_Konstantoudaki/gSK0.0028/')
-    labels.append(r'%s$\bar{g}_\mathregular{canin}$' % str(gcahva))
+    labels.append(r'%s$\bar{g}_\mathregular{CaN}$' % str(gcahva))
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('canin_Konstantoudaki/SK_Allen/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{canin}$, %s$\bar{g}_\mathregular{SK}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaN}$, %s$\bar{g}_\mathregular{SK}$' % str(gbk))
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gsk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax14.set_title(r'canin (Konstantoudaki); SK (Allen)',fontsize=14)
+ax14.set_title(r'CaN (Konstantoudaki); SK (Allen)',fontsize=14)
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -620,14 +620,14 @@ infilenames = ['somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_Nspik
 for gcahva in gcahvas:
     #### Subplot 11 ####
     model_folders.append('caq/gSK0.0028/')
-    labels.append(r'%s$\bar{g}_\mathregular{caq}$' % str(gcahva))
+    labels.append(r'%s$\bar{g}_\mathregular{CaQ}$' % str(gcahva))
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('caq/bk/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{caq}$, %s$\bar{g}_\mathregular{bk}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaQ}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax3.set_title(r'caq (Hjorth); bk (Hjorth)',fontsize=14)
+ax3.set_title(r'CaQ (Hjorth); BK (Hjorth)',fontsize=14)
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -669,14 +669,14 @@ infilenames = ['somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_Nspik
 for gcahva in gcahvas:
     #### Subplot 12 ####
     model_folders.append('caq/gSK0.0028/')
-    labels.append(r'%s$\bar{g}_\mathregular{caq}$' % str(gcahva))
+    labels.append(r'%s$\bar{g}_\mathregular{CaQ}$' % str(gcahva))
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('caq/BK_I_Zhang/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{caq}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaQ}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax6.set_title(r'caq (Hjorth); BK (Zhang)',fontsize=14)
+ax6.set_title(r'CaQ (Hjorth); BK (Zang)',fontsize=14)
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -718,14 +718,14 @@ infilenames = ['somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_Nspik
 for gcahva in gcahvas:
     #### Subplot 13 ####
     model_folders.append('caq/gSK0.0028/')
-    labels.append(r'%s$\bar{g}_\mathregular{caq}$' % str(gcahva))
+    labels.append(r'%s$\bar{g}_\mathregular{CaQ}$' % str(gcahva))
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('caq/BK_AitOuares/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{caq}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaQ}$, %s$\bar{g}_\mathregular{BK}$' % str(gbk))
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax9.set_title(r'caq (Hjorth); BK (Ait Ouares)',fontsize=14)
+ax9.set_title(r'CaQ (Hjorth); BK (Ait Ouares)',fontsize=14)
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -767,14 +767,14 @@ infilenames = ['somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_Nspik
 for gcahva in gcahvas:
     #### Subplot 14 ####
     model_folders.append('caq/gSK0.0028/')
-    labels.append(r'%s$\bar{g}_\mathregular{caq}$' % str(gcahva))
+    labels.append(r'%s$\bar{g}_\mathregular{CaQ}$' % str(gcahva))
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('caq/SK_AitOuares/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{caq}$, %s$\bar{g}_\mathregular{SK}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaQ}$, %s$\bar{g}_\mathregular{SK}$' % str(gbk))
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax12.set_title(r'caq (Hjorth); SK (Ait Ouares)',fontsize=14) #'_gsk'+str(gbk)+'p' + '_gCaHVA'+str(gcahva)+'p_
+ax12.set_title(r'CaQ (Hjorth); SK (Ait Ouares)',fontsize=14) #'_gsk'+str(gbk)+'p' + '_gCaHVA'+str(gcahva)+'p_
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []
@@ -819,14 +819,14 @@ colorindex  = []
 for gcahva in gcahvas:
     #### Subplot 15 ####
     model_folders.append('caq/gSK0.0028/')
-    labels.append(r'%s$\bar{g}_\mathregular{caq}$' % str(gcahva))
+    labels.append(r'%s$\bar{g}_\mathregular{CaQ}$' % str(gcahva))
     infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gCaHVA'+str(gcahva)+'p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 model_folders.append('caq/SK_Allen/gSK0.0028/')
-labels.append(r'1.0$\bar{g}_\mathregular{caq}$, %s$\bar{g}_\mathregular{SK}$' % str(gbk))
+labels.append(r'1.0$\bar{g}_\mathregular{CaQ}$, %s$\bar{g}_\mathregular{SK}$' % str(gbk))
 infilenames.append('somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt')
 Nmodels = len(model_folders)
 
-ax15.set_title(r'caq (Hjorth); SK (Allen)',fontsize=14)
+ax15.set_title(r'CaQ (Hjorth); SK (Allen)',fontsize=14)
 for i in range(Nmodels):
     Nspikes      = []
     iamp_Nspikes = []

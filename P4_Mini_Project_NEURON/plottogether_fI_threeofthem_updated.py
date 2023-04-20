@@ -33,20 +33,21 @@ showplot = True # False
 plt.rc('xtick',labelsize=14)
 plt.rc('ytick',labelsize=14)
     
-fig = plt.figure(figsize=(18, 6),dpi=300)
+fig = plt.figure(figsize=(15, 5),dpi=300)
     
-gs = gridspec.GridSpec(1, 6)
+gs = gridspec.GridSpec(2, 6, height_ratios=[4, 1])
     
 ax1 = plt.subplot(gs[0, 0:2])
 ax2 = plt.subplot(gs[0, 2:4])
 ax3 = plt.subplot(gs[0, 4:6])
+ax4 = plt.subplot(gs[1, 0:6])
     
 #fig.suptitle(r'Properties',fontsize=20)
 
 ax1.set_title(r'A',loc='left',fontsize=18)
 ax2.set_title(r'B',loc='left',fontsize=18)
 ax3.set_title(r'B',loc='left',fontsize=18)
-ax1.set_title(r'Altering $\bar{g}_\mathregular{CaHVA}$, with $0\bar{g}_\mathregular{CaHVA}$',fontsize=18)
+ax1.set_title(r'Altering $\bar{g}_\mathregular{CaHVA}$, with $0\bar{g}_\mathregular{SK}$',fontsize=18)
 ax2.set_title(r'Altering $\bar{g}_\mathregular{SK}$',fontsize=18)
 ax3.set_title(r'Altering $\bar{g}_\mathregular{CaHVA}$, with 1.0$\bar{g}_\mathregular{SK}$',fontsize=18)
     
@@ -146,7 +147,7 @@ for gcahva in gcahvas:
         ax1.plot(I_Nspikes,Nspikes, label=thelabel,linewidth=thislinewidth,color=colors[i])
     i+=1
     
-ax1.legend(loc='lower right',ncol=2)
+#ax1.legend(loc='lower right',ncol=2)
 
 
 vary_SK      = True # False # 
@@ -211,7 +212,7 @@ for gsk in gsks:
         ax2.plot(I_Nspikes,Nspikes, label=thelabel,linewidth=thislinewidth,color=colors[i])
     i+=1
 
-ax2.legend(loc='lower right',ncol=3)
+#ax2.legend(loc='lower right',ncol=3)
 
 ########################################################################
 vary_SK      = True # False # 
@@ -277,7 +278,14 @@ for gcahva in gcahvas:
         ax3.plot(I_Nspikes,Nspikes, label=thelabel,linewidth=thislinewidth,color=colors[i])
     i+=1
 
-ax3.legend(loc='upper left',ncol=2)
+#ax3.legend(loc='upper left',ncol=2)
+
+ax4.set_frame_on(False)
+ax4.get_xaxis().set_visible(False)
+ax4.get_yaxis().set_visible(False)
+for i in range(Ng):
+    ax4.plot('-',color=colors[i],label=r'%.1f$\bar{g}$' % gcahvas_plot[i])
+ax4.legend(loc='upper center',ncol=9, fontsize=12.5)
 
 plt.tight_layout()
 plt.savefig(figname)

@@ -47,7 +47,7 @@ axr3 = plt.subplot(gs[5, 4:6])
 
 ax1.set_title(r'A',loc='left',fontsize=18)
 ax2.set_title(r'B',loc='left',fontsize=18)
-ax2.set_title(r'C',loc='left',fontsize=18)
+ax3.set_title(r'C',loc='left',fontsize=18)
 ax4.set_title(r'D',loc='left',fontsize=18)
 ax5.set_title(r'E',loc='left',fontsize=18)
 ax6.set_title(r'F',loc='left',fontsize=18)
@@ -68,6 +68,7 @@ plotname = outfolder+'compare_allmodels_fI_all_realisticparams.png'
 gbks   = [1.0,3.337]
 Vshifts = [0,-14.5]
 gcahvas = [0.2,0.2]
+Vshifts_name = [0,14.5]
 gcahvas_plot = [1.0,1.0]
 
 colors = []
@@ -83,8 +84,9 @@ for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'CaHVA_Allen/bk/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA0.2p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -114,13 +116,14 @@ for i in range(Nmodels):
 
 ### CaHVA_Allen, BK_I_Zhang:
 
-ax4.set_title(r'CaHVA (Allen); BK (Zhang)',fontsize=14)
+ax4.set_title(r'CaHVA (Allen); BK (Zang)',fontsize=14)
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'CaHVA_Allen/BK_I_Zhang/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA0.2p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -157,8 +160,9 @@ for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'CaHVA_Allen/BK_AitOuares/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA0.2p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -193,8 +197,9 @@ for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'CaHVA_Allen/SK_AitOuares/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gsk'+str(gbk)+'p' + '_gCaHVA0.2p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -229,8 +234,9 @@ for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'CaHVA_Allen/SK_Allen/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gSK'+str(gbk)+'p' + '_gCaHVA0.2p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -268,13 +274,14 @@ axr1.legend(loc='upper left',ncol=3)
 #'''
 ### canin, bk:
 
-ax2.set_title(r'canin (Konstantoudaki); bk (Hjorth)',fontsize=14)
+ax2.set_title(r'CaN (Konstantoudaki); BK (Hjorth)',fontsize=14)
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'canin_Konstantoudaki/bk/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -304,13 +311,14 @@ for i in range(Nmodels):
 
 ### canin, BK_Zhang: #####################
 
-ax5.set_title(r'canin (Konstantoudaki); BK (Zhang)',fontsize=14)
+ax5.set_title(r'CaN (Konstantoudaki); BK (Zang)',fontsize=14)
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'canin_Konstantoudaki/BK_I_Zhang/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -340,13 +348,14 @@ for i in range(Nmodels):
 
 ### canin, BK_AO: #####################
 
-ax8.set_title(r'canin (Konstantoudaki); BK (Ait Ouares)',loc='right',fontsize=13.8)
+ax8.set_title(r'CaN (Konstantoudaki); BK (Ait Ouares)',loc='right',fontsize=13.8)
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'canin_Konstantoudaki/BK_AitOuares/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -376,13 +385,14 @@ for i in range(Nmodels):
 
 ### canin, SK_AO: #####################
 
-ax11.set_title(r'canin (Konstantoudaki); SK (Ait Ouares)',loc='right',fontsize=13.8) #'_gsk'+str(gbk)+'p' + '_gCaHVA'+str(gcahva)+'p_
+ax11.set_title(r'CaN (Konstantoudaki); SK (Ait Ouares)',loc='right',fontsize=13.8) #'_gsk'+str(gbk)+'p' + '_gCaHVA'+str(gcahva)+'p_
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'canin_Konstantoudaki/SK_AitOuares/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gsk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -412,13 +422,14 @@ for i in range(Nmodels):
 
 ### canin, SK_Allen: #####################
 
-ax14.set_title(r'canin (Konstantoudaki); SK (Allen)',fontsize=14)
+ax14.set_title(r'CaN (Konstantoudaki); SK (Allen)',fontsize=14)
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'canin_Konstantoudaki/SK_Allen/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gsk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -454,15 +465,16 @@ for i in range(len(plotlabels)):
     axr2.plot('-',color=colors[colorindex[i]],label=plotlabels[i])
 axr2.legend(loc='upper left',ncol=3)
 #'''
-### caq, bk: ##################### 
+### caq, bk: #####################
 
-ax3.set_title(r'caq (Hjorth); BK (Hjorth)',fontsize=14)
+ax3.set_title(r'CaQ (Hjorth); BK (Hjorth)',fontsize=14)
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'caq/bk/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -492,13 +504,14 @@ for i in range(Nmodels):
 
 ### caq, BK_Zhang: #####################
 
-ax6.set_title(r'caq (Hjorth); BK (Zhang)',fontsize=14)
+ax6.set_title(r'CaQ (Hjorth); BK (Zang)',fontsize=14)
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'caq/BK_I_Zhang/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -528,11 +541,12 @@ for i in range(Nmodels):
 
 ### caq, BK_A0: #####################
 
-ax9.set_title(r'caq (Hjorth); BK (Ait Ouares)',fontsize=14)
+ax9.set_title(r'CaQ (Hjorth); BK (Ait Ouares)',fontsize=14)
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
     thislabel    = r'%s$\bar{g}_\mathregular{BK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
     model_folder = 'caq/BK_AitOuares/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
@@ -562,15 +576,16 @@ for i in range(Nmodels):
 
     infile_Nspikes.close()
 
-### caq, SK_AO: ##################### 
+### caq, SK_AO: #####################
 
-ax12.set_title(r'caq (Hjorth); SK (Ait Ouares)',fontsize=14) #'_gsk'+str(gbk)+'p' + '_gCaHVA'+str(gcahva)+'p_
+ax12.set_title(r'CaQ (Hjorth); SK (Ait Ouares)',fontsize=14) #'_gsk'+str(gbk)+'p' + '_gCaHVA'+str(gcahva)+'p_
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'caq/SK_AitOuares/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []
@@ -598,15 +613,16 @@ for i in range(Nmodels):
 
     infile_Nspikes.close()
 
-### caq, SK_Allen: ##################### 
+### caq, SK_Allen: #####################
 
-ax15.set_title(r'caq (Hjorth); SK (Allen)',fontsize=14)
+ax15.set_title(r'CaQ (Hjorth); SK (Allen)',fontsize=14)
 for i in range(Nmodels):
     gbk    = gbks[i]
     gcahva = gcahvas[i]
     Vshift = Vshifts[i]
+    Vshift_name = Vshifts_name[i]
     gcahva_plot  = gcahvas_plot[i]
-    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift))
+    thislabel    = r'%s$\bar{g}_\mathregular{SK}$, $V_\mathregular{shift}$=%s mV' % (str(gbk),str(Vshift_name))
     model_folder = 'caq/SK_Allen/gSK0.0028/Shift_gCaHVA_V/Vshift_'+str(Vshift)+'/'
     infilename   = 'somaHjorth_idur%i_varyiamp'% (idur)+'_manual_cm'+str(cm)+'_gbk'+str(gbk)+'p' + '_gCaHVA1.0p__Nspikes_vs_I_s'+str(skiptime)+'.txt'
     Nspikes      = []

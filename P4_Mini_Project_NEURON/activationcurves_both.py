@@ -77,7 +77,7 @@ print('max(mTau_standard):',max(mTau_standard),'; min(mTau_standard):',min(mTau_
 print('max(hTau_standard):',max(hTau_standard),'; min(hTau_standard):',min(hTau_standard))
 
 print('caihalf_SK:',caihalf_SK)
-plt.figure(figsize=(5,3.7),dpi=300)
+plt.figure(figsize=(5,2.7),dpi=300)
 plt.plot(cais,zInf_standard,color='k')
 plt.axvline(x=1e-4,color='grey',linestyle=':',linewidth=0.75)
 plt.axvline(x=caihalf_SK,color='k',linestyle='--',linewidth=0.75)
