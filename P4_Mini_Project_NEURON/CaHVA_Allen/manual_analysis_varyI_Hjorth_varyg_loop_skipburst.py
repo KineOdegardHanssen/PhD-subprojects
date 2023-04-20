@@ -102,7 +102,7 @@ def manual(filename,idelay,idur,spikedurat,skiptime):
             Npeaks=0
         if len(dur)==0:
             Npeaks=0
-        elif peaktimes[-1]<=(3*idur/4.+idelay) and dur[-1]<durthr: #Checking if there's no firing in the last quarter of the stim. interval AND a short ISI: That means that the firing has stopped
+        if peaktimes[-1]<=(3*idur/4.+idelay) and dur[-1]<durthr: #Checking if there's no firing in the last quarter of the stim. interval AND a short ISI: That means that the firing has stopped
             Npeaks=0
     
     '''

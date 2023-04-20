@@ -46,6 +46,9 @@ def unpack_sk(filename):
     g_SK     = data[:, 7]
     g_Ca_HVA = data[:, 8]
     return t, v, eca, cai, cao, I_SK, I_Ca_HVA, g_SK, g_Ca_HVA
+	
+startconcentration = 0.0001
+halfconcentration   = 0.00043287612810830614
 
 idur = 1000
 iamp = 0.02
@@ -131,10 +134,10 @@ g_Ca_HVA5 = g_Ca_HVAs[4]
 
 
 ishift1 = 0#-200#2426
-ishift2 = 927#1069
-ishift3 = -140
-ishift4 = 5557#5577
-ishift5 = 1257
+ishift2 = 921#1069
+ishift3 = -180
+ishift4 = 5422
+ishift5 = 995
 
 shiftall = -100#200
 spdelta = 2200
@@ -267,22 +270,26 @@ ax6.set_xlabel(r'$t$ (ms)',fontsize=12)
 ax6.set_ylabel(r'$g_\mathregular{Ca}/\bar{g}_\mathregular{Ca}$',fontsize=12)
 
 #'''
+
+ax1.axvline(x=peaktimes1,color='k',linestyle='--',linewidth=0.75)
 ax1.plot(t5[istart5+ishift5:iend5+ishift5], V5_shifted_CaHVA,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax1.plot(t4[istart4+ishift4:iend4+ishift4], V4_shifted_CaHVA,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax1.plot(t3[istart3+ishift3:iend3+ishift3], V3_shifted_CaHVA,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
 ax1.plot(t2[istart2+ishift2:iend2+ishift2], V2_shifted_CaHVA,color=colors[3],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[3])
 ax1.plot(t1[istart1+ishift1:iend1+ishift1], V1_shifted_CaHVA,color=colors[4],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[4])
 ax1.set_xlim(left=t1[istart1+ishift1],right=t1[iend1+ishift1])
-ax1.legend(loc='upper right',ncol=1,fontsize=11)
+ax1.legend(loc='upper right',ncol=1,fontsize=10)
 
+ax2.axvline(x=peaktimes1,color='k',linestyle='--',linewidth=0.75)
 ax2.plot(t5[istart5+ishift5:iend5+ishift5], eca5_shifted_CaHVA,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax2.plot(t4[istart4+ishift4:iend4+ishift4], eca4_shifted_CaHVA,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax2.plot(t3[istart3+ishift3:iend3+ishift3], eca3_shifted_CaHVA,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
 ax2.plot(t2[istart2+ishift2:iend2+ishift2], eca2_shifted_CaHVA,color=colors[3],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[3])
 ax2.plot(t1[istart1+ishift1:iend1+ishift1], eca1_shifted_CaHVA,color=colors[4],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[4])
 ax2.set_xlim(left=t1[istart1+ishift1],right=t1[iend1+ishift1])
-ax2.legend(loc='upper left',ncol=1,fontsize=11)
+#ax2.legend(loc='upper left',ncol=1,fontsize=11)
 
+ax3.axvline(x=peaktimes1,color='k',linestyle='--',linewidth=0.75)
 ax3.plot(t1_shift, deltaV4,color=colors[0],label=r'$V_{%i\ \mathregular{mV}}-V_{0\ \mathregular{mV}}$' % Vshifts[0])
 ax3.plot(t1_shift, deltaV3,color=colors[1],label=r'$V_{%i\ \mathregular{mV}}-V_{0\ \mathregular{mV}}$' % Vshifts[1])
 ax3.plot(t1_shift, deltaV2,color=colors[3],label=r'$V_{%i\ \mathregular{mV}}-V_{0\ \mathregular{mV}}$' % Vshifts[3])
@@ -290,29 +297,34 @@ ax3.plot(t1_shift, deltaV1,color=colors[4],label=r'$V_{%i\ \mathregular{mV}}-V_{
 ax3.set_xlim(left=t1[istart1+ishift1],right=t1[iend1+ishift1])
 ax3.legend(loc='upper right',ncol=1,fontsize=11)
 
+ax4.axvline(x=peaktimes1,color='k',linestyle='--',linewidth=0.75)
+ax4.axhline(y=startconcentration,color='grey',linestyle=':',linewidth=0.75)
+ax4.axhline(y=halfconcentration,color='k',linestyle='--',linewidth=0.75)
 ax4.plot(t5[istart5+ishift5:iend5+ishift5], cai5_shifted_CaHVA,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax4.plot(t4[istart4+ishift4:iend4+ishift4], cai4_shifted_CaHVA,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax4.plot(t3[istart3+ishift3:iend3+ishift3], cai3_shifted_CaHVA,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
 ax4.plot(t2[istart2+ishift2:iend2+ishift2], cai2_shifted_CaHVA,color=colors[3],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[3])
 ax4.plot(t1[istart1+ishift1:iend1+ishift1], cai1_shifted_CaHVA,color=colors[4],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[4])
 ax4.set_xlim(left=t1[istart1+ishift1],right=t1[iend1+ishift1])
-ax4.legend(loc='upper left',ncol=1,fontsize=11)
+#ax4.legend(loc='upper left',ncol=1,fontsize=11)
 
+ax5.axvline(x=peaktimes1,color='k',linestyle='--',linewidth=0.75)
 ax5.plot(t5[istart5+ishift5:iend5+ishift5], I_Ca_HVA5_shifted_CaHVA,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax5.plot(t4[istart4+ishift4:iend4+ishift4], I_Ca_HVA4_shifted_CaHVA,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax5.plot(t3[istart3+ishift3:iend3+ishift3], I_Ca_HVA3_shifted_CaHVA,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
 ax5.plot(t2[istart2+ishift2:iend2+ishift2], I_Ca_HVA2_shifted_CaHVA,color=colors[3],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[3])
 ax5.plot(t1[istart1+ishift1:iend1+ishift1], I_Ca_HVA1_shifted_CaHVA,color=colors[4],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[4])
 ax5.set_xlim(left=t1[istart1+ishift1],right=t1[iend1+ishift1])
-ax5.legend(loc='lower left',ncol=1,fontsize=10)
+#ax5.legend(loc='lower left',ncol=1,fontsize=10)
 
+ax6.axvline(x=peaktimes1,color='k',linestyle='--',linewidth=0.75)
 ax6.plot(t5[istart5+ishift5:iend5+ishift5], g_Ca_HVA5_shifted_CaHVA,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax6.plot(t4[istart4+ishift4:iend4+ishift4], g_Ca_HVA4_shifted_CaHVA,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax6.plot(t3[istart3+ishift3:iend3+ishift3], g_Ca_HVA3_shifted_CaHVA,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
 ax6.plot(t2[istart2+ishift2:iend2+ishift2], g_Ca_HVA2_shifted_CaHVA,color=colors[3],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[3])
 ax6.plot(t1[istart1+ishift1:iend1+ishift1], g_Ca_HVA1_shifted_CaHVA,color=colors[4],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[4])
 ax6.set_xlim(left=t1[istart1+ishift1],right=t1[iend1+ishift1])
-ax6.legend(loc='upper left',ncol=1,fontsize=10)
+#ax6.legend(loc='upper left',ncol=1,fontsize=10)
 
 fig.tight_layout()#(rect=[0, 0.03, 1, 0.95])
 plt.savefig('Results/Soma10/Compare/trace_cainfo_idur'+str(idur)+'_iamp'+str(iamp)+'_CaHVA_SHIFTS_aligned.png')
@@ -417,11 +429,11 @@ g_Ca_HVA_sk5 = g_Ca_HVA_sk5/float(gcahva*gcahva_base)
 Nt = len(t_sk1)
 
 
-ishift1 = -300
-ishift2 = -213
-ishift3 = -242
-ishift4 = -194
-ishift5 = -1262
+ishift1 = 150 #-300
+ishift2 = -225 #-213
+ishift3 = 142 #-242
+ishift4 = -717 #-194
+ishift5 = 63 #-1262
 
 shorten1 = 0#467
 istart = int(9*N/16)+800
@@ -544,7 +556,7 @@ deltaV3_SK = V4_shifted_CaHVA_SK-V3_shifted_CaHVA_SK
 deltaV4_SK = V5_shifted_CaHVA_SK-V3_shifted_CaHVA_SK
 
 
-fig = plt.figure(figsize=(10,14),dpi=300)#(figsize=(8,3),dpi=300)
+fig = plt.figure(figsize=(10,12),dpi=300)#(figsize=(8,3),dpi=300)
 
 gs = gridspec.GridSpec(4, 4)
     
@@ -595,6 +607,7 @@ ax8.set_xlabel(r'$t$ (ms)',fontsize=12)
 ax8.set_ylabel(r'$g_\mathregular{SK}/\bar{g}_\mathregular{SK}$',fontsize=12)
 
 
+ax1.axvline(x=peaktimes1_SK,color='k',linestyle='--',linewidth=0.75)
 ax1.plot(t_sk5[istart5+ishift5:iend5+ishift5], V5_shifted_CaHVA_SK,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax1.plot(t_sk4[istart4+ishift4:iend4+ishift4], V4_shifted_CaHVA_SK,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax1.plot(t_sk3[istart3+ishift3:iend3+ishift3], V3_shifted_CaHVA_SK,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
@@ -603,6 +616,7 @@ ax1.plot(t_sk1[istart1+ishift1:iend1+ishift1], V1_shifted_CaHVA_SK,color=colors[
 ax1.set_xlim(left=t_sk1[istart1+ishift1],right=t_sk1[iend1+ishift1])
 ax1.legend(loc='upper right',ncol=1,fontsize=10)
 
+ax2.axvline(x=peaktimes1_SK,color='k',linestyle='--',linewidth=0.75)
 ax2.plot(t_sk5[istart5+ishift5:iend5+ishift5], eca_sk5_shifted_CaHVA_SK,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax2.plot(t_sk4[istart4+ishift4:iend4+ishift4], eca_sk4_shifted_CaHVA_SK,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax2.plot(t_sk3[istart3+ishift3:iend3+ishift3], eca_sk3_shifted_CaHVA_SK,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
@@ -611,29 +625,35 @@ ax2.plot(t_sk1[istart1+ishift1:iend1+ishift1], eca_sk1_shifted_CaHVA_SK,color=co
 ax2.set_xlim(left=t_sk1[istart1+ishift1],right=t_sk1[iend1+ishift1])
 ax2.legend(loc='lower left',ncol=1,fontsize=11)
 
+ax3.axvline(x=peaktimes1_SK,color='k',linestyle='--',linewidth=0.75)
 ax3.plot(t1_shift_sk, deltaV4_SK,color=colors[0],label=r'$V_{%i\ \mathregular{mV}}-V_{0\ \mathregular{mV}}$' % Vshifts[0])
 ax3.plot(t1_shift_sk, deltaV3_SK,color=colors[1],label=r'$V_{%i\ \mathregular{mV}}-V_{0\ \mathregular{mV}}$' % Vshifts[1])
 ax3.plot(t1_shift_sk, deltaV2_SK,color=colors[3],label=r'$V_{%i\ \mathregular{mV}}-V_{0\ \mathregular{mV}}$' % Vshifts[3])
 ax3.plot(t1_shift_sk, deltaV1_SK,color=colors[4],label=r'$V_{%i\ \mathregular{mV}}-V_{0\ \mathregular{mV}}$' % Vshifts[4])
 ax3.set_xlim(left=t1_shift_sk[0],right=t1_shift_sk[-1])
-ax3.legend(loc='upper right',ncol=1,fontsize=11)
+ax3.legend(loc='lower right',ncol=1,fontsize=11)
 
+ax4.axvline(x=peaktimes1_SK,color='k',linestyle='--',linewidth=0.75)
+ax4.axhline(y=startconcentration,color='grey',linestyle=':',linewidth=0.75)
+ax4.axhline(y=halfconcentration,color='k',linestyle='--',linewidth=0.75)
 ax4.plot(t_sk5[istart5+ishift5:iend5+ishift5], cai_sk5_shifted_CaHVA_SK,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax4.plot(t_sk4[istart4+ishift4:iend4+ishift4], cai_sk4_shifted_CaHVA_SK,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax4.plot(t_sk3[istart3+ishift3:iend3+ishift3], cai_sk3_shifted_CaHVA_SK,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
 ax4.plot(t_sk2[istart2+ishift2:iend2+ishift2], cai_sk2_shifted_CaHVA_SK,color=colors[3],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[3])
 ax4.plot(t_sk1[istart1+ishift1:iend1+ishift1], cai_sk1_shifted_CaHVA_SK,color=colors[4],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[4])
 ax4.set_xlim(left=t_sk1[istart1+ishift1],right=t_sk1[iend1+ishift1])
-ax4.legend(loc='lower left',ncol=1,fontsize=11)
+ax4.legend(loc='upper left',ncol=1,fontsize=11)
 
+ax5.axvline(x=peaktimes1_SK,color='k',linestyle='--',linewidth=0.75)
 ax5.plot(t_sk5[istart5+ishift5:iend5+ishift5], I_Ca_HVA_sk5_shifted_CaHVA_SK,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax5.plot(t_sk4[istart4+ishift4:iend4+ishift4], I_Ca_HVA_sk4_shifted_CaHVA_SK,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax5.plot(t_sk3[istart3+ishift3:iend3+ishift3], I_Ca_HVA_sk3_shifted_CaHVA_SK,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
 ax5.plot(t_sk2[istart2+ishift2:iend2+ishift2], I_Ca_HVA_sk2_shifted_CaHVA_SK,color=colors[3],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[3])
 ax5.plot(t_sk1[istart1+ishift1:iend1+ishift1], I_Ca_HVA_sk1_shifted_CaHVA_SK,color=colors[4],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[4])
 ax5.set_xlim(left=t_sk1[istart1+ishift1],right=t_sk1[iend1+ishift1])
-ax5.legend(loc='lower left',ncol=1,fontsize=11)
+ax5.legend(loc='lower left',ncol=1,fontsize=10)
 
+ax6.axvline(x=peaktimes1_SK,color='k',linestyle='--',linewidth=0.75)
 ax6.plot(t_sk5[istart5+ishift5:iend5+ishift5], g_Ca_HVA_sk5_shifted_CaHVA_SK,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax6.plot(t_sk4[istart4+ishift4:iend4+ishift4], g_Ca_HVA_sk4_shifted_CaHVA_SK,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax6.plot(t_sk3[istart3+ishift3:iend3+ishift3], g_Ca_HVA_sk3_shifted_CaHVA_SK,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
@@ -642,21 +662,23 @@ ax6.plot(t_sk1[istart1+ishift1:iend1+ishift1], g_Ca_HVA_sk1_shifted_CaHVA_SK,col
 ax6.set_xlim(left=t_sk1[istart1+ishift1],right=t_sk1[iend1+ishift1])
 ax6.legend(loc='upper left',ncol=1,fontsize=10)
 
+ax7.axvline(x=peaktimes1_SK,color='k',linestyle='--',linewidth=0.75)
 ax7.plot(t_sk5[istart5+ishift5:iend5+ishift5], I_SK_sk5_shifted_CaHVA_SK,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax7.plot(t_sk4[istart4+ishift4:iend4+ishift4], I_SK_sk4_shifted_CaHVA_SK,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax7.plot(t_sk3[istart3+ishift3:iend3+ishift3], I_SK_sk3_shifted_CaHVA_SK,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
 ax7.plot(t_sk2[istart2+ishift2:iend2+ishift2], I_SK_sk2_shifted_CaHVA_SK,color=colors[3],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[3])
 ax7.plot(t_sk1[istart1+ishift1:iend1+ishift1], I_SK_sk1_shifted_CaHVA_SK,color=colors[4],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[4])
 ax7.set_xlim(left=t_sk1[istart1+ishift1],right=t_sk1[iend1+ishift1])
-ax7.legend(loc='upper right',ncol=1,fontsize=10)
+ax7.legend(loc='upper left',ncol=1,fontsize=10)
 
+ax8.axvline(x=peaktimes1_SK,color='k',linestyle='--',linewidth=0.75)
 ax8.plot(t_sk5[istart5+ishift5:iend5+ishift5], g_SK_sk5_shifted_CaHVA_SK,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
 ax8.plot(t_sk4[istart4+ishift4:iend4+ishift4], g_SK_sk4_shifted_CaHVA_SK,color=colors[1],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[1])
 ax8.plot(t_sk3[istart3+ishift3:iend3+ishift3], g_SK_sk3_shifted_CaHVA_SK,color=colors[2],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[2])
 ax8.plot(t_sk2[istart2+ishift2:iend2+ishift2], g_SK_sk2_shifted_CaHVA_SK,color=colors[3],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[3])
 ax8.plot(t_sk1[istart1+ishift1:iend1+ishift1], g_SK_sk1_shifted_CaHVA_SK,color=colors[4],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[4])
 ax8.set_xlim(left=t_sk1[istart1+ishift1],right=t_sk1[iend1+ishift1])
-ax8.legend(loc='lower left',ncol=1,fontsize=11)
+ax8.legend(loc='upper left',ncol=1,fontsize=11)
 
 '''
 print('len(t1_shift):',len(t1_shift))
@@ -735,8 +757,9 @@ ax3.plot(t1_shift, deltaV4,color=colors[0],label=r'$V_{%i\ \mathregular{mV}}-V_{
 ax3.plot(t1_shift, deltaV3,color=colors[1],label=r'$V_{%i\ \mathregular{mV}}-V_{%i\ \mathregular{mV}}$' % (Vshifts[1],Vshifts[2]))
 ax3.plot(t1_shift, deltaV2,color=colors[3],label=r'$V_{%i\ \mathregular{mV}}-V_{%i\ \mathregular{mV}}$' % (Vshifts[3],Vshifts[2]))
 ax3.plot(t1_shift, deltaV1,color=colors[4],label=r'$V_{%i\ \mathregular{mV}}-V_{%i\ \mathregular{mV}}$' % (Vshifts[4],Vshifts[2]))
-ax3.set_xlim(left=t1_shift[0],right=t1_shift[-1])
-ax3.legend(loc='upper right',ncol=1,fontsize=10)
+ax3.set_xlim(left=peaktime_CaHVA,right=t1_shift[-1])
+ax3.set_ylim(top=6,bottom=-7)
+ax3.legend(loc='lower left',ncol=2,fontsize=10)
 
 ax5.axvline(x=peaktime_CaHVA,color='k',linestyle='--',linewidth=0.75)
 ax5.plot(t5_shift, I_Ca_HVA5_shifted_CaHVA,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
@@ -763,8 +786,9 @@ ax4.plot(t4_shift_sk, deltaV4_SK,color=colors[0],label=r'$V_{%i\ \mathregular{mV
 ax4.plot(t3_shift_sk, deltaV3_SK,color=colors[1],label=r'$V_{%i\ \mathregular{mV}}-V_{%i\ \mathregular{mV}}$' % (Vshifts[1],Vshifts[2]))
 ax4.plot(t2_shift_sk, deltaV2_SK,color=colors[3],label=r'$V_{%i\ \mathregular{mV}}-V_{%i\ \mathregular{mV}}$' % (Vshifts[3],Vshifts[2]))
 ax4.plot(t1_shift_sk, deltaV1_SK,color=colors[4],label=r'$V_{%i\ \mathregular{mV}}-V_{%i\ \mathregular{mV}}$' % (Vshifts[4],Vshifts[2]))
-ax4.set_xlim(left=t1_shift_sk[0],right=t1_shift_sk[-1])
-ax4.legend(loc='upper right',ncol=1,fontsize=10)
+ax4.set_xlim(left=peaktime_CaHVA_SK,right=t1_shift_sk[-1])
+ax4.set_ylim(top=6,bottom=-7)
+ax4.legend(loc='lower left',ncol=2,fontsize=9)
 
 ax6.axvline(x=peaktime_CaHVA_SK,color='k',linestyle='--',linewidth=0.75)
 ax6.plot(t5_shift_sk, I_Ca_HVA_sk5_shifted_CaHVA_SK,color=colors[0],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[0])
@@ -783,15 +807,15 @@ ax7.plot(t3_shift_sk, I_SK_sk3_shifted_CaHVA_SK,color=colors[2],label=r'$V_\math
 ax7.plot(t2_shift_sk, I_SK_sk2_shifted_CaHVA_SK,color=colors[3],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[3])
 ax7.plot(t1_shift_sk, I_SK_sk1_shifted_CaHVA_SK,color=colors[4],label=r'$V_\mathregular{shift}=$%i mV' % Vshifts[4])
 ax7.set_xlim(left=t1_shift_sk[0],right=t1_shift_sk[-1])
-ax7.legend(loc='upper right',ncol=1,fontsize=10)
+ax7.legend(loc='upper left',ncol=1,fontsize=9)
 
 fig.tight_layout()#(rect=[0, 0.03, 1, 0.95])
 plt.savefig('Results/Soma10/Compare/trace_cainfo_idur'+str(idur)+'_iamp'+str(iamp)+'_CaHVA_SK_SHIFTS_aligned_smallset.png')
-
+#plt.show()
 
 
 ################## Plotting total tracde and [Ca]in: ##################
-fig = plt.figure(figsize=(10,8))#,dpi=300)#(figsize=(8,3),dpi=300)
+fig = plt.figure(figsize=(10,8),dpi=300)#(figsize=(8,3),dpi=300)
     
 gs = gridspec.GridSpec(2, 4)
     
@@ -841,4 +865,5 @@ ax4.legend(loc='lower right',ncol=2,fontsize=9)
 
 plt.tight_layout()
 plt.savefig('Results/Soma10/Compare/trace_concentration_idur'+str(idur)+'_iamp'+str(iamp)+'_Ca_SK_SHIFTS_both.png')
+#plt.show()
 

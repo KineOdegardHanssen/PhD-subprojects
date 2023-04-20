@@ -247,6 +247,9 @@ def unpack_sk(filename):
     g_SK     = data[:, 7]
     g_Ca_HVA = data[:, 8]
     return t, v, eca, cai, cao, I_SK, I_Ca_HVA, g_SK, g_Ca_HVA
+	
+startconcentration = 0.0001
+halfconcentration   = 0.00043287612810830614
 
 idur = 1000
 iamp = 0.02 # 0.04 # 
@@ -505,7 +508,7 @@ ax2.plot(t2[istart2+ishift2:iend2+ishift2], eca2_shifted_CaHVA,color=colors_gCa[
 ax2.plot(t3[istart3+ishift3:iend3+ishift3], eca3_shifted_CaHVA,color=colors_gCa[3],label=r'%s$\bar{g}_\mathregular{CaHVA}$' % str(gcahvas_label[3]))
 ax2.plot(t4[istart4+ishift4:iend4+ishift4], eca4_shifted_CaHVA,color=colors_gCa[4],label=r'%s$\bar{g}_\mathregular{CaHVA}$' % str(gcahvas_label[4]))
 ax2.set_xlim(left=t1[istart1+ishift1],right=t1[iend1+ishift1])
-ax2.legend(loc='upper left',ncol=1,fontsize=11)
+#ax2.legend(loc='upper left',ncol=1,fontsize=11)
 
 ax3.axvline(x=peaktime_CaHVA,color='k',linestyle='--',linewidth=0.75)
 ax3.plot(t0[istart0+ishift0:iend0+ishift0], deltaV0,color=colors_gCa[0],label=r'$V_{%s\bar{g}_\mathregular{CaHVA}}$-$V_{%s\bar{g}_\mathregular{CaHVA}}$' % (str(gcahvas_label[0]),str(gcahvas_label[1])))#,color=mycolors[0])
@@ -516,13 +519,15 @@ ax3.set_xlim(left=t1[istart1+ishift1],right=t1[iend1+ishift1])
 ax3.legend(loc='upper left',ncol=1,fontsize=10)
 
 ax4.axvline(x=peaktime_CaHVA,color='k',linestyle='--',linewidth=0.75)
+ax4.axhline(y=startconcentration,color='grey',linestyle=':',linewidth=0.75)
+ax4.axhline(y=halfconcentration,color='k',linestyle='--',linewidth=0.75)
 ax4.plot(t0[istart0+ishift0:iend0+ishift0], cai0_shifted_CaHVA,color=colors_gCa[0],label=r'%s$\bar{g}_\mathregular{CaHVA}$' % str(gcahvas_label[0]))
 ax4.plot(t1[istart1+ishift1:iend1+ishift1], cai1_shifted_CaHVA,color=colors_gCa[1],label=r'%s$\bar{g}_\mathregular{CaHVA}$' % str(gcahvas_label[1]))
 ax4.plot(t2[istart2+ishift2:iend2+ishift2], cai2_shifted_CaHVA,color=colors_gCa[2],label=r'%s$\bar{g}_\mathregular{CaHVA}$' % str(gcahvas_label[2]))
 ax4.plot(t3[istart3+ishift3:iend3+ishift3], cai3_shifted_CaHVA,color=colors_gCa[3],label=r'%s$\bar{g}_\mathregular{CaHVA}$' % str(gcahvas_label[3]))
 ax4.plot(t4[istart4+ishift4:iend4+ishift4], cai4_shifted_CaHVA,color=colors_gCa[4],label=r'%s$\bar{g}_\mathregular{CaHVA}$' % str(gcahvas_label[4]))
 ax4.set_xlim(left=t1[istart1+ishift1],right=t1[iend1+ishift1])
-ax4.legend(loc='upper left',ncol=1,fontsize=11)
+#ax4.legend(loc='upper left',ncol=1,fontsize=11)
 
 ax5.axvline(x=peaktime_CaHVA,color='k',linestyle='--',linewidth=0.75)
 ax5.plot(t1[istart1+ishift1:iend1+ishift1], I_Ca_HVA1_shifted_CaHVA,color=colors_gCa[1],label=r'%s$\bar{g}_\mathregular{CaHVA}$' % str(gcahvas_label[1]))
@@ -886,6 +891,8 @@ ax3.legend(loc='lower left',ncol=1,fontsize=11)
 
 
 ax4.axvline(x=peaktime_CaHVA_SK,color='k',linestyle='--',linewidth=0.75)
+ax4.axhline(y=startconcentration,color='grey',linestyle=':',linewidth=0.75)
+ax4.axhline(y=halfconcentration,color='k',linestyle='--',linewidth=0.75)
 ax4.plot(t_nosk[istart0+ishift0:iend0+ishift0], cai_sk1_shifted_CaHVA_SK,color=colors_gSK[0],label=r'0$\bar{g}_\mathregular{SK}$')
 ax4.plot(t_sk1[istart1+ishift1:iend1+ishift1], cai_sk2_shifted_CaHVA_SK,color=colors_gSK[1],label=r'%s$\bar{g}_\mathregular{SK}$' % str(gsks[0]))
 ax4.plot(t_sk2[istart2+ishift2:iend2+ishift2], cai_sk3_shifted_CaHVA_SK,color=colors_gSK[2],label=r'%s$\bar{g}_\mathregular{SK}$' % str(gsks[1]))
@@ -894,7 +901,7 @@ ax4.plot(t_sk4[istart4+ishift4:iend4+ishift4], cai_sk5_shifted_CaHVA_SK,color=co
 ax4.plot(t_sk5[istart5+ishift5:iend5+ishift5], cai_sk6_shifted_CaHVA_SK,color=colors_gSK[5],label=r'%s$\bar{g}_\mathregular{SK}$' % str(gsks[4]))
 ax4.set_xlim(left=t_nosk[istart0+ishift0],right=t_nosk[iend0+ishift0])
 #ax2.axis([634.84,671.6,-78.2,51.1])
-ax4.legend(loc='lower right',ncol=1,fontsize=11)
+ax4.legend(loc='upper left',ncol=4,fontsize=11)
 
 ax5.axvline(x=peaktime_CaHVA_SK,color='k',linestyle='--',linewidth=0.75)
 ax5.plot(t_nosk[istart0+ishift0:iend0+ishift0], I_Ca_HVA_sk1_shifted_CaHVA_SK,color=colors_gSK[0],label=r'0$\bar{g}_\mathregular{SK}$')
@@ -1014,8 +1021,9 @@ ax3.plot(t0_shift, deltaV0,color=colors_gCa[0],label=r'$V_{%s\bar{g}}$-$V_{%s\ba
 ax3.plot(t1_shift, deltaV1,color=colors_gCa[2],label=r'$V_{%s\bar{g}}$-$V_{%s\bar{g}}$' % (str(gcahvas_label[2]),str(gcahvas_label[1])))
 ax3.plot(t2_shift, deltaV2,color=colors_gCa[3],label=r'$V_{%s\bar{g}}$-$V_{%s\bar{g}}$' % (str(gcahvas_label[3]),str(gcahvas_label[1])))
 ax3.plot(t3_shift, deltaV3,color=colors_gCa[4],label=r'$V_{%s\bar{g}}$-$V_{%s\bar{g}}$' % (str(gcahvas_label[4]),str(gcahvas_label[1])))
-ax3.set_xlim(left=t1_shift[0],right=t1_shift[-1])
-ax3.legend(loc='upper left',ncol=1,fontsize=11)
+ax3.set_xlim(left=peaktime_CaHVA,right=t1_shift[-1])
+ax3.set_ylim(top=4,bottom=-11)
+ax3.legend(loc='lower center',ncol=1,fontsize=11)
 
 ax5.axvline(x=peaktime_CaHVA,color='k',linestyle='--',linewidth=0.75)
 ax5.plot(t0_shift, I_Ca_HVA0_shifted_CaHVA,color=colors_gCa[0],label=r'%s$\bar{g}$' % str(gcahvas_label[0]))
@@ -1045,8 +1053,9 @@ ax4.plot(t2_shift_sk, deltaV2_SK,color=colors_gSK[2],label=r'$V_{%s\bar{g}}$-$V_
 ax4.plot(t3_shift_sk, deltaV3_SK,color=colors_gSK[3],label=r'$V_{%s\bar{g}}$-$V_{0\bar{g}}$' % str(gsks[2]))
 ax4.plot(t4_shift_sk, deltaV4_SK,color=colors_gSK[4],label=r'$V_{%s\bar{g}}$-$V_{0\bar{g}}$' % str(gsks[3]))
 ax4.plot(t5_shift_sk, deltaV5_SK,color=colors_gSK[5],label=r'$V_{%s\bar{g}}$-$V_{0\bar{g}}$' % str(gsks[4]))
-ax4.set_xlim(left=t1_shift_sk[0],right=t1_shift_sk[-1])
-ax4.legend(loc='lower left',ncol=1,fontsize=9)
+ax4.set_xlim(left=peaktime_CaHVA_SK,right=t1_shift_sk[-1])
+ax4.set_ylim(top=4,bottom=-11)
+ax4.legend(loc='lower center',ncol=1,fontsize=9)
 
 
 ax6.axvline(x=peaktime_CaHVA_SK,color='k',linestyle='--',linewidth=0.75)
